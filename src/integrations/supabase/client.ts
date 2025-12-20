@@ -22,11 +22,13 @@ if (import.meta.env.DEV) {
 if (!SUPABASE_URL) {
   console.error('❌ VITE_SUPABASE_URL is not set. Please add it to your .env file.');
   console.error('   Expected: VITE_SUPABASE_URL=https://flndlrgxxnlhuuusargv.supabase.co');
+  console.error('   For Vercel: Add this in Project Settings > Environment Variables');
 }
 
 if (!SUPABASE_PUBLISHABLE_KEY) {
   console.error('❌ VITE_SUPABASE_PUBLISHABLE_KEY is not set. Please add it to your .env file.');
   console.error('   Get your anon/publishable key from: https://supabase.com/dashboard/project/flndlrgxxnlhuuusargv/settings/api');
+  console.error('   For Vercel: Add this in Project Settings > Environment Variables');
 } else if (SUPABASE_PUBLISHABLE_KEY.length < 50) {
   // Modern publishable keys (sb_publishable_...) are shorter than legacy anon keys
   // Check for both formats
@@ -40,13 +42,56 @@ if (!SUPABASE_PUBLISHABLE_KEY) {
   }
 }
 
+// Validate URL format
+const isValidUrl = (url: string | undefined): boolean => {
+  if (!url || typeof url !== 'string' || url.trim() === '') return false;
+  try {
+    const urlObj = new URL(url.trim());
+    return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+// Validate that we have required environment variables
+const hasValidUrl = isValidUrl(SUPABASE_URL);
+const hasValidKey = SUPABASE_PUBLISHABLE_KEY && SUPABASE_PUBLISHABLE_KEY.trim().length > 0;
+
+if (!hasValidUrl || !hasValidKey) {
+  const missingVars: string[] = [];
+  if (!hasValidUrl) {
+    missingVars.push('VITE_SUPABASE_URL');
+  }
+  if (!hasValidKey) {
+    missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
+  }
+
+  const errorMsg = `❌ Missing or invalid environment variables: ${missingVars.join(', ')}\n\n` +
+    `Please set these in:\n` +
+    `  - Local: Create a .env file in the project root with:\n` +
+    `    VITE_SUPABASE_URL=https://your-project.supabase.co\n` +
+    `    VITE_SUPABASE_PUBLISHABLE_KEY=your-key-here\n` +
+    `  - Vercel: Project Settings > Environment Variables\n\n` +
+    `Get your values from: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api`;
+
+  console.error(errorMsg);
+  
+  // Always throw in both dev and prod to prevent creating invalid client
+  throw new Error(`Missing required environment variables: ${missingVars.join(', ')}. Check console for details.`);
+}
+
+// Only create client if we have valid configuration
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL || '', SUPABASE_PUBLISHABLE_KEY || '', {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
+export const supabase = createClient<Database>(
+  SUPABASE_URL!.trim(),
+  SUPABASE_PUBLISHABLE_KEY!.trim(),
+  {
+    auth: {
+      storage: localStorage,
+      persistSession: true,
+      autoRefreshToken: true,
+    }
   }
-});
+);
