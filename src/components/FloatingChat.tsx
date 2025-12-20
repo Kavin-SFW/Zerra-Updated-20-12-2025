@@ -1,0 +1,609 @@
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import {
+  MessageCircle, X, Send, Bot, ThumbsUp, ThumbsDown, Copy,
+  TrendingUp, Database, BarChart3, Sparkles, Minimize2, Mic, MicOff
+} from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useAnalytics } from "@/contexts/AnalyticsContext";
+
+// Type definitions for Web Speech API
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  abort(): void;
+  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  item(index: number): SpeechRecognitionResult;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
+  isFinal: boolean;
+}
+
+interface SpeechRecognitionAlternative {
+  transcript: string;
+  confidence: number;
+}
+
+declare var SpeechRecognition: {
+  prototype: SpeechRecognition;
+  new(): SpeechRecognition;
+};
+
+declare var webkitSpeechRecognition: {
+  prototype: SpeechRecognition;
+  new(): SpeechRecognition;
+};
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
+const FloatingChat = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: '1',
+      role: 'assistant',
+      content: "Hello! I'm your AI analytics assistant. I can help you query your data, generate insights, and create visualizations.\n\n💡 **Tip**: For best results, go to the **Analytics** page and select a data source from the dropdown. Then I'll have full context about your data!\n\nWhat would you like to explore?",
+      timestamp: new Date(),
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  const { selectedDataSourceId } = useAnalytics();
+  const [suggestedPrompts, setSuggestedPrompts] = useState<Array<{ text: string, icon: any }>>([]);
+
+  // Generate dynamic suggested prompts based on available data
+  useEffect(() => {
+    const generateDynamicPrompts = async () => {
+      if (!selectedDataSourceId) {
+        setSuggestedPrompts([]);
+        return;
+      }
+
+      try {
+        const { data: dataSource, error } = await (supabase as any)
+          .from('data_sources')
+          .select('schema_info, metadata, name')
+          .eq('id', selectedDataSourceId)
+          .single();
+
+        // Clear prompts if data source doesn't exist (was deleted) or error occurred
+        if (error || !dataSource) {
+          setSuggestedPrompts([]);
+          return;
+        }
+
+        const schemaInfo = dataSource.schema_info || {};
+        const columns = Object.keys(schemaInfo);
+
+        // Generate prompts based on available columns
+        const prompts: Array<{ text: string, icon: any }> = [];
+
+        // Find key metrics/columns
+        const numericColumns = columns.filter((col: string) =>
+          schemaInfo[col]?.type === 'numeric' ||
+          schemaInfo[col]?.data_type === 'number' ||
+          ['revenue', 'sales', 'amount', 'price', 'quantity', 'count'].some(keyword =>
+            col.toLowerCase().includes(keyword)
+          )
+        ).slice(0, 3);
+
+        const categoricalColumns = columns.filter((col: string) =>
+          schemaInfo[col]?.type === 'categorical' ||
+          schemaInfo[col]?.data_type === 'text' ||
+          ['category', 'region', 'product', 'customer', 'status', 'type'].some(keyword =>
+            col.toLowerCase().includes(keyword)
+          )
+        ).slice(0, 2);
+
+        // Generate dynamic prompts
+        if (numericColumns.length > 0 && categoricalColumns.length > 0) {
+          prompts.push({
+            text: `Show me ${numericColumns[0]} trends by ${categoricalColumns[0]}`,
+            icon: TrendingUp,
+          });
+        }
+
+        if (numericColumns.length > 1) {
+          prompts.push({
+            text: `What are the top 5 items by ${numericColumns[0]}?`,
+            icon: BarChart3,
+          });
+        }
+
+        if (categoricalColumns.length > 0) {
+          prompts.push({
+            text: `Compare performance across different ${categoricalColumns[0]}`,
+            icon: Database,
+          });
+        }
+
+        // Fallback prompts if no specific columns found
+        if (prompts.length === 0) {
+          prompts.push({
+            text: `Analyze trends in ${dataSource.name}`,
+            icon: TrendingUp,
+          });
+          prompts.push({
+            text: `What are the key insights from this data?`,
+            icon: BarChart3,
+          });
+          prompts.push({
+            text: `Show me the data distribution`,
+            icon: Database,
+          });
+        }
+
+        setSuggestedPrompts(prompts.slice(0, 3)); // Limit to 3 prompts
+      } catch (error) {
+        console.error('Error generating dynamic prompts:', error);
+        setSuggestedPrompts([]);
+      }
+    };
+
+    generateDynamicPrompts();
+  }, [selectedDataSourceId]);
+
+  useEffect(() => {
+    if (isOpen && !isMinimized) {
+      inputRef.current?.focus();
+    }
+  }, [isOpen, isMinimized]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    // Check for browser support
+    const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognitionClass) {
+      setIsSpeechSupported(true);
+      const recognition = new SpeechRecognitionClass() as SpeechRecognition;
+
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = Array.from(event.results)
+          .map((result) => result[0].transcript)
+          .join('');
+
+        setInput(prev => prev + (prev ? ' ' : '') + transcript);
+        setIsListening(false);
+      };
+
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+
+        // Only show errors for critical issues, not for normal interruptions
+        if (event.error === 'audio-capture') {
+          toast.error("No microphone found. Please check your microphone settings.");
+        } else if (event.error === 'not-allowed') {
+          toast.error("Microphone permission denied. Please allow microphone access.");
+        }
+        // Silently handle 'no-speech' and other errors as they're expected when releasing button
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    } else {
+      setIsSpeechSupported(false);
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      console.log('Sending chat request with dataSourceId:', selectedDataSourceId);
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          question: userMessage.content,
+          dataSourceId: selectedDataSourceId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = 'Failed to get response';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        console.error('Chat API error:', response.status, errorMessage);
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: result.answer || 'I received an empty response. Please try again.',
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      const errorText = error instanceof Error ? error.message : 'Sorry, I encountered an error. Please try again.';
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: errorText,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+      toast.error(errorText.length > 50 ? 'Failed to send message' : errorText);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSuggestedPrompt = (prompt: string) => {
+    setInput(prompt);
+    inputRef.current?.focus();
+  };
+
+  const copyMessage = (content: string) => {
+    navigator.clipboard.writeText(content);
+    toast.success("Message copied to clipboard");
+  };
+
+  const handleFeedback = (messageId: string, type: 'up' | 'down') => {
+    // Handle feedback logic here
+    toast.success(`Feedback ${type === 'up' ? 'sent' : 'recorded'}`);
+  };
+
+  const startListening = () => {
+    if (!isSpeechSupported) {
+      toast.error("Speech recognition is not supported in your browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    if (recognitionRef.current && !isListening) {
+      try {
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        toast.error("Failed to start voice recognition. Please try again.");
+      }
+    }
+  };
+
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      try {
+        // Force stop immediately
+        recognitionRef.current.stop();
+        recognitionRef.current.abort();
+        setIsListening(false);
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+        setIsListening(false);
+      }
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    startListening();
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    stopListening();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    startListening();
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    stopListening();
+  };
+
+  // Prevent context menu on long press
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+  };
+
+  if (!isOpen) {
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="w-16 h-16 rounded-full bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90 text-white shadow-[0_0_30px_rgba(0,212,255,0.5)] hover:shadow-[0_0_40px_rgba(0,212,255,0.7)] transition-all duration-300 animate-pulse-slow"
+        >
+          <MessageCircle className="w-6 h-6" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 w-96">
+      <Card className="glass-card border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[600px]">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#00D4FF]/20 to-[#6B46C1]/20 border-b border-white/10 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-bold text-white">AI Analytics Chat</h3>
+              <p className="text-xs text-[#E5E7EB]/70">Ask questions in natural language</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMinimized(!isMinimized)}
+              className="text-[#E5E7EB] hover:text-white hover:bg-white/10 h-8 w-8"
+            >
+              <Minimize2 className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(false)}
+              className="text-[#E5E7EB] hover:text-white hover:bg-white/10 h-8 w-8"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {!isMinimized && (
+          <>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0A0E27]/50">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {message.role === 'assistant' && (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center flex-shrink-0">
+                      <Bot className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
+                      ? 'bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] text-white'
+                      : 'bg-white/5 border border-white/10 text-[#E5E7EB]'
+                      }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    {message.role === 'assistant' && (
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/10">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-[#E5E7EB]/70 hover:text-[#00D4FF]"
+                          onClick={() => handleFeedback(message.id, 'up')}
+                        >
+                          <ThumbsUp className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-[#E5E7EB]/70 hover:text-red-400"
+                          onClick={() => handleFeedback(message.id, 'down')}
+                        >
+                          <ThumbsDown className="w-3 h-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-[#E5E7EB]/70 hover:text-[#00D4FF]"
+                          onClick={() => copyMessage(message.content)}
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  {message.role === 'user' && (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6B46C1] to-[#9333EA] flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-white">U</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex justify-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                    <div className="flex space-x-2">
+                      <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Suggested Prompts */}
+            {messages.length === 1 && (
+              <div className="px-4 pb-2 space-y-2">
+                {suggestedPrompts.map((prompt, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestedPrompt(prompt.text)}
+                    className="w-full text-left glass-card p-3 rounded-lg hover:border-[#00D4FF]/50 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00D4FF]/20 to-[#6B46C1]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <prompt.icon className="w-4 h-4 text-[#00D4FF]" />
+                      </div>
+                      <span className="text-sm text-[#E5E7EB] group-hover:text-white transition-colors">
+                        {prompt.text}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Input */}
+            <div className="p-4 border-t border-white/10 bg-[#0A0E27]/50">
+              <div className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder="Ask me anything about your data..."
+                    className="bg-white/5 border-white/20 text-white placeholder:text-[#E5E7EB]/40 focus:border-[#00D4FF] rounded-lg pr-10"
+                    disabled={isLoading || isListening}
+                  />
+                  {isListening && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    </div>
+                  )}
+                </div>
+                {isSpeechSupported && (
+                  <Button
+                    onMouseDown={handleMouseDown}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={stopListening}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    onContextMenu={handleContextMenu}
+                    disabled={isLoading}
+                    className={`${isListening
+                      ? "bg-red-500 hover:bg-red-600 animate-pulse active:bg-red-700"
+                      : "bg-white/10 hover:bg-white/20 border border-white/20 active:bg-white/30"
+                      } text-white px-4 rounded-lg transition-all select-none`}
+                    title="Hold to speak"
+                  >
+                    {isListening ? (
+                      <MicOff className="w-4 h-4" />
+                    ) : (
+                      <Mic className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={isLoading || !input.trim() || isListening}
+                  className="bg-gradient-to-r from-[#6B46C1] to-[#9333EA] hover:from-[#6B46C1]/90 hover:to-[#9333EA]/90 text-white px-4 rounded-lg"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+              {isSpeechSupported && (
+                <p className="text-xs text-[#E5E7EB]/50 mt-2 flex items-center gap-1">
+                  <Mic className="w-3 h-3" />
+                  Hold the microphone button to speak
+                </p>
+              )}
+            </div>
+          </>
+        )}
+      </Card>
+    </div>
+  );
+};
+
+export default FloatingChat;
+
