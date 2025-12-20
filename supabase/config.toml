@@ -1,0 +1,19 @@
+project_id = "flndlrgxxnlhuuusargv"
+
+[auth]
+site_url = "http://localhost:8080"
+jwt_expiry = 3600
+
+[auth.email]
+enable_signup = true
+
+[analytics]
+enabled = false
+
+[functions.process-file]
+verify_jwt = false
+# JWT verification is handled manually in the function code
+# This allows OPTIONS preflight requests to work properly
+
+[functions.chat]
+verify_jwt = true
