@@ -6,15 +6,16 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Debug: Log environment variable status (without exposing full key)
-if (import.meta.env.DEV) {
-  console.log('🔍 Supabase Configuration:');
-  console.log('   URL:', SUPABASE_URL || '❌ NOT SET');
-  console.log('   Key:', SUPABASE_PUBLISHABLE_KEY ? `✅ Set (${SUPABASE_PUBLISHABLE_KEY.length} chars)` : '❌ NOT SET');
-  if (SUPABASE_PUBLISHABLE_KEY) {
-    // Check if key starts with quotes (common .env issue)
-    if (SUPABASE_PUBLISHABLE_KEY.startsWith('"') || SUPABASE_PUBLISHABLE_KEY.startsWith("'")) {
-      console.warn('⚠️ Key appears to have quotes - this may cause issues. Remove quotes from .env file.');
-    }
+// Log in both dev and prod to help debug Vercel issues
+console.log('🔍 Supabase Configuration Check:');
+console.log('   Environment:', import.meta.env.MODE);
+console.log('   URL:', SUPABASE_URL ? `✅ Set (${SUPABASE_URL.substring(0, 30)}...)` : '❌ NOT SET');
+console.log('   Key:', SUPABASE_PUBLISHABLE_KEY ? `✅ Set (${SUPABASE_PUBLISHABLE_KEY.length} chars)` : '❌ NOT SET');
+
+if (SUPABASE_PUBLISHABLE_KEY) {
+  // Check if key starts with quotes (common .env issue)
+  if (SUPABASE_PUBLISHABLE_KEY.startsWith('"') || SUPABASE_PUBLISHABLE_KEY.startsWith("'")) {
+    console.warn('⚠️ Key appears to have quotes - this may cause issues. Remove quotes from .env file.');
   }
 }
 
@@ -61,23 +62,35 @@ if (!hasValidUrl || !hasValidKey) {
   const missingVars: string[] = [];
   if (!hasValidUrl) {
     missingVars.push('VITE_SUPABASE_URL');
+    console.error('❌ VITE_SUPABASE_URL is missing or invalid');
+    console.error('   Current value:', SUPABASE_URL ? `"${SUPABASE_URL}"` : 'undefined');
   }
   if (!hasValidKey) {
     missingVars.push('VITE_SUPABASE_PUBLISHABLE_KEY');
+    console.error('❌ VITE_SUPABASE_PUBLISHABLE_KEY is missing or invalid');
+    console.error('   Current value:', SUPABASE_PUBLISHABLE_KEY ? `"${SUPABASE_PUBLISHABLE_KEY.substring(0, 20)}..."` : 'undefined');
   }
 
   const errorMsg = `❌ Missing or invalid environment variables: ${missingVars.join(', ')}\n\n` +
-    `Please set these in:\n` +
-    `  - Local: Create a .env file in the project root with:\n` +
-    `    VITE_SUPABASE_URL=https://your-project.supabase.co\n` +
-    `    VITE_SUPABASE_PUBLISHABLE_KEY=your-key-here\n` +
-    `  - Vercel: Project Settings > Environment Variables\n\n` +
-    `Get your values from: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api`;
+    `🔧 How to fix:\n` +
+    `  1. Go to Vercel Dashboard: https://vercel.com/dashboard\n` +
+    `  2. Select your project\n` +
+    `  3. Go to Settings > Environment Variables\n` +
+    `  4. Add these variables:\n` +
+    `     - VITE_SUPABASE_URL=https://your-project.supabase.co\n` +
+    `     - VITE_SUPABASE_PUBLISHABLE_KEY=your-key-here\n` +
+    `  5. Redeploy your project\n\n` +
+    `📋 Get your values from: https://supabase.com/dashboard/project/YOUR_PROJECT_ID/settings/api\n\n` +
+    `⚠️ Note: After adding variables, you MUST redeploy for changes to take effect!`;
 
   console.error(errorMsg);
   
-  // Always throw in both dev and prod to prevent creating invalid client
-  throw new Error(`Missing required environment variables: ${missingVars.join(', ')}. Check console for details.`);
+  // Create a user-friendly error that will show in the browser
+  const userFriendlyError = `Configuration Error: Missing environment variables (${missingVars.join(', ')}). ` +
+    `Please check the browser console for detailed instructions.`;
+  
+  // Always throw to prevent creating invalid client
+  throw new Error(userFriendlyError);
 }
 
 // Only create client if we have valid configuration
