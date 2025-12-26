@@ -70,7 +70,7 @@ interface Message {
 }
 
 const FloatingChat = () => {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isChatOpen, setIsChatOpen, selectedDataSourceId } = useAnalytics();
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -88,7 +88,6 @@ const FloatingChat = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  const { selectedDataSourceId } = useAnalytics();
   const [suggestedPrompts, setSuggestedPrompts] = useState<Array<{ text: string, icon: any }>>([]);
 
   // Generate dynamic suggested prompts based on available data
@@ -184,10 +183,10 @@ const FloatingChat = () => {
   }, [selectedDataSourceId]);
 
   useEffect(() => {
-    if (isOpen && !isMinimized) {
+    if (isChatOpen && !isMinimized) {
       inputRef.current?.focus();
     }
-  }, [isOpen, isMinimized]);
+  }, [isChatOpen, isMinimized]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -394,17 +393,8 @@ const FloatingChat = () => {
     e.preventDefault();
   };
 
-  if (!isOpen) {
-    return (
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="w-16 h-16 rounded-full bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90 text-white shadow-[0_0_30px_rgba(0,212,255,0.5)] hover:shadow-[0_0_40px_rgba(0,212,255,0.7)] transition-all duration-300 animate-pulse-slow"
-        >
-          <MessageCircle className="w-6 h-6" />
-        </Button>
-      </div>
-    );
+  if (!isChatOpen) {
+    return null;
   }
 
   return (
@@ -433,7 +423,7 @@ const FloatingChat = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setIsOpen(false)}
+              onClick={() => setIsChatOpen(false)}
               className="text-[#E5E7EB] hover:text-white hover:bg-white/10 h-8 w-8"
             >
               <X className="w-4 h-4" />

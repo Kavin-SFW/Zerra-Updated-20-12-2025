@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Upload, Search, MoreVertical, Database, FileSpreadsheet, 
   CheckCircle2, RefreshCw, AlertCircle, Plus,
-  Server, Cloud, Loader2, Trash2
+  Server, Cloud, Loader2, Trash2, X
 } from "lucide-react";
 import { toast } from "sonner";
+import * as XLSX from 'xlsx';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,15 +20,36 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 
+type DataSourceStatus = "active" | "syncing" | "error" | "inactive";
+
 interface DataSource {
   id: string;
   name: string;
   type: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   records: string;
   lastSync: string;
-  status: "active" | "syncing" | "error" | "inactive";
+  status: DataSourceStatus;
+  created_at?: string;
+  row_count?: number;
+  last_synced_at?: string;
 }
+
+interface QuickConnectSource {
+  name: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
+  color: string;
+}
+
+const ALLOWED_FILE_TYPES = [
+  'text/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel.sheet.macroEnabled.12'
+];
+
+const ALLOWED_FILE_EXTENSIONS = ['.csv', '.xlsx', '.xls'];
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 const DataSources = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,6 +58,7 @@ const DataSources = () => {
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   const { selectedDataSourceId, setSelectedDataSourceId } = useAnalytics();
 
   // Fetch real data sources from Supabase
@@ -53,7 +77,7 @@ const DataSources = () => {
       }
 
       // Fetch data sources
-      const { data: sources, error: sourcesError } = await supabase
+      const { data: sources, error: sourcesError }: { data: any[] | null, error: any } = await (supabase as any)
         .from('data_sources')
         .select('id, name, type, status, row_count, last_synced_at, created_at')
         .eq('created_by', session.user.id)
@@ -202,90 +226,151 @@ const DataSources = () => {
     handleFileUpload(files);
   };
 
-  const handleFileUpload = async (files: File[]) => {
-    if (files.length === 0) return;
+  const convertXlsxToCsv = async (file: File): Promise<File> => {
+    const toastId = `converting-${file.name}`;
+    try {
+      toast.loading(`Converting ${file.name} to CSV...`, { id: toastId });
+      
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const csv = XLSX.utils.sheet_to_csv(worksheet);
+      
+      // Create a new file with .csv extension
+      const csvFile = new File([csv], file.name.replace(/\.(xlsx|xls)$/i, '.csv'), {
+        type: 'text/csv',
+      });
+      
+      toast.success(`Successfully converted to ${csvFile.name}`, { id: toastId });
+      return csvFile;
+      
+    } catch (error) {
+      console.error('Error converting XLSX to CSV:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Conversion failed';
+      toast.error(`Failed to convert ${file.name}: ${errorMessage}`, { 
+        id: toastId,
+        duration: 5000 
+      });
+      throw error; // Re-throw to allow handleFileUpload to handle the error
+    }
+  };
 
-    const file = files[0];
-    
-    // Validate file type
-    const allowedTypes = [
-      'text/csv',
-      'application/vnd.ms-excel',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel.sheet.macroEnabled.12'
-    ];
-    
-    const allowedExtensions = ['.csv', '.xlsx', '.xls'];
+  const validateFile = (file: File): { isValid: boolean; error?: string } => {
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
-    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
-      toast.error("Invalid file type. Please upload a CSV or Excel file.");
+    if (!ALLOWED_FILE_TYPES.includes(file.type) && 
+        !ALLOWED_FILE_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext))) {
+      return { 
+        isValid: false, 
+        error: `Invalid file type. Please upload a CSV or Excel file.` 
+      };
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return { 
+        isValid: false, 
+        error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit.` 
+      };
+    }
+
+    return { isValid: true };
+  };
+
+  const handleFileUpload = async (files: File[]) => {
+  if (!files.length) return;
+
+  const file = files[0];
+  const validation = validateFile(file);
+  
+  if (!validation.isValid) {
+    toast.error(validation.error || 'Invalid file');
+    return;
+  }
+
+  setUploading(true);
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      toast.error("Please log in to upload files.");
       return;
     }
 
-    // Validate file size (100MB)
-    const maxSize = 100 * 1024 * 1024; // 100MB in bytes
-    if (file.size > maxSize) {
-      toast.error("File size exceeds 100MB limit.");
-      return;
-    }
+    // Convert XLS/XLSX to CSV if needed
+    const isExcelFile = file.name.toLowerCase().endsWith('.xlsx') || 
+                       file.name.toLowerCase().endsWith('.xls') ||
+                       file.type.includes('spreadsheetml') || 
+                       file.type.includes('excel');
+    
+    const fileToUpload = isExcelFile ? await convertXlsxToCsv(file) : file;
 
-    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', fileToUpload);
+
+    const uploadToast = toast.loading("Uploading and processing file...", { 
+      id: `upload-${Date.now()}`,
+      duration: Infinity 
+    });
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please log in to upload files.");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      toast.loading("Uploading and processing file...", { id: "upload" });
-
-      // Don't set Content-Type header for FormData - browser sets it automatically with boundary
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-file`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
-          // Explicitly don't set Content-Type - browser will set multipart/form-data with boundary
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLIC_KEY || '',
         },
         body: formData,
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage = 'File processing failed';
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          errorMessage = errorText || errorMessage;
+        if (!response.ok) {
+          const errorText = await response.text();
+          let errorMessage = 'File processing failed';
+          try {
+            const errorData = JSON.parse(errorText);
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            errorMessage = errorText || errorMessage;
+          }
+          throw new Error(errorMessage);
         }
-        throw new Error(errorMessage);
-      }
 
       const result = await response.json();
       
-      toast.success(`File processed successfully! ${result.rows_count || 0} rows analyzed.`, { id: "upload" });
-      
-      // Refresh the data sources list
-      await fetchDataSources();
-      console.log("File processed:", result);
+      toast.success(`File processed successfully! ${result.rows_count || 0} rows analyzed.`, { 
+        id: uploadToast,
+        duration: 5000 
+      });
 
+      // Set the newly created data source ID and navigate to analytics
+      if (result.data_source_id) {
+        setSelectedDataSourceId(result.data_source_id);
+        setTimeout(() => {
+          navigate('/analytics');
+        }, 1500);
+      } else {
+        // Refresh the data sources list if we don't navigate
+        await fetchDataSources();
+      }
     } catch (error) {
       console.error('Error uploading file:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to upload file. Please try again.';
-      toast.error(errorMessage, { id: "upload" });
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      toast.error(errorMessage, { 
+        id: uploadToast,
+        icon: <X className="w-5 h-5 text-red-500" />,
+        duration: 5000
+      });
     }
-  };
+  } catch (error) {
+    console.error('Error in file upload:', error);
+    toast.error('An unexpected error occurred');
+  } finally {
+    setUploading(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }
+};
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
@@ -320,13 +405,12 @@ const DataSources = () => {
         {/* Upload Section */}
         <Card className="glass-card p-8 border-white/10">
           <div
-            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
-              isDragging
-                ? "border-[#00D4FF] bg-[#00D4FF]/10"
-                : uploading
+            className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${isDragging
+              ? "border-[#00D4FF] bg-[#00D4FF]/10"
+              : uploading
                 ? "border-[#00D4FF] bg-[#00D4FF]/5"
                 : "border-[#00D4FF]/30 hover:border-[#00D4FF]/50 cursor-pointer"
-            }`}
+              }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -430,145 +514,145 @@ const DataSources = () => {
               </Card>
             ) : (
               filteredSources.map((source) => (
-              <Card
-                key={source.id}
-                className="glass-card p-6 border-white/10 hover:border-[#00D4FF]/30 transition-all"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    {/* Icon */}
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00D4FF]/20 to-[#6B46C1]/20 flex items-center justify-center">
-                      <source.icon className="text-[#00D4FF]" size={24} />
+                <Card
+                  key={source.id}
+                  className="glass-card p-6 border-white/10 hover:border-[#00D4FF]/30 transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      {/* Icon */}
+                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00D4FF]/20 to-[#6B46C1]/20 flex items-center justify-center">
+                        <source.icon className="text-[#00D4FF]" size={24} />
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-white">{source.name}</h3>
+                          <Badge className="bg-white/10 text-[#E5E7EB] border-white/20">
+                            {source.type}
+                          </Badge>
+                          {getStatusBadge(source.status)}
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-[#E5E7EB]/70">
+                          <span>{source.records}</span>
+                          <span>•</span>
+                          <span>{source.lastSync}</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Info */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-white">{source.name}</h3>
-                        <Badge className="bg-white/10 text-[#E5E7EB] border-white/20">
-                          {source.type}
-                        </Badge>
-                        {getStatusBadge(source.status)}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-[#E5E7EB]/70">
-                        <span>{source.records}</span>
-                        <span>•</span>
-                        <span>{source.lastSync}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-[#E5E7EB]/70 hover:text-white hover:bg-white/10"
+                    {/* Actions */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-[#E5E7EB]/70 hover:text-white hover:bg-white/10"
+                        >
+                          <MoreVertical className="w-5 h-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        className="bg-[#1a1f3a] border-white/10 text-white"
                       >
-                        <MoreVertical className="w-5 h-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      className="bg-[#1a1f3a] border-white/10 text-white"
-                    >
-                      <DropdownMenuItem 
-                        className="hover:bg-white/10"
-                        onClick={async () => {
-                          try {
-                            const { data: { session } } = await supabase.auth.getSession();
-                            if (!session) return;
-                            
-                            const { error } = await supabase
-                              .from('data_sources')
-                              .update({ 
-                                status: 'syncing',
-                                last_synced_at: new Date().toISOString()
-                              })
-                              .eq('id', source.id);
-                            
-                            if (error) {
+                        <DropdownMenuItem
+                          className="hover:bg-white/10"
+                          onClick={async () => {
+                            try {
+                              const { data: { session } } = await supabase.auth.getSession();
+                              if (!session) return;
+
+                              const { error } = await supabase
+                                .from('data_sources')
+                                .update({
+                                  status: 'syncing',
+                                  last_synced_at: new Date().toISOString()
+                                })
+                                .eq('id', source.id);
+
+                              if (error) {
+                                toast.error('Failed to sync');
+                              } else {
+                                toast.success('Sync started');
+                                await fetchDataSources();
+                              }
+                            } catch (error) {
                               toast.error('Failed to sync');
-                            } else {
-                              toast.success('Sync started');
-                              await fetchDataSources();
                             }
-                          } catch (error) {
-                            toast.error('Failed to sync');
-                          }
-                        }}
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" />
-                        Sync Now
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-red-400 hover:bg-red-500/10 hover:text-red-400"
-                        onClick={async () => {
-                          if (!confirm("Are you sure you want to delete this data source? This action cannot be undone.")) return;
-                          
-                          try {
-                            const { data: { session } } = await supabase.auth.getSession();
-                            if (!session) return;
-                            
-                            // 1. Delete the record from data_sources
-                            // RLS should handle cascade or we might need to delete from storage if applicable
-                            const { error } = await supabase
-                              .from('data_sources')
-                              .delete()
-                              .eq('id', source.id);
-                            
-                            if (error) {
+                          }}
+                        >
+                          <RefreshCw className="w-4 h-4 mr-2" />
+                          Sync Now
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-red-400 hover:bg-red-500/10 hover:text-red-400"
+                          onClick={async () => {
+                            if (!confirm("Are you sure you want to delete this data source? This action cannot be undone.")) return;
+
+                            try {
+                              const { data: { session } } = await supabase.auth.getSession();
+                              if (!session) return;
+
+                              // 1. Delete the record from data_sources
+                              // RLS should handle cascade or we might need to delete from storage if applicable
+                              const { error } = await supabase
+                                .from('data_sources')
+                                .delete()
+                                .eq('id', source.id);
+
+                              if (error) {
+                                toast.error('Failed to delete data source');
+                                console.error(error);
+                              } else {
+                                toast.success('Data source deleted');
+
+                                // Clear selected data source if it was the deleted one
+                                if (selectedDataSourceId === source.id) {
+                                  setSelectedDataSourceId(null);
+                                }
+
+                                await fetchDataSources();
+                              }
+                            } catch (error) {
                               toast.error('Failed to delete data source');
                               console.error(error);
-                            } else {
-                              toast.success('Data source deleted');
-                              
-                              // Clear selected data source if it was the deleted one
-                              if (selectedDataSourceId === source.id) {
-                                setSelectedDataSourceId(null);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-400"
+                          onClick={async () => {
+                            try {
+                              const { data: { session } } = await supabase.auth.getSession();
+                              if (!session) return;
+
+                              const { error } = await supabase
+                                .from('data_sources')
+                                .update({ status: 'inactive' })
+                                .eq('id', source.id);
+
+                              if (error) {
+                                toast.error('Failed to disconnect');
+                              } else {
+                                toast.success('Disconnected');
+                                await fetchDataSources();
                               }
-                              
-                              await fetchDataSources();
-                            }
-                          } catch (error) {
-                            toast.error('Failed to delete data source');
-                            console.error(error);
-                          }
-                        }}
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-400"
-                        onClick={async () => {
-                          try {
-                            const { data: { session } } = await supabase.auth.getSession();
-                            if (!session) return;
-                            
-                            const { error } = await supabase
-                              .from('data_sources')
-                              .update({ status: 'inactive' })
-                              .eq('id', source.id);
-                            
-                            if (error) {
+                            } catch (error) {
                               toast.error('Failed to disconnect');
-                            } else {
-                              toast.success('Disconnected');
-                              await fetchDataSources();
                             }
-                          } catch (error) {
-                            toast.error('Failed to disconnect');
-                          }
-                        }}
-                      >
-                        Disconnect
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </Card>
+                          }}
+                        >
+                          Disconnect
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </Card>
               ))
             )}
           </div>
@@ -579,4 +663,3 @@ const DataSources = () => {
 };
 
 export default DataSources;
-
