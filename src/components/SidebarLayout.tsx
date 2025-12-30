@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import logo from "@/assets/softworks-logo.png";
 import { useToast } from "@/hooks/use-toast";
-import TopChatTrigger from "./TopChatTrigger";
+// import TopChatTrigger from "./TopChatTrigger";
 
 interface SidebarLayoutProps {
   children: ReactNode;
@@ -146,7 +146,7 @@ const SidebarLayout = ({ children }: SidebarLayoutProps) => {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pt-0">
-        <TopChatTrigger />
+        {/* <TopChatTrigger /> */}
         <div className="p-0">
           {children}
         </div>

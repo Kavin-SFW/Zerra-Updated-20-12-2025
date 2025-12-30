@@ -157,6 +157,7 @@ All colors MUST be HSL.
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -164,31 +165,41 @@ All colors MUST be HSL.
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) translateX(0);
   }
+
   33% {
     transform: translateY(-20px) translateX(10px);
   }
+
   66% {
     transform: translateY(10px) translateX(-10px);
   }
 }
 
 @keyframes float-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0) rotate(0deg);
   }
+
   50% {
     transform: translateY(-15px) rotate(5deg);
   }
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.5;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.05);
@@ -199,6 +210,7 @@ All colors MUST be HSL.
   from {
     transform: rotate(0deg) translateX(180px) rotate(0deg);
   }
+
   to {
     transform: rotate(360deg) translateX(180px) rotate(-360deg);
   }
@@ -209,15 +221,19 @@ All colors MUST be HSL.
     height: 0;
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
   }
+
   50% {
     box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
   }
@@ -281,10 +297,9 @@ html {
   color: #fff;
 }
 
-/* Focus Styles */
+/* Global focus-visible override removed to maintain clean dashboard aesthetics */
 *:focus-visible {
-  outline: 2px solid #00D4FF;
-  outline-offset: 2px;
+  outline: none;
 }
 
 /* Link Hover Effects */
@@ -298,6 +313,7 @@ a {
     transform: scale(0);
     opacity: 1;
   }
+
   100% {
     transform: scale(4);
     opacity: 0;
@@ -313,7 +329,12 @@ a {
 }
 
 /* Premium Typography */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -324,6 +345,7 @@ h1, h2, h3, h4, h5, h6 {
   h1 {
     font-size: 2.5rem;
   }
+
   h2 {
     font-size: 2rem;
   }
@@ -334,6 +356,7 @@ h1, h2, h3, h4, h5, h6 {
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -341,12 +364,10 @@ h1, h2, h3, h4, h5, h6 {
 
 .shimmer {
   animation: shimmer 2s infinite;
-  background: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.2) 50%,
-    rgba(255, 255, 255, 0.1) 100%
-  );
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.1) 100%);
   background-size: 1000px 100%;
 }
 
@@ -378,7 +399,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Smooth Transitions */
 * {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }

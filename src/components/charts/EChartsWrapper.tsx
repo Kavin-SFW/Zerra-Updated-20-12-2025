@@ -8,12 +8,14 @@ interface EChartsWrapperProps {
   option: EChartsOption;
   style?: React.CSSProperties;
   className?: string;
+  id?: string;
 }
 
-const EChartsWrapper: React.FC<EChartsWrapperProps> = ({ 
-  option, 
+const EChartsWrapper: React.FC<EChartsWrapperProps> = ({
+  option,
   style = { height: '400px', width: '100%' },
-  className = ''
+  className = '',
+  id
 }) => {
   // Register the Macarons theme
   useEffect(() => {
@@ -28,6 +30,7 @@ const EChartsWrapper: React.FC<EChartsWrapperProps> = ({
 
   return (
     <ReactECharts
+      id={id}
       option={themedOption}
       theme="macarons"
       style={style}

@@ -90,7 +90,6 @@ const FloatingChat = () => {
 
   const [suggestedPrompts, setSuggestedPrompts] = useState<Array<{ text: string, icon: any }>>([]);
 
-  // Generate dynamic suggested prompts based on available data
   useEffect(() => {
     const generateDynamicPrompts = async () => {
       if (!selectedDataSourceId) {
@@ -105,7 +104,6 @@ const FloatingChat = () => {
           .eq('id', selectedDataSourceId)
           .single();
 
-        // Clear prompts if data source doesn't exist (was deleted) or error occurred
         if (error || !dataSource) {
           setSuggestedPrompts([]);
           return;
@@ -114,10 +112,8 @@ const FloatingChat = () => {
         const schemaInfo = dataSource.schema_info || {};
         const columns = Object.keys(schemaInfo);
 
-        // Generate prompts based on available columns
         const prompts: Array<{ text: string, icon: any }> = [];
 
-        // Find key metrics/columns
         const numericColumns = columns.filter((col: string) =>
           schemaInfo[col]?.type === 'numeric' ||
           schemaInfo[col]?.data_type === 'number' ||
@@ -134,7 +130,6 @@ const FloatingChat = () => {
           )
         ).slice(0, 2);
 
-        // Generate dynamic prompts
         if (numericColumns.length > 0 && categoricalColumns.length > 0) {
           prompts.push({
             text: `Show me ${numericColumns[0]} trends by ${categoricalColumns[0]}`,
@@ -156,7 +151,6 @@ const FloatingChat = () => {
           });
         }
 
-        // Fallback prompts if no specific columns found
         if (prompts.length === 0) {
           prompts.push({
             text: `Analyze trends in ${dataSource.name}`,
@@ -172,7 +166,7 @@ const FloatingChat = () => {
           });
         }
 
-        setSuggestedPrompts(prompts.slice(0, 3)); // Limit to 3 prompts
+        setSuggestedPrompts(prompts.slice(0, 3));
       } catch (error) {
         console.error('Error generating dynamic prompts:', error);
         setSuggestedPrompts([]);
@@ -240,7 +234,6 @@ const FloatingChat = () => {
       setIsSpeechSupported(false);
     }
 
-    // Cleanup on unmount
     return () => {
       if (recognitionRef.current) {
         recognitionRef.current.stop();
@@ -334,7 +327,6 @@ const FloatingChat = () => {
   };
 
   const handleFeedback = (messageId: string, type: 'up' | 'down') => {
-    // Handle feedback logic here
     toast.success(`Feedback ${type === 'up' ? 'sent' : 'recorded'}`);
   };
 
@@ -357,7 +349,6 @@ const FloatingChat = () => {
   const stopListening = () => {
     if (recognitionRef.current) {
       try {
-        // Force stop immediately
         recognitionRef.current.stop();
         recognitionRef.current.abort();
         setIsListening(false);
@@ -388,209 +379,223 @@ const FloatingChat = () => {
     stopListening();
   };
 
-  // Prevent context menu on long press
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
   };
 
-  if (!isChatOpen) {
-    return null;
-  }
-
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-96">
-      <Card className="glass-card border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden flex flex-col h-[600px]">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#00D4FF]/20 to-[#6B46C1]/20 border-b border-white/10 p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold text-white">AI Analytics Chat</h3>
-              <p className="text-xs text-[#E5E7EB]/70">Ask questions in natural language</p>
-            </div>
+    <div className="fixed bottom-16 right-10 z-50 flex flex-col items-end gap-4">
+      {!isChatOpen && (
+        <Button
+          onClick={() => setIsChatOpen(true)}
+          className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#128C7E] shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 group relative"
+        >
+          <div className="relative">
+            <MessageCircle className="w-7 h-7 text-white fill-white/10" />
+            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMinimized(!isMinimized)}
-              className="text-[#E5E7EB] hover:text-white hover:bg-white/10 h-8 w-8"
-            >
-              <Minimize2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsChatOpen(false)}
-              className="text-[#E5E7EB] hover:text-white hover:bg-white/10 h-8 w-8"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+          <div className="absolute right-full mr-3 bg-white text-[#075E54] px-3 py-1.5 rounded-lg text-sm font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            Chat with AI
           </div>
-        </div>
+        </Button>
+      )}
 
-        {!isMinimized && (
-          <>
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0A0E27]/50">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {message.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center flex-shrink-0">
+      {isChatOpen && (
+        <Card className={`glass-card border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden flex flex-col transition-all duration-300 origin-bottom-right ${isMinimized ? 'h-16 w-80' : 'h-[550px] w-96'} animate-in fade-in slide-in-from-bottom-5 zoom-in-95`}>
+          <div className="bg-gradient-to-r from-[#00D4FF]/20 to-[#6B46C1]/20 border-b border-white/10 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-white">AI Analytics Chat</h3>
+                <p className="text-xs text-[#E5E7EB]/70">Ask questions in natural language</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsMinimized(!isMinimized)}
+                className="text-[#E5E7EB] hover:text-white hover:bg-white/10 h-8 w-8"
+              >
+                <Minimize2 className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsChatOpen(false)}
+                className="text-[#E5E7EB] hover:text-white hover:bg-white/10 h-8 w-8"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {!isMinimized && (
+            <>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#0A0E27]/50">
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {message.role === 'assistant' && (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center flex-shrink-0">
+                        <Bot className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
+                        ? 'bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] text-white'
+                        : 'bg-white/5 border border-white/10 text-[#E5E7EB]'
+                        }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {message.role === 'assistant' && (
+                        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/10">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-[#E5E7EB]/70 hover:text-[#00D4FF]"
+                            onClick={() => handleFeedback(message.id, 'up')}
+                          >
+                            <ThumbsUp className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-[#E5E7EB]/70 hover:text-red-400"
+                            onClick={() => handleFeedback(message.id, 'down')}
+                          >
+                            <ThumbsDown className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 text-[#E5E7EB]/70 hover:text-[#00D4FF]"
+                            onClick={() => copyMessage(message.content)}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {message.role === 'user' && (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6B46C1] to-[#9333EA] flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-white">U</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
-                  )}
-                  <div
-                    className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
-                      ? 'bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] text-white'
-                      : 'bg-white/5 border border-white/10 text-[#E5E7EB]'
-                      }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    {message.role === 'assistant' && (
-                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/10">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-[#E5E7EB]/70 hover:text-[#00D4FF]"
-                          onClick={() => handleFeedback(message.id, 'up')}
-                        >
-                          <ThumbsUp className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-[#E5E7EB]/70 hover:text-red-400"
-                          onClick={() => handleFeedback(message.id, 'down')}
-                        >
-                          <ThumbsDown className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-[#E5E7EB]/70 hover:text-[#00D4FF]"
-                          onClick={() => copyMessage(message.content)}
-                        >
-                          <Copy className="w-3 h-3" />
-                        </Button>
+                    <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                      <div className="flex space-x-2">
+                        <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Suggested Prompts */}
+              {messages.length === 1 && (
+                <div className="px-4 pb-2 space-y-2">
+                  {suggestedPrompts.map((prompt, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSuggestedPrompt(prompt.text)}
+                      className="w-full text-left glass-card p-3 rounded-lg hover:border-[#00D4FF]/50 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00D4FF]/20 to-[#6B46C1]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <prompt.icon className="w-4 h-4 text-[#00D4FF]" />
+                        </div>
+                        <span className="text-sm text-[#E5E7EB] group-hover:text-white transition-colors">
+                          {prompt.text}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Input */}
+              <div className="p-4 border-t border-white/10 bg-[#0A0E27]/50">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Input
+                      ref={inputRef}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                      placeholder="Ask me anything about your data..."
+                      className="bg-white/5 border-white/20 text-white placeholder:text-[#E5E7EB]/40 focus:border-[#00D4FF] rounded-lg pr-10"
+                      disabled={isLoading || isListening}
+                    />
+                    {isListening && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                       </div>
                     )}
                   </div>
-                  {message.role === 'user' && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6B46C1] to-[#9333EA] flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-bold text-white">U</span>
-                    </div>
+                  {isSpeechSupported && (
+                    <Button
+                      onMouseDown={handleMouseDown}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={stopListening}
+                      onTouchStart={handleTouchStart}
+                      onTouchEnd={handleTouchEnd}
+                      onContextMenu={handleContextMenu}
+                      disabled={isLoading}
+                      className={`${isListening
+                        ? "bg-red-500 hover:bg-red-600 animate-pulse active:bg-red-700"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20 active:bg-white/30"
+                        } text-white px-4 rounded-lg transition-all select-none`}
+                      title="Hold to speak"
+                    >
+                      {isListening ? (
+                        <MicOff className="w-4 h-4" />
+                      ) : (
+                        <Mic className="w-4 h-4" />
+                      )}
+                    </Button>
                   )}
-                </div>
-              ))}
-              {isLoading && (
-                <div className="flex justify-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="bg-white/5 border border-white/10 rounded-lg p-3">
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-2 h-2 bg-[#00D4FF] rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            {/* Suggested Prompts */}
-            {messages.length === 1 && (
-              <div className="px-4 pb-2 space-y-2">
-                {suggestedPrompts.map((prompt, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSuggestedPrompt(prompt.text)}
-                    className="w-full text-left glass-card p-3 rounded-lg hover:border-[#00D4FF]/50 transition-all group"
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={isLoading || !input.trim() || isListening}
+                    className="bg-gradient-to-r from-[#6B46C1] to-[#9333EA] hover:from-[#6B46C1]/90 hover:to-[#9333EA]/90 text-white px-4 rounded-lg"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00D4FF]/20 to-[#6B46C1]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <prompt.icon className="w-4 h-4 text-[#00D4FF]" />
-                      </div>
-                      <span className="text-sm text-[#E5E7EB] group-hover:text-white transition-colors">
-                        {prompt.text}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Input */}
-            <div className="p-4 border-t border-white/10 bg-[#0A0E27]/50">
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <Input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    placeholder="Ask me anything about your data..."
-                    className="bg-white/5 border-white/20 text-white placeholder:text-[#E5E7EB]/40 focus:border-[#00D4FF] rounded-lg pr-10"
-                    disabled={isLoading || isListening}
-                  />
-                  {isListening && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                    </div>
-                  )}
+                    <Send className="w-4 h-4" />
+                  </Button>
                 </div>
                 {isSpeechSupported && (
-                  <Button
-                    onMouseDown={handleMouseDown}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={stopListening}
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={handleTouchEnd}
-                    onContextMenu={handleContextMenu}
-                    disabled={isLoading}
-                    className={`${isListening
-                      ? "bg-red-500 hover:bg-red-600 animate-pulse active:bg-red-700"
-                      : "bg-white/10 hover:bg-white/20 border border-white/20 active:bg-white/30"
-                      } text-white px-4 rounded-lg transition-all select-none`}
-                    title="Hold to speak"
-                  >
-                    {isListening ? (
-                      <MicOff className="w-4 h-4" />
-                    ) : (
-                      <Mic className="w-4 h-4" />
-                    )}
-                  </Button>
+                  <p className="text-xs text-[#E5E7EB]/50 mt-2 flex items-center gap-1">
+                    <Mic className="w-3 h-3" />
+                    Hold the microphone button to speak
+                  </p>
                 )}
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={isLoading || !input.trim() || isListening}
-                  className="bg-gradient-to-r from-[#6B46C1] to-[#9333EA] hover:from-[#6B46C1]/90 hover:to-[#9333EA]/90 text-white px-4 rounded-lg"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
               </div>
-              {isSpeechSupported && (
-                <p className="text-xs text-[#E5E7EB]/50 mt-2 flex items-center gap-1">
-                  <Mic className="w-3 h-3" />
-                  Hold the microphone button to speak
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </Card>
+            </>
+          )}
+        </Card>
+      )}
     </div>
   );
 };
