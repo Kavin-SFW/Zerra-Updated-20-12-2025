@@ -91,14 +91,21 @@ const SidebarLayout = ({ children }: SidebarLayoutProps) => {
             isHovered ? "p-5" : "p-3"
           }`}
         >
-          <div className="flex items-center justify-center">
+          <div className="flex items-center gap-3 justify-center">
             <img
-              src="/Softworks Logo.png"
+              src="/logo.jpg"
               alt="SoftWorks Technologies"
               className={`transition-all duration-300 object-contain ${
                 isHovered ? "h-10" : "h-12"
               }`}
             />
+            <span
+              className={`text-white font-bold text-lg transition-all duration-300 whitespace-nowrap ${
+                isHovered ? "opacity-100" : "opacity-0 w-0"
+              }`}
+            >
+              Zerra
+            </span>
           </div>
         </div>
 
