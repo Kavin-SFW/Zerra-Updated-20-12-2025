@@ -9,7 +9,6 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-import logo from "@/assets/softworks-logo.png";
 import { useToast } from "@/hooks/use-toast";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { ChevronDown, MoreVertical, LayoutDashboard } from "lucide-react";
@@ -84,15 +83,21 @@ const SidebarLayout = ({ children }: SidebarLayoutProps) => {
       <aside
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`${isHovered ? 'w-64' : 'w-20'} bg-[#0f1429] border-r border-white/10 flex flex-col transition-all duration-300 ease-in-out z-50`}
+        className={`${isHovered ? "w-64" : "w-20"} bg-[#0f1429] border-r border-white/10 flex flex-col transition-all duration-300 ease-in-out z-50`}
       >
         {/* Logo */}
-        <div className={`border-b border-white/10 overflow-hidden transition-all duration-300 ${isHovered ? 'p-5' : 'p-3'}`}>
+        <div
+          className={`border-b border-white/10 overflow-hidden transition-all duration-300 ${
+            isHovered ? "p-5" : "p-3"
+          }`}
+        >
           <div className="flex items-center justify-center">
             <img
-              src="/logo-sfw.png"
-              alt="SFW ZERRA"
-              className={`transition-all duration-300 object-contain ${isHovered ? 'h-10' : 'h-12'}`}
+              src="/Softworks Logo.png"
+              alt="SoftWorks Technologies"
+              className={`transition-all duration-300 object-contain ${
+                isHovered ? "h-10" : "h-12"
+              }`}
             />
           </div>
         </div>

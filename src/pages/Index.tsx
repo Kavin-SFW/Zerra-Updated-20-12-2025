@@ -1,8 +1,26 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, BarChart3, Brain, Compass, Database, Zap, Shield, RefreshCw, LayoutDashboard, Users, Factory, ShoppingBag, Heart, Building2, Truck, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  ArrowRight,
+  Play,
+  BarChart3,
+  Brain,
+  Compass,
+  Database,
+  Zap,
+  Shield,
+  RefreshCw,
+  LayoutDashboard,
+  Users,
+  Factory,
+  ShoppingBag,
+  Heart,
+  Building2,
+  Truck,
+  Sparkles,
+  CheckCircle2,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
-import logo from "@/assets/softworks-logo.png";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -53,9 +71,9 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <img
-              src="/logo-sfw.png"
-              alt="SFW ZERRA"
-              className={`transition-all duration-300 object-contain w-15 h-10`}
+              src="/Softworks Logo.png"
+              alt="SoftWorks Technologies"
+              className="transition-all duration-300 object-contain w-15 h-10"
             />
           </div>
           <div className="hidden md:flex items-center gap-6">

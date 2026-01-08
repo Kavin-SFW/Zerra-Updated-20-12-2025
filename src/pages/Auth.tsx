@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { User, Session } from "@supabase/supabase-js";
 import { BarChart3, Sparkles, Mail, Lock, ArrowRight } from "lucide-react";
-import logo from "@/assets/softworks-logo.png";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -108,9 +107,9 @@ const Auth = () => {
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="relative">
                 <img
-                  src="/logo-sfw.png"
-                  alt="SFW ZERRA"
-                  className={`transition-all duration-300 object-contain h-15 w-15`}
+                  src="/Softworks Logo.png"
+                  alt="SoftWorks Technologies"
+                  className="transition-all duration-300 object-contain h-15 w-15"
                 />
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] rounded-full animate-pulse-slow"></div>
               </div>
