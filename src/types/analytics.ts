@@ -5,6 +5,9 @@ export interface VisualizationRecommendation {
     title: string;
     x_axis: string;
     y_axis: string | string[];
+    x_label?: string;
+    y_label?: string;
+    colorPalette?: string[];
     reasoning?: string;
     priority: 'high' | 'medium' | 'low';
 }

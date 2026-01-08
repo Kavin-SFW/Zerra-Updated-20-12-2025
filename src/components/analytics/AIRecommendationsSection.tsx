@@ -274,7 +274,7 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
                                 >
                                     View
                                 </Button>
-                                {onCreateChart && (
+                                {/* {onCreateChart && (
                                     <Button
                                         onClick={() => onCreateChart(rec)}
                                         variant="ghost"
@@ -284,7 +284,7 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
                                     >
                                         +
                                     </Button>
-                                )}
+                                )} */}
                             </div>
                         </div>
                     ))}

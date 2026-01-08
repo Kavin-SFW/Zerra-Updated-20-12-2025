@@ -5,6 +5,12 @@ interface AnalyticsContextType {
     setSelectedDataSourceId: (id: string | null) => void;
     isChatOpen: boolean;
     setIsChatOpen: (open: boolean) => void;
+    selectedTemplate: string;
+    setSelectedTemplate: (template: string) => void;
+    selectedIndustryId: string;
+    setSelectedIndustryId: (id: string) => void;
+    selectedIndustryName: string;
+    setSelectedIndustryName: (name: string) => void;
 }
 
 const AnalyticsContext = createContext<AnalyticsContextType | undefined>(undefined);
@@ -12,13 +18,22 @@ const AnalyticsContext = createContext<AnalyticsContextType | undefined>(undefin
 export const AnalyticsProvider = ({ children }: { children: ReactNode }) => {
     const [selectedDataSourceId, setSelectedDataSourceId] = useState<string | null>(null);
     const [isChatOpen, setIsChatOpen] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState("default");
+    const [selectedIndustryId, setSelectedIndustryId] = useState("all");
+    const [selectedIndustryName, setSelectedIndustryName] = useState("All Industries");
 
     return (
         <AnalyticsContext.Provider value={{
             selectedDataSourceId,
             setSelectedDataSourceId,
             isChatOpen,
-            setIsChatOpen
+            setIsChatOpen,
+            selectedTemplate,
+            setSelectedTemplate,
+            selectedIndustryId,
+            setSelectedIndustryId,
+            selectedIndustryName,
+            setSelectedIndustryName
         }}>
             {children}
         </AnalyticsContext.Provider>

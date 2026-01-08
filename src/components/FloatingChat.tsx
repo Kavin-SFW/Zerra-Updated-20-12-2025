@@ -388,7 +388,7 @@ const FloatingChat = () => {
       {!isChatOpen && (
         <Button
           onClick={() => setIsChatOpen(true)}
-          className="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#128C7E] shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 group relative"
+          className="w-14 h-14 rounded-full bg-cyan-500 hover:bg-cyan-600 shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 group relative"
         >
           <div className="relative">
             <MessageCircle className="w-7 h-7 text-white fill-white/10" />

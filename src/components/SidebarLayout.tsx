@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import logo from "@/assets/softworks-logo.png";
 import { useToast } from "@/hooks/use-toast";
+import { useAnalytics } from "@/contexts/AnalyticsContext";
+import { ChevronDown, MoreVertical, LayoutDashboard } from "lucide-react";
+
 // import TopChatTrigger from "./TopChatTrigger";
 
 interface SidebarLayoutProps {
@@ -21,7 +24,9 @@ const SidebarLayout = ({ children }: SidebarLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { selectedTemplate, setSelectedTemplate } = useAnalytics();
   const [isHovered, setIsHovered] = useState(false);
+  const [isAnalyticsExpanded, setIsAnalyticsExpanded] = useState(true);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -93,30 +98,85 @@ const SidebarLayout = ({ children }: SidebarLayoutProps) => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-hide">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
 
             return (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-4 px-3 py-3 rounded-lg transition-all relative group ${active
-                  ? "bg-[#00D4FF]/20 text-[#00D4FF] border border-[#00D4FF]/30"
-                  : "text-[#E5E7EB]/70 hover:text-[#E5E7EB] hover:bg-white/5"
-                  }`}
-              >
-                <Icon className={`w-5 h-5 min-w-[20px] ${active ? "text-[#00D4FF]" : ""}`} />
-                <span className={`font-medium whitespace-nowrap transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                  {item.label}
-                </span>
-                {!isHovered && (
-                  <div className="absolute left-14 bg-[#1e293b] text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-white/10">
+              <div key={item.path} className="space-y-1">
+                <button
+                  onClick={() => {
+                    navigate(item.path);
+                    if (item.path === "/analytics") {
+                      setIsAnalyticsExpanded(!isAnalyticsExpanded);
+                    }
+                  }}
+                  className={`w-full flex items-center gap-4 px-3 py-3 rounded-lg transition-all relative group ${active
+                    ? "bg-[#00D4FF]/20 text-[#00D4FF] border border-[#00D4FF]/30"
+                    : "text-[#E5E7EB]/70 hover:text-[#E5E7EB] hover:bg-white/5"
+                    }`}
+                >
+                  <Icon className={`w-5 h-5 min-w-[20px] ${active ? "text-[#00D4FF]" : ""}`} />
+                  <span className={`font-medium whitespace-nowrap transition-all duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                     {item.label}
+                  </span>
+                  {isHovered && item.path === "/analytics" && (
+                    <ChevronDown className={`w-3.5 h-3.5 ml-auto transition-transform duration-300 ${isAnalyticsExpanded ? 'rotate-180' : ''}`} />
+                  )}
+                  {!isHovered && (
+                    <div className="absolute left-14 bg-[#1e293b] text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl border border-white/10">
+                      {item.label}
+                    </div>
+                  )}
+                </button>
+
+                {/* Sub-menu for Analytics Template Selection */}
+                {active && item.path === "/analytics" && isHovered && isAnalyticsExpanded && (
+                  <div className="ml-9 mt-1 space-y-1 animate-in slide-in-from-top-2 duration-300 overflow-hidden">
+                    <button
+                      onClick={() => setSelectedTemplate('default')}
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[10.5px] transition-all ${selectedTemplate === 'default'
+                        ? "text-[#00D4FF] bg-[#00D4FF]/10 font-semibold"
+                        : "text-[#E5E7EB]/50 hover:text-[#E5E7EB] hover:bg-white/5"
+                        }`}
+                    >
+                      <LayoutDashboard className="w-3 h-3 min-w-[12px]" />
+                      <span>Default Analytics</span>
+                    </button>
+
+                    <div className="pt-2 pb-1">
+                      <p className="text-[9px] font-bold text-[#00D4FF]/40 px-2 tracking-wider uppercase">Dashboards</p>
+                    </div>
+
+                    <div className="space-y-1 overflow-y-auto max-h-[250px] pr-1 scrollbar-hide">
+                      {Array.from({ length: 10 }).map((_, i) => {
+                        const name = `Template ${i + 1}`;
+                        const templateId = `template${i + 1}`;
+                        const isSel = selectedTemplate === templateId;
+                        return (
+                          <button
+                            key={i}
+                            onClick={() => setSelectedTemplate(templateId)}
+                            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[10.5px] transition-all group/temp ${isSel
+                              ? "text-[#00D4FF] bg-[#00D4FF]/10 font-semibold"
+                              : "text-[#E5E7EB]/40 hover:text-[#E5E7EB] hover:bg-white/5"
+                              }`}
+                          >
+                            <span className={`w-3.5 h-3.5 flex items-center justify-center border rounded-[3px] text-[8px] transition-colors ${isSel
+                              ? "border-[#00D4FF] bg-[#00D4FF]/20"
+                              : "border-white/10 group-hover/temp:border-[#00D4FF]/50"
+                              }`}>
+                              {i + 1}
+                            </span>
+                            <span className="truncate">{name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </nav>

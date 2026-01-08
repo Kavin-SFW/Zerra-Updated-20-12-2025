@@ -149,6 +149,15 @@ All colors MUST be HSL.
     border-color: rgba(0, 212, 255, 0.3);
     box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.2);
   }
+
+  /* Utility to hide scrollbar but keep functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }
 
 /* Premium Animations */

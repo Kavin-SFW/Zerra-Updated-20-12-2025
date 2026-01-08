@@ -7,17 +7,23 @@ import {
     BarChart3, AlertCircle
 } from 'lucide-react';
 
+export const capitalize = (str: any) => {
+    if (!str) return '';
+    const s = String(str);
+    return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
 export const createEChartsOption = (
     rec: VisualizationRecommendation,
     data: any[],
     chartSortOrder: 'none' | 'desc' | 'asc' = 'none',
-    isFullView: boolean = false
+    isFullView: boolean = false,
+    breakdownDimension?: string | string[] // Support single or multiple dimensions
 ): EChartsOption => {
     const chartType = rec.type || 'bar';
 
-    // Base options for a bright/clean look with background color
     const baseOption: EChartsOption = {
-        backgroundColor: '#F8FAFC', // Light blue-gray background
+        backgroundColor: '#FFFFFF',
         tooltip: {
             trigger: 'axis',
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -54,9 +60,13 @@ export const createEChartsOption = (
         },
         animationDuration: 800,
         animationEasing: 'cubicOut',
-        animationDurationUpdate: 500,
         animationEasingUpdate: 'quinticOut'
     };
+
+    // Apply dynamic palette if present
+    if (rec.colorPalette && rec.colorPalette.length > 0) {
+        baseOption.color = rec.colorPalette;
+    }
 
     if (chartType === 'gauge') {
         const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
@@ -70,7 +80,7 @@ export const createEChartsOption = (
                 type: 'gauge',
                 center: ['50%', '60%'],
                 radius: '85%',
-                data: [{ value: Math.round(avg), name: String(yAxis) }],
+                data: [{ value: Math.round(avg), name: capitalize(yAxis) }],
                 max: Math.round(max * 1.2),
                 pointer: { itemStyle: { color: 'auto' }, width: 4 },
                 detail: {
@@ -88,7 +98,7 @@ export const createEChartsOption = (
     if (chartType === 'funnel') {
         const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
         const grouped = data.reduce((acc: any, item) => {
-            const key = String(item[rec.x_axis]);
+            const key = capitalize(item[rec.x_axis]);
             const value = Number(item[yAxis]) || 0;
             acc[key] = (acc[key] || 0) + value;
             return acc;
@@ -127,12 +137,12 @@ export const createEChartsOption = (
         const topData = data.slice(0, sampleSize);
 
         const indicators = topData.map(d => ({
-            name: String(d[rec.x_axis]),
+            name: capitalize(d[rec.x_axis]),
             max: Math.max(...data.map(i => Number(i[yAxisArray[0]]) || 0)) * 1.2 || 100
         }));
 
         const seriesData = yAxisArray.map(yCol => ({
-            name: yCol,
+            name: capitalize(yCol),
             value: topData.map(d => Number(d[yCol]) || 0)
         }));
 
@@ -160,8 +170,27 @@ export const createEChartsOption = (
 
     if (chartType === 'pie') {
         const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const dims = Array.isArray(breakdownDimension)
+            ? breakdownDimension
+            : (breakdownDimension ? [breakdownDimension] : []);
+
+        const useBreakdown = dims.length > 0
+            && data.length > 0
+            && dims.every(dim => Object.prototype.hasOwnProperty.call(data[0], dim));
+
+        const getKey = (item: any) => {
+            if (useBreakdown) {
+                const keyParts = dims.map(dim => {
+                    const v = item?.[dim];
+                    return capitalize(v ?? 'Other');
+                });
+                return keyParts.join(' | ');
+            }
+            return capitalize(item?.[rec.x_axis]);
+        };
+
         const grouped = data.reduce((acc: any, item) => {
-            const key = String(item[rec.x_axis]);
+            const key = getKey(item);
             const value = Number(item[yAxis]) || 0;
             acc[key] = (acc[key] || 0) + value;
             return acc;
@@ -196,14 +225,14 @@ export const createEChartsOption = (
                 radius: isFullView ? ['40%', '75%'] : ['45%', '80%'],
                 center: ['50%', '50%'],
                 avoidLabelOverlap: true,
-                label: {
+                label: useBreakdown ? { show: false } : {
                     show: true,
                     position: 'outside',
                     formatter: '{b}: {d}%',
                     fontSize: 10,
                     color: '#64748B',
                 },
-                labelLine: { show: true, length: 10, length2: 10 },
+                labelLine: useBreakdown ? { show: false } : { show: true, length: 10, length2: 10 },
                 emphasis: {
                     label: { show: true, fontSize: 12, fontWeight: 'bold' }
                 },
@@ -219,7 +248,7 @@ export const createEChartsOption = (
         return {
             ...baseOption,
             xAxis: {
-                name: rec.x_axis,
+                name: rec.x_label || capitalize(rec.x_axis),
                 nameLocation: 'middle',
                 nameGap: 40,
                 nameTextStyle: {
@@ -238,7 +267,7 @@ export const createEChartsOption = (
                 }
             },
             yAxis: {
-                name: String(yAxis),
+                name: rec.y_label || capitalize(yAxis),
                 splitLine: { lineStyle: { color: '#F1F5F9' } },
                 axisLabel: { color: '#64748B' }
             },
@@ -257,10 +286,98 @@ export const createEChartsOption = (
     }
 
     if (chartType === 'area') {
-        const xData = data.map(d => String(d[rec.x_axis]));
-        const yAxisArray = Array.isArray(rec.y_axis) ? rec.y_axis : [rec.y_axis];
-        const series = yAxisArray.map((yCol: string) => ({
-            name: yCol,
+        const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+
+        const hasBreakdown = Array.isArray(breakdownDimension)
+            ? breakdownDimension.length > 0
+            : (breakdownDimension && breakdownDimension !== 'none' && breakdownDimension !== 'original');
+
+        if (hasBreakdown) {
+            const dims = Array.isArray(breakdownDimension) ? breakdownDimension : [breakdownDimension!];
+            const isValidDimension = dims.every(dim => data.length > 0 && Object.prototype.hasOwnProperty.call(data[0], dim));
+
+            if (isValidDimension) {
+                const xDataRaw = data.map(d => capitalize(d[rec.x_axis]));
+                const uniqueCategories = Array.from(new Set(xDataRaw));
+                const getBreakdownKey = (d: any) => dims.map(dim => d[dim]).join(' | ');
+                const uniqueBreakdowns = Array.from(new Set(data.map(d => getBreakdownKey(d))));
+
+                const pivotedData: Record<string, Record<string, number>> = {};
+                uniqueCategories.forEach(cat => pivotedData[cat] = {});
+
+                data.forEach(d => {
+                    const cat = capitalize(d[rec.x_axis]);
+                    const breakdown = getBreakdownKey(d);
+                    const val = Number(d[yAxisRaw]) || 0;
+                    if (pivotedData[cat]) {
+                        pivotedData[cat][breakdown] = (pivotedData[cat][breakdown] || 0) + val;
+                    }
+                });
+
+                const series = uniqueBreakdowns.map((breakdown: any, seriesIdx: number) => ({
+                    name: capitalize(breakdown),
+                    type: 'line' as const,
+                    smooth: true,
+                    stack: 'total',
+                    emphasis: { focus: 'series' },
+                    areaStyle: { opacity: 0.25 },
+                    data: uniqueCategories.map(cat => pivotedData[cat][breakdown] || 0)
+                }));
+
+                return {
+                    ...baseOption,
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: { type: 'cross' }
+                    },
+                    legend: { show: false },
+                    grid: {
+                        left: '3%',
+                        right: '4%',
+                        bottom: '12%',
+                        top: '10%',
+                        containLabel: true
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: uniqueCategories,
+                        axisLabel: {
+                            color: '#64748B',
+                            rotate: 35,
+                            fontSize: 10,
+                            interval: 0,
+                            width: 80,
+                            overflow: 'truncate'
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        splitLine: { lineStyle: { color: '#F1F5F9' } },
+                        axisLabel: { color: '#64748B' }
+                    },
+                    series: series as any,
+                    dataZoom: isFullView ? [
+                        {
+                            type: 'slider',
+                            show: true,
+                            xAxisIndex: [0],
+                            start: 0,
+                            end: 100
+                        },
+                        {
+                            type: 'inside',
+                            xAxisIndex: [0],
+                            start: 0,
+                            end: 100
+                        }
+                    ] : undefined
+                };
+            }
+        }
+
+        const xData = data.map(d => capitalize(d[rec.x_axis]));
+        const series = [{
+            name: capitalize(yAxisRaw),
             type: 'line' as const,
             smooth: true,
             lineStyle: { width: 3 },
@@ -271,8 +388,8 @@ export const createEChartsOption = (
                     { offset: 1, color: 'rgba(14, 165, 233, 0.1)' }
                 ])
             },
-            data: data.map(d => Number(d[yCol]) || 0)
-        }));
+            data: data.map(d => Number(d[yAxisRaw]) || 0)
+        }];
 
         return {
             ...baseOption,
@@ -295,10 +412,478 @@ export const createEChartsOption = (
         };
     }
 
+    if (chartType === 'treemap') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const grouped = data.reduce((acc: any, item) => {
+            const key = capitalize(item[rec.x_axis]);
+            const value = Number(item[yAxis]) || 0;
+            acc[key] = (acc[key] || 0) + value;
+            return acc;
+        }, {});
+
+        const treemapData = Object.entries(grouped).map(([name, value]) => ({
+            name,
+            value: Number(value)
+        }));
+
+        return {
+            ...baseOption,
+            tooltip: { trigger: 'item', formatter: '{b}: {c}' },
+            series: [{
+                type: 'treemap',
+                data: treemapData,
+                breadcrumb: { show: false },
+                label: { show: true, position: 'inside', fontSize: 10 },
+                itemStyle: { borderColor: '#fff' }
+            }]
+        };
+    }
+
+    if (chartType === 'heatmap') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const yDim = typeof rec.y_axis === 'string' ? rec.y_axis : (Array.isArray(rec.y_axis) && rec.y_axis.length > 1 ? rec.y_axis[1] : yAxis);
+
+        const xValues = Array.from(new Set(data.map(d => capitalize(d[rec.x_axis])))).slice(0, 12);
+        const yValues = Array.from(new Set(data.map(d => capitalize(d[yDim] || 'Value')))).slice(0, 7);
+
+        const heatmapData: any[] = [];
+        xValues.forEach((x, xi) => {
+            yValues.forEach((y, yi) => {
+                const match = data.find(d => capitalize(d[rec.x_axis]) === x && capitalize(d[yDim] || 'Value') === y);
+                heatmapData.push([xi, yi, match ? Math.round(Number(match[yAxis] || 0)) : 0]);
+            });
+        });
+
+        return {
+            ...baseOption,
+            tooltip: { position: 'top' },
+            grid: { ...baseOption.grid, top: '10%', bottom: '15%' },
+            xAxis: { type: 'category', data: xValues, splitArea: { show: true } },
+            yAxis: { type: 'category', data: yValues, splitArea: { show: true } },
+            visualMap: {
+                min: 0,
+                max: Math.max(...heatmapData.map(d => d[2]), 100),
+                calculable: true,
+                orient: 'horizontal',
+                left: 'center',
+                bottom: '0%',
+                inRange: { color: ['#bae6fd', '#0ea5e9', '#0369a1'] }
+            },
+            series: [{
+                type: 'heatmap',
+                data: heatmapData,
+                label: { show: false },
+                emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
+            }]
+        };
+    }
+
+    if (chartType === 'sunburst') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const grouped = data.reduce((acc: any, item) => {
+            const key = capitalize(item[rec.x_axis]);
+            const value = Number(item[yAxis]) || 0;
+            acc[key] = (acc[key] || 0) + value;
+            return acc;
+        }, {});
+
+        const sunburstData = Object.entries(grouped).map(([name, value]) => ({
+            name,
+            value: Number(value),
+            children: [{ name: 'Details', value: Number(value) }]
+        }));
+
+        return {
+            ...baseOption,
+            series: [{
+                type: 'sunburst',
+                data: sunburstData,
+                radius: [0, '90%'],
+                label: { rotate: 'radial', fontSize: 10 }
+            }]
+        };
+    }
+
+    if (chartType === 'sankey') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const targetDim = typeof rec.y_axis === 'string' ? rec.y_axis : (Array.isArray(rec.y_axis) && rec.y_axis.length > 1 ? rec.y_axis[1] : yAxis);
+
+        const nodesSet = new Set<string>();
+        const links: any[] = [];
+
+        data.slice(0, 10).forEach(item => {
+            const source = capitalize(item[rec.x_axis]);
+            const target = capitalize(item[targetDim]) || 'Target';
+            const value = Number(item[yAxis]) || 1;
+
+            nodesSet.add(source);
+            nodesSet.add(target);
+            links.push({ source, target, value });
+        });
+
+        return {
+            ...baseOption,
+            tooltip: { trigger: 'item', triggerOn: 'mousemove' },
+            series: [{
+                type: 'sankey',
+                data: Array.from(nodesSet).map(name => ({ name })),
+                links: links,
+                emphasis: { focus: 'adjacency' },
+                lineStyle: { color: 'gradient', curveness: 0.5 }
+            }]
+        };
+    }
+
+    if (chartType === 'waterfall') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const xData = data.slice(0, 6).map(d => capitalize(d[rec.x_axis]));
+        const rawValues = data.slice(0, 6).map(d => Number(d[yAxis]) || 0);
+
+        const helping: number[] = [];
+        const positive: number[] = [];
+        let currentTotal = 0;
+
+        rawValues.forEach((val, i) => {
+            helping.push(currentTotal);
+            positive.push(val);
+            currentTotal += val;
+        });
+
+        return {
+            ...baseOption,
+            xAxis: { type: 'category', data: xData },
+            yAxis: { type: 'value' },
+            series: [
+                {
+                    name: 'Placeholder',
+                    type: 'bar',
+                    stack: 'Total',
+                    itemStyle: { borderColor: 'transparent', color: 'transparent' },
+                    emphasis: { itemStyle: { borderColor: 'transparent', color: 'transparent' } },
+                    data: helping
+                },
+                {
+                    name: 'Value',
+                    type: 'bar',
+                    stack: 'Total',
+                    label: { show: true, position: 'top' },
+                    data: positive
+                }
+            ]
+        };
+    }
+
+    if (chartType === 'gradient-area') {
+        const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const xData = data.map(d => capitalize(d[rec.x_axis]));
+
+        return {
+            ...baseOption,
+            tooltip: { trigger: 'axis', axisPointer: { type: 'cross', label: { backgroundColor: '#6a7985' } } },
+            xAxis: [
+                {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: xData,
+                    name: rec.x_label || capitalize(rec.x_axis),
+                    nameLocation: 'middle',
+                    nameGap: 30,
+                    axisLabel: { color: '#64748B', fontSize: 10 }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value',
+                    name: rec.y_label || capitalize(yAxisRaw),
+                    axisLabel: { color: '#64748B' }
+                }
+            ],
+            series: [{
+                name: capitalize(yAxisRaw),
+                type: 'line',
+                stack: 'Total',
+                smooth: true,
+                lineStyle: { width: 0 },
+                showSymbol: false,
+                areaStyle: {
+                    opacity: 0.8,
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#8B5CF6' },
+                        { offset: 1, color: '#0EA5E9' }
+                    ])
+                },
+                emphasis: { focus: 'series' },
+                data: data.map(d => Number(d[yAxisRaw]) || 0)
+            }]
+        };
+    }
+
+    if (chartType === 'polar-bar') {
+        const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const values = data.slice(0, 8).map(d => Number(d[yAxisRaw]) || 0);
+        const categories = data.slice(0, 8).map(d => capitalize(d[rec.x_axis]));
+
+        return {
+            ...baseOption,
+            polar: { radius: [30, '80%'] },
+            angleAxis: {
+                type: 'category',
+                data: categories,
+                startAngle: 75
+            },
+            radiusAxis: {
+                min: 0,
+                max: Math.max(...values) * 1.2
+            },
+            tooltip: { trigger: 'axis' },
+            series: [{
+                type: 'bar',
+                data: values,
+                coordinateSystem: 'polar',
+                name: rec.y_label || capitalize(yAxisRaw),
+                itemStyle: {
+                    color: (params: any) => {
+                        const colors = ['#0EA5E9', '#8B5CF6', '#F43F5E', '#10B981', '#F59E0B'];
+                        return colors[params.dataIndex % colors.length];
+                    }
+                }
+            }]
+        };
+    }
+
+    if (chartType === 'themeRiver') {
+        // ThemeRiver requires Date, Value, ID structure
+        const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const themeData: any[] = [];
+
+        // Mocking time progression for demo if real time missing, or using x_axis if available
+        data.slice(0, 20).forEach((d, i) => {
+            const date = d['date'] || `2024-01-${String(i + 1).padStart(2, '0')}`;
+            const val = Number(d[yAxisRaw]) || 0;
+            const category = capitalize(d[rec.x_axis] || 'General');
+            themeData.push([date, val, category]);
+        });
+
+        return {
+            ...baseOption,
+            tooltip: { trigger: 'axis', axisPointer: { type: 'line', lineStyle: { color: 'rgba(0,0,0,0.2)', width: 1, type: 'solid' } } },
+            singleAxis: {
+                top: 50,
+                bottom: 50,
+                axisTick: {},
+                axisLabel: {},
+                type: 'time',
+                axisPointer: {
+                    animation: true,
+                    label: { show: true }
+                },
+                splitLine: { show: true, lineStyle: { type: 'dashed', opacity: 0.2 } }
+            },
+            series: [{
+                type: 'themeRiver',
+                emphasis: { itemStyle: { shadowBlur: 20, shadowColor: 'rgba(0, 0, 0, 0.8)' } },
+                data: themeData,
+                label: { show: false }
+            }]
+        };
+    }
+
+    if (chartType === 'pictorialBar' || chartType === 'dotted-bar') {
+        const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const xData = data.slice(0, 8).map(d => capitalize(d[rec.x_axis]));
+        const values = data.slice(0, 8).map(d => Number(d[yAxisRaw]) || 0);
+
+        return {
+            ...baseOption,
+            tooltip: { trigger: 'axis', axisPointer: { type: 'none' } },
+            xAxis: {
+                data: xData,
+                axisTick: { show: false },
+                axisLine: { show: false },
+                axisLabel: { color: '#64748B' }
+            },
+            yAxis: {
+                splitLine: { show: false },
+                axisTick: { show: false },
+                axisLine: { show: false },
+                axisLabel: { show: false }
+            },
+            series: [{
+                name: 'hill',
+                type: 'pictorialBar',
+                barCategoryGap: '-130%',
+                symbol: 'path://M0,10 L10,10 L5,0 L0,10 z',
+                itemStyle: { opacity: 0.5 },
+                emphasis: { itemStyle: { opacity: 1 } },
+                data: values,
+                z: 10
+            }, {
+                name: 'glyph',
+                type: 'pictorialBar',
+                barGap: '-100%',
+                symbolPosition: 'end',
+                symbolSize: 50,
+                symbolOffset: [0, -30],
+                data: values.map((v, i) => ({
+                    value: v,
+                    symbol: chartType === 'dotted-bar' ? 'circle' : 'rect' // simple differentiation
+                }))
+            }]
+        };
+    }
+
+    if (chartType === 'normalized-bar') {
+        const xDataRaw = data.map(d => capitalize(d[rec.x_axis]));
+        const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+
+        // Assume grouping by a dimension for normalized stack
+        const dims = Array.isArray(breakdownDimension) ? breakdownDimension : (breakdownDimension ? [breakdownDimension] : []);
+        const hasBreakdown = dims.length > 0;
+
+        if (hasBreakdown) {
+            // ... reused pivot logic or simplified ...
+            // For brevity, let's treat it as a stacked bar with 100% logic manually calculated or using ECharts 'stack' logic if available.
+            // ECharts 5 doesn't have native "stack: '100%'" in simple config without transform.
+            // We will manually normalize.
+
+            // 1. Pivot
+            const uniqueCategories = Array.from(new Set(xDataRaw));
+            const getBreakdownKey = (d: any) => dims.map(dim => d[dim]).join(' | ');
+            const uniqueBreakdowns = Array.from(new Set(data.map(d => getBreakdownKey(d))));
+
+            const pivotedData: Record<string, Record<string, number>> = {};
+            uniqueCategories.forEach(cat => pivotedData[cat] = {});
+            data.forEach(d => {
+                const cat = capitalize(d[rec.x_axis]);
+                const breakdown = getBreakdownKey(d);
+                pivotedData[cat][breakdown] = (pivotedData[cat][breakdown] || 0) + (Number(d[yAxisRaw]) || 0);
+            });
+
+            // 2. Normalize
+            const series = uniqueBreakdowns.map(breakdown => {
+                return {
+                    name: capitalize(breakdown),
+                    type: 'bar',
+                    stack: 'total',
+                    data: uniqueCategories.map(cat => {
+                        const val = pivotedData[cat][breakdown] || 0;
+                        const total = uniqueBreakdowns.reduce((sum, b) => sum + (pivotedData[cat][b] || 0), 0);
+                        return total === 0 ? 0 : (val / total) * 100;
+                    })
+                }
+            });
+
+            return {
+                ...baseOption,
+                tooltip: {
+                    trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (params: any) => {
+                        let res = params[0].name + '<br/>';
+                        params.forEach((param: any) => {
+                            res += `${param.marker} ${param.seriesName}: ${param.value.toFixed(1)}%<br/>`;
+                        });
+                        return res;
+                    }
+                },
+                xAxis: { type: 'category', data: uniqueCategories, axisLabel: { color: '#64748B', rotate: 30 } },
+                yAxis: { type: 'value', min: 0, max: 100, axisLabel: { formatter: '{value}%', color: '#64748B' } },
+                series: series as any
+            };
+        }
+    }
+
     // Default: bar/line charts
-    const xDataRaw = data.map(d => String(d[rec.x_axis]));
+    const xDataRaw = data.map(d => capitalize(d[rec.x_axis]));
     const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
     const yDataRaw = data.map(d => Number(d[yAxisRaw]) || 0);
+
+    // --- STACKING LOGIC START ---
+    const hasBreakdown = Array.isArray(breakdownDimension)
+        ? breakdownDimension.length > 0
+        : (breakdownDimension && breakdownDimension !== 'none' && breakdownDimension !== 'original');
+
+    if (hasBreakdown && (chartType === 'bar' || chartType === 'line')) {
+        // Normalize breakdownDimensions to an array
+        const dims = Array.isArray(breakdownDimension) ? breakdownDimension : [breakdownDimension!];
+
+        // Validate that all breakdownDimensions exist in the data
+        const isValidDimension = dims.every(dim => data.length > 0 && Object.prototype.hasOwnProperty.call(data[0], dim));
+
+        if (isValidDimension) {
+            const uniqueCategories = Array.from(new Set(xDataRaw)); // X-Axis values
+
+            // Create composite key for breakdown
+            const getBreakdownKey = (d: any) => dims.map(dim => d[dim]).join(' | ');
+
+            const uniqueBreakdowns = Array.from(new Set(data.map(d => getBreakdownKey(d)))); // Legend items
+
+            // ... (proceed with stacking logic)
+
+            // Pivot Data: Map<Category, Map<Breakdown, Value>>
+            const pivotedData: Record<string, Record<string, number>> = {};
+            uniqueCategories.forEach(cat => pivotedData[cat] = {});
+
+            data.forEach(d => {
+                const cat = capitalize(d[rec.x_axis]);
+                const breakdown = getBreakdownKey(d);
+                const val = Number(d[yAxisRaw]) || 0;
+                if (pivotedData[cat]) {
+                    pivotedData[cat][breakdown] = (pivotedData[cat][breakdown] || 0) + val;
+                }
+            });
+
+            // Create Series for each breakdown value
+            const series = uniqueBreakdowns.map((breakdown: any) => ({
+                name: capitalize(breakdown),
+                type: chartType,
+                stack: chartType === 'bar' && (rec as any)?.breakdownMode !== 'grouped' ? 'total' : undefined,
+                emphasis: { focus: 'series' },
+                data: uniqueCategories.map(cat => pivotedData[cat][breakdown] || 0),
+                itemStyle: chartType === 'bar' ? { borderRadius: [0, 0, 0, 0] } : undefined // Remove radius for stacked internal bars
+            }));
+
+            return {
+                ...baseOption,
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: { type: 'shadow' } // Shadow pointer for stacked bars
+                },
+                legend: { show: false },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '12%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: uniqueCategories,
+                    axisLabel: { color: '#64748B', rotate: 30, fontSize: 10, width: 80, overflow: 'truncate' }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: { color: '#64748B' }
+                },
+                series: series as any,
+                dataZoom: isFullView ? [
+                    {
+                        type: 'slider',
+                        show: true,
+                        xAxisIndex: [0],
+                        start: 0,
+                        end: 100
+                    },
+                    {
+                        type: 'inside',
+                        xAxisIndex: [0],
+                        start: 0,
+                        end: 100
+                    }
+                ] : undefined
+            };
+        }
+    }
+    // --- STACKING LOGIC END ---
 
     if ((rec as any).isHorizontal && chartType === 'bar') {
         const aggregated: Record<string, number> = {};
@@ -334,7 +919,7 @@ export const createEChartsOption = (
             ...baseOption,
             title: [
                 {
-                    text: rec.title,
+                    text: capitalize(rec.title),
                     left: 'center',
                     top: 0,
                     textStyle: {
@@ -353,7 +938,7 @@ export const createEChartsOption = (
             },
             xAxis: {
                 type: 'value',
-                name: yAxisRaw,
+                name: rec.y_label || capitalize(yAxisRaw),
                 nameLocation: 'middle',
                 nameGap: 45,
                 splitLine: { lineStyle: { color: '#F1F5F9' } },
@@ -367,7 +952,7 @@ export const createEChartsOption = (
             },
             yAxis: {
                 type: 'category',
-                name: rec.x_axis,
+                name: rec.x_label || capitalize(rec.x_axis),
                 nameLocation: 'middle',
                 nameGap: 65,
                 data: finalCategories,
@@ -383,7 +968,7 @@ export const createEChartsOption = (
                 inverse: true,
             },
             series: [{
-                name: String(yAxisRaw),
+                name: capitalize(yAxisRaw),
                 type: 'bar',
                 label: {
                     show: true,
@@ -449,6 +1034,9 @@ export const createEChartsOption = (
         ...baseOption,
         xAxis: {
             type: 'category',
+            name: rec.x_label || capitalize(rec.x_axis),
+            nameLocation: 'middle',
+            nameGap: 35,
             data: xData,
             axisLabel: {
                 color: '#64748B',
@@ -461,11 +1049,14 @@ export const createEChartsOption = (
         },
         yAxis: {
             type: 'value',
+            name: rec.y_label || capitalize(yAxisRaw),
+            nameLocation: 'middle',
+            nameGap: 40,
             splitLine: { lineStyle: { color: '#F1F5F9' } },
             axisLabel: { color: '#64748B' }
         },
         series: [{
-            name: String(yAxisRaw),
+            name: capitalize(yAxisRaw),
             type: (chartType === 'line' ? 'line' : 'bar') as any,
             smooth: chartType === 'line',
             label: {

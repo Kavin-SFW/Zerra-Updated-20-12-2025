@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Upload, Search, MoreVertical, Database, FileSpreadsheet, 
+import {
+  Upload, Search, MoreVertical, Database, FileSpreadsheet,
   CheckCircle2, RefreshCw, AlertCircle, Plus,
   Server, Cloud, Loader2, Trash2, X
 } from "lucide-react";
@@ -18,6 +18,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 
 type DataSourceStatus = "active" | "syncing" | "error" | "inactive";
@@ -26,7 +33,7 @@ interface DataSource {
   id: string;
   name: string;
   type: string;
-  icon: React.ComponentType<{ className?: string; size?: number }>;
+  icon: React.ComponentType<any>;
   records: string;
   lastSync: string;
   status: DataSourceStatus;
@@ -59,12 +66,51 @@ const DataSources = () => {
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { selectedDataSourceId, setSelectedDataSourceId } = useAnalytics();
+  const {
+    selectedDataSourceId,
+    setSelectedDataSourceId,
+    selectedIndustryId: selectedIndustry,
+    setSelectedIndustryId: setSelectedIndustry,
+    setSelectedIndustryName
+  } = useAnalytics();
+  const [industries, setIndustries] = useState<{ id: string; name: string }[]>([]);
 
   // Fetch real data sources from Supabase
   useEffect(() => {
     fetchDataSources();
   }, []);
+
+  const fetchIndustries = async () => {
+    try {
+      console.log('Fetching industries...');
+      const { data, error } = await (supabase as any)
+        .from('industries')
+        .select('*');
+
+      if (error) {
+        console.error('Supabase error fetching industries:', error);
+        toast.error(`Industries fetch error: ${error.message}`);
+        return;
+      }
+
+      console.log('Fetched industries raw data:', data);
+      if (data && data.length > 0) {
+        // Robust mapping to handle different possible column names
+        const mappedData = data.map((item: any) => ({
+          id: String(item.id || item.ID || ''),
+          name: item.name || item.industry_name || item.title || item.label || item.industry || 'Unknown Industry'
+        }));
+        setIndustries(mappedData);
+        toast.success(`Successfully fetched ${mappedData.length} industries`);
+      } else {
+        console.log('No industries found in database');
+        // toast.info('No industries found in the database');
+      }
+    } catch (error: any) {
+      console.error('Error fetching industries:', error);
+      toast.error(`Failed to fetch industries: ${error.message}`);
+    }
+  };
 
   const fetchDataSources = async () => {
     try {
@@ -75,6 +121,9 @@ const DataSources = () => {
         setLoading(false);
         return;
       }
+
+      // Fetch industries once we have a session
+      fetchIndustries();
 
       // Fetch data sources
       const { data: sources, error: sourcesError }: { data: any[] | null, error: any } = await (supabase as any)
@@ -177,10 +226,12 @@ const DataSources = () => {
     { name: "Dynamics 365", icon: Cloud, color: "from-purple-500 to-purple-600" },
   ];
 
-  const filteredSources = dataSources.filter((source) =>
-    source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    source.type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredSources = dataSources.filter((source) => {
+    const matchesSearch = source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      source.type.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesIndustry = selectedIndustry === "all" || (source as any).industry_id === selectedIndustry;
+    return matchesSearch && matchesIndustry;
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -230,27 +281,27 @@ const DataSources = () => {
     const toastId = `converting-${file.name}`;
     try {
       toast.loading(`Converting ${file.name} to CSV...`, { id: toastId });
-      
+
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data, { type: "array" });
       const sheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[sheetName];
       const csv = XLSX.utils.sheet_to_csv(worksheet);
-      
+
       // Create a new file with .csv extension
       const csvFile = new File([csv], file.name.replace(/\.(xlsx|xls)$/i, '.csv'), {
         type: 'text/csv',
       });
-      
+
       toast.success(`Successfully converted to ${csvFile.name}`, { id: toastId });
       return csvFile;
-      
+
     } catch (error) {
       console.error('Error converting XLSX to CSV:', error);
       const errorMessage = error instanceof Error ? error.message : 'Conversion failed';
-      toast.error(`Failed to convert ${file.name}: ${errorMessage}`, { 
+      toast.error(`Failed to convert ${file.name}: ${errorMessage}`, {
         id: toastId,
-        duration: 5000 
+        duration: 5000
       });
       throw error; // Re-throw to allow handleFileUpload to handle the error
     }
@@ -258,19 +309,19 @@ const DataSources = () => {
 
   const validateFile = (file: File): { isValid: boolean; error?: string } => {
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-    
-    if (!ALLOWED_FILE_TYPES.includes(file.type) && 
-        !ALLOWED_FILE_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext))) {
-      return { 
-        isValid: false, 
-        error: `Invalid file type. Please upload a CSV or Excel file.` 
+
+    if (!ALLOWED_FILE_TYPES.includes(file.type) &&
+      !ALLOWED_FILE_EXTENSIONS.some(ext => file.name.toLowerCase().endsWith(ext))) {
+      return {
+        isValid: false,
+        error: `Invalid file type. Please upload a CSV or Excel file.`
       };
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return { 
-        isValid: false, 
-        error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit.` 
+      return {
+        isValid: false,
+        error: `File size exceeds ${MAX_FILE_SIZE / (1024 * 1024)}MB limit.`
       };
     }
 
@@ -278,50 +329,50 @@ const DataSources = () => {
   };
 
   const handleFileUpload = async (files: File[]) => {
-  if (!files.length) return;
+    if (!files.length) return;
 
-  const file = files[0];
-  const validation = validateFile(file);
-  
-  if (!validation.isValid) {
-    toast.error(validation.error || 'Invalid file');
-    return;
-  }
+    const file = files[0];
+    const validation = validateFile(file);
 
-  setUploading(true);
-
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      toast.error("Please log in to upload files.");
+    if (!validation.isValid) {
+      toast.error(validation.error || 'Invalid file');
       return;
     }
 
-    // Convert XLS/XLSX to CSV if needed
-    const isExcelFile = file.name.toLowerCase().endsWith('.xlsx') || 
-                       file.name.toLowerCase().endsWith('.xls') ||
-                       file.type.includes('spreadsheetml') || 
-                       file.type.includes('excel');
-    
-    const fileToUpload = isExcelFile ? await convertXlsxToCsv(file) : file;
-
-    const formData = new FormData();
-    formData.append('file', fileToUpload);
-
-    const uploadToast = toast.loading("Uploading and processing file...", { 
-      id: `upload-${Date.now()}`,
-      duration: Infinity 
-    });
+    setUploading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-file`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLIC_KEY || '',
-        },
-        body: formData,
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in to upload files.");
+        return;
+      }
+
+      // Convert XLS/XLSX to CSV if needed
+      const isExcelFile = file.name.toLowerCase().endsWith('.xlsx') ||
+        file.name.toLowerCase().endsWith('.xls') ||
+        file.type.includes('spreadsheetml') ||
+        file.type.includes('excel');
+
+      const fileToUpload = isExcelFile ? await convertXlsxToCsv(file) : file;
+
+      const formData = new FormData();
+      formData.append('file', fileToUpload);
+
+      const uploadToast = toast.loading("Uploading and processing file...", {
+        id: `upload-${Date.now()}`,
+        duration: Infinity
       });
+
+      try {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/process-file`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLIC_KEY || '',
+          },
+          body: formData,
+        });
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -335,42 +386,42 @@ const DataSources = () => {
           throw new Error(errorMessage);
         }
 
-      const result = await response.json();
-      
-      toast.success(`File processed successfully! ${result.rows_count || 0} rows analyzed.`, { 
-        id: uploadToast,
-        duration: 5000 
-      });
+        const result = await response.json();
 
-      // Set the newly created data source ID and navigate to analytics
-      if (result.data_source_id) {
-        setSelectedDataSourceId(result.data_source_id);
-        setTimeout(() => {
-          navigate('/analytics');
-        }, 1500);
-      } else {
-        // Refresh the data sources list if we don't navigate
-        await fetchDataSources();
+        toast.success(`File processed successfully! ${result.rows_count || 0} rows analyzed.`, {
+          id: uploadToast,
+          duration: 5000
+        });
+
+        // Set the newly created data source ID and navigate to analytics
+        if (result.data_source_id) {
+          setSelectedDataSourceId(result.data_source_id);
+          setTimeout(() => {
+            navigate('/analytics');
+          }, 1500);
+        } else {
+          // Refresh the data sources list if we don't navigate
+          await fetchDataSources();
+        }
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to upload file. Please try again.';
+        toast.error(errorMessage, {
+          id: uploadToast,
+          icon: <X className="w-5 h-5 text-red-500" />,
+          duration: 5000
+        });
       }
     } catch (error) {
-      console.error('Error uploading file:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload file. Please try again.';
-      toast.error(errorMessage, { 
-        id: uploadToast,
-        icon: <X className="w-5 h-5 text-red-500" />,
-        duration: 5000
-      });
+      console.error('Error in file upload:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
-  } catch (error) {
-    console.error('Error in file upload:', error);
-    toast.error('An unexpected error occurred');
-  } finally {
-    setUploading(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  }
-};
+  };
 
   const handleBrowseClick = () => {
     fileInputRef.current?.click();
@@ -394,12 +445,38 @@ const DataSources = () => {
             </h1>
             <p className="text-[#E5E7EB]/70 text-lg">Connect and manage your data sources</p>
           </div>
-          <Button
-            className="bg-gradient-to-r from-[#6B46C1] to-[#9333EA] hover:from-[#6B46C1]/90 hover:to-[#9333EA]/90 text-white px-6 py-6 rounded-lg shadow-[0_0_20px_rgba(107,70,193,0.3)] hover:shadow-[0_0_30px_rgba(107,70,193,0.5)] transition-all"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Add Connection
-          </Button>
+          <div className="flex items-center gap-4">
+            <Select
+              value={selectedIndustry}
+              onValueChange={(val) => {
+                setSelectedIndustry(val);
+                if (val === 'all') {
+                  setSelectedIndustryName('All Industries');
+                } else {
+                  const ind = industries.find(i => i.id === val);
+                  if (ind) setSelectedIndustryName(ind.name);
+                }
+              }}
+            >
+              <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Select Industry" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a1f3a] border-white/10 text-white">
+                <SelectItem value="all">All Industries</SelectItem>
+                {industries.map((industry) => (
+                  <SelectItem key={industry.id} value={industry.id}>
+                    {industry.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              className="bg-gradient-to-r from-[#6B46C1] to-[#9333EA] hover:from-[#6B46C1]/90 hover:to-[#9333EA]/90 text-white px-6 py-6 rounded-lg shadow-[0_0_20px_rgba(107,70,193,0.3)] hover:shadow-[0_0_30px_rgba(107,70,193,0.5)] transition-all"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Connection
+            </Button>
+          </div>
         </div>
 
         {/* Upload Section */}

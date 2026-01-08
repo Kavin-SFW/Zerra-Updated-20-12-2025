@@ -52,10 +52,11 @@ const Index = () => {
       <nav className="fixed top-0 w-full z-50 backdrop-blur-xl bg-[#0A0E27]/80 border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={logo} alt="SFW ZERRA" className="h-10" />
-            <span className="text-xl font-bold bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] bg-clip-text text-transparent">
-              ZERRA
-            </span>
+            <img
+              src="/logo-sfw.png"
+              alt="SFW ZERRA"
+              className={`transition-all duration-300 object-contain w-15 h-10`}
+            />
           </div>
           <div className="hidden md:flex items-center gap-6">
             <button onClick={() => scrollToSection("features")} className="text-sm text-[#E5E7EB] hover:text-[#00D4FF] transition-colors">Features</button>
@@ -64,8 +65,8 @@ const Index = () => {
             <Button variant="ghost" onClick={() => navigate("/auth")} className="text-white hover:bg-white/10">
               Sign In
             </Button>
-            <Button 
-              onClick={() => navigate("/auth")} 
+            <Button
+              onClick={() => navigate("/auth")}
               className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90 text-white border-0"
             >
               Start Free Trial
@@ -81,7 +82,7 @@ const Index = () => {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,212,255,0.1),transparent_50%)]"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(107,70,193,0.15),transparent_50%)]"></div>
         </div>
-        
+
         {/* Floating Particles */}
         <div className="absolute inset-0 overflow-hidden">
           {[...Array(20)].map((_, i) => (
@@ -100,7 +101,7 @@ const Index = () => {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div 
+            <div
               data-animate
               id="hero-text"
               className={`space-y-8 ${isVisible["hero-text"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -116,7 +117,7 @@ const Index = () => {
                   Decisions
                 </span>{" "}
                 With <span className="text-[#00D4FF]">SFW ZERRA</span>
-          </h1>
+              </h1>
               <p className="text-xl md:text-2xl text-[#E5E7EB] leading-relaxed">
                 AI-powered analytics platform delivering descriptive, predictive, and prescriptive insights in real-time
               </p>
@@ -127,7 +128,7 @@ const Index = () => {
                   className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90 text-white text-lg px-8 py-6 rounded-lg shadow-[0_0_30px_rgba(0,212,255,0.3)] hover:shadow-[0_0_40px_rgba(0,212,255,0.5)] transition-all"
                 >
                   Start Free Trial <ArrowRight className="ml-2" />
-            </Button>
+                </Button>
                 <Button
                   size="lg"
                   variant="outline"
@@ -135,7 +136,7 @@ const Index = () => {
                 >
                   <Play className="mr-2" size={20} />
                   Watch Demo
-            </Button>
+                </Button>
               </div>
               <div className="pt-4">
                 <p className="text-sm text-[#E5E7EB]/70">
@@ -143,9 +144,9 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            
+
             {/* 3D Dashboard Mockup */}
-            <div 
+            <div
               data-animate
               id="hero-visual"
               className={`relative ${isVisible["hero-visual"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -241,16 +242,16 @@ const Index = () => {
       {/* Three Pillars Section */}
       <section id="features" className="relative py-32 bg-gradient-to-b from-[#0A0E27] to-[#0f1429]">
         <div className="container mx-auto px-4">
-          <div 
+          <div
             data-animate
             id="pillars-header"
             className={`text-center mb-20 ${isVisible["pillars-header"] ? "animate-fade-in-up" : "opacity-0"}`}
           >
             <h2 className="text-4xl md:text-6xl font-bold mb-4">
               Intelligence, <span className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] bg-clip-text text-transparent">Evolved</span>
-          </h2>
+            </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {[
               {
@@ -297,7 +298,7 @@ const Index = () => {
       {/* AI Conversation Demo Section */}
       <section id="demo" className="relative py-32 bg-[#0f1429]">
         <div className="container mx-auto px-4">
-          <div 
+          <div
             data-animate
             id="demo-header"
             className={`text-center mb-20 ${isVisible["demo-header"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -308,7 +309,7 @@ const Index = () => {
             <p className="text-xl text-[#E5E7EB]/70">Natural language meets enterprise data</p>
           </div>
 
-          <div 
+          <div
             data-animate
             id="demo-chat"
             className={`max-w-4xl mx-auto ${isVisible["demo-chat"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -324,7 +325,7 @@ const Index = () => {
                     <p className="text-[#E5E7EB]">Show me revenue trends for Q3 vs costs</p>
                   </div>
                 </div>
-                
+
                 {/* ZERRA Response */}
                 <div className="flex gap-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6B46C1] to-[#9333EA] flex items-center justify-center flex-shrink-0">
@@ -362,7 +363,7 @@ const Index = () => {
                             />
                           ))}
                         </div>
-                        
+
                         {/* Chart Bars - Revenue (Blue) */}
                         <div className="flex gap-3 items-end h-full relative z-10">
                           {[
@@ -414,8 +415,8 @@ const Index = () => {
                       </div>
 
                       <p className="text-[#E5E7EB] text-sm leading-relaxed">
-                        Q3 revenue increased by <span className="text-[#00D4FF] font-semibold">23%</span> compared to Q2, 
-                        while costs remained stable at <span className="text-[#9333EA] font-semibold">+2%</span>. This resulted in a 
+                        Q3 revenue increased by <span className="text-[#00D4FF] font-semibold">23%</span> compared to Q2,
+                        while costs remained stable at <span className="text-[#9333EA] font-semibold">+2%</span>. This resulted in a
                         <span className="text-[#00D4FF] font-semibold"> 31% improvement</span> in profit margins.
                       </p>
                     </div>
@@ -430,7 +431,7 @@ const Index = () => {
       {/* Data Sources Showcase */}
       <section className="relative py-32 bg-gradient-to-b from-[#0f1429] to-[#0A0E27]">
         <div className="container mx-auto px-4">
-          <div 
+          <div
             data-animate
             id="sources-header"
             className={`text-center mb-20 ${isVisible["sources-header"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -440,7 +441,7 @@ const Index = () => {
             </h2>
           </div>
 
-          <div 
+          <div
             data-animate
             id="sources-visual"
             className={`max-w-4xl mx-auto ${isVisible["sources-visual"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -534,7 +535,7 @@ const Index = () => {
       {/* Platform Features Grid */}
       <section className="relative py-32 bg-[#0A0E27]">
         <div className="container mx-auto px-4">
-          <div 
+          <div
             data-animate
             id="features-header"
             className={`text-center mb-20 ${isVisible["features-header"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -577,7 +578,7 @@ const Index = () => {
       {/* Industries Section */}
       <section id="industries" className="relative py-32 bg-gradient-to-b from-[#0A0E27] to-[#0f1429]">
         <div className="container mx-auto px-4">
-          <div 
+          <div
             data-animate
             id="industries-header"
             className={`text-center mb-20 ${isVisible["industries-header"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -617,7 +618,7 @@ const Index = () => {
       <section className="relative py-32 bg-[#0f1429]">
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div 
+            <div
               data-animate
               id="tech-text"
               className={`space-y-6 ${isVisible["tech-text"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -626,7 +627,7 @@ const Index = () => {
                 Enterprise Architecture, <span className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] bg-clip-text text-transparent">Startup Speed</span>
               </h2>
               <p className="text-xl text-[#E5E7EB]/70">Built on battle-tested technology</p>
-              
+
               <div className="grid grid-cols-2 gap-4 mt-8">
                 {[
                   "Sub-second query performance",
@@ -650,7 +651,7 @@ const Index = () => {
               </div>
             </div>
 
-            <div 
+            <div
               data-animate
               id="tech-visual"
               className={`${isVisible["tech-visual"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -783,7 +784,7 @@ const Index = () => {
       {/* Social Proof Section */}
       <section className="relative py-32 bg-gradient-to-b from-[#0f1429] to-[#0A0E27]">
         <div className="container mx-auto px-4">
-          <div 
+          <div
             data-animate
             id="social-header"
             className={`text-center mb-20 ${isVisible["social-header"] ? "animate-fade-in-up" : "opacity-0"}`}
@@ -819,14 +820,14 @@ const Index = () => {
       <section className="relative py-32 bg-gradient-to-br from-[#0A0E27] via-[#1a1f3a] to-[#0A0E27] overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,212,255,0.15),transparent_70%)]"></div>
         <div className="container mx-auto px-4 relative z-10">
-          <div 
+          <div
             data-animate
             id="cta-content"
             className={`max-w-4xl mx-auto text-center space-y-8 ${isVisible["cta-content"] ? "animate-fade-in-up" : "opacity-0"}`}
           >
             <h2 className="text-4xl md:text-6xl font-bold">
               Ready to Transform Your <span className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] bg-clip-text text-transparent">Data?</span>
-          </h2>
+            </h2>
             <p className="text-xl text-[#E5E7EB]/70">
               Join hundreds of companies making smarter decisions with ZERRA
             </p>
@@ -844,7 +845,7 @@ const Index = () => {
                 className="border-2 border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 text-white text-lg px-12 py-6 rounded-lg"
               >
                 Schedule a Demo
-          </Button>
+              </Button>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm text-[#E5E7EB]/70 pt-4">
               <span className="flex items-center gap-2">

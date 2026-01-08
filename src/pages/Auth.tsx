@@ -81,7 +81,7 @@ const Auth = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,212,255,0.1),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(107,70,193,0.15),transparent_50%)]"></div>
       </div>
-      
+
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(15)].map((_, i) => (
@@ -107,21 +107,14 @@ const Auth = () => {
             {/* Logo and Icons */}
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="relative">
-                <img src={logo} alt="SFW ZERRA" className="h-12" />
+                <img
+                  src="/logo-sfw.png"
+                  alt="SFW ZERRA"
+                  className={`transition-all duration-300 object-contain h-15 w-15`}
+                />
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] rounded-full animate-pulse-slow"></div>
               </div>
-              <div className="flex items-center gap-2">
-                <BarChart3 className="w-8 h-8 text-[#00D4FF]" />
-                <Sparkles className="w-6 h-6 text-[#6B46C1] animate-pulse-slow" />
-              </div>
             </div>
-
-            {/* Brand Name */}
-            <h1 className="text-4xl font-bold">
-              <span className="bg-gradient-to-r from-[#00D4FF] via-[#6B46C1] to-[#9333EA] bg-clip-text text-transparent">
-                SFW ZERRA
-              </span>
-            </h1>
 
             {/* Welcome Message */}
             <p className="text-[#E5E7EB]/70 text-lg">

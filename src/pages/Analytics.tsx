@@ -4,13 +4,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  BarChart3, TrendingUp, Lightbulb, Database,
-  Loader2, AlertCircle, Sparkles,
+  BarChart3, TrendingUp, Database,
   DollarSign, Package, Activity, ShoppingBag, History, Layers,
   Search, ChevronLeft, ChevronRight, MoreHorizontal, Maximize2, Filter,
   BarChart, LineChart, PieChart, AreaChart, Radar, Zap, Target,
-  Image as ImageIcon, FileText, Download, FileDown
+  Image as ImageIcon, FileText, Download, FileDown, Trash2, Calendar, Plus
 } from "lucide-react";
+import { DateRange } from "react-day-picker";
+import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { startOfDay, endOfDay, isWithinInterval, parseISO, subDays } from "date-fns";
+
 import { jsPDF } from "jspdf";
 import {
   DropdownMenu,
@@ -36,6 +39,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandList, CommandItem, CommandSeparator } from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Download as DownloadIcon,
+  Filter as FilterIcon,
+  RefreshCw,
+  MoreHorizontal as MoreHorizontalIcon,
+  Maximize2 as Maximize2Icon,
+  Trash2 as Trash2Icon,
+  FileText as FileTextIcon,
+  FileDown as FileDownIcon,
+  LayoutGrid,
+  Zap as ZapIcon,
+  Target as TargetIcon,
+  Image as ImageIconLucide,
+  BarChart3 as BarChart3Icon,
+  Radar as RadarIcon,
+  Calendar as CalendarIcon,
+  Layers as LayersIcon,
+  ChevronDown,
+  Check
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
@@ -49,15 +76,33 @@ import {
 import {
   createEChartsOption,
   getPriorityColor,
-  getInsightIcon
+  getInsightIcon,
+  capitalize
 } from "@/lib/chart-utils";
 import AIRecommendationsSection from "@/components/analytics/AIRecommendationsSection";
+import { InteractiveChartBuilder } from "@/components/analytics/InteractiveChartBuilder";
+import { cn } from "@/lib/utils";
+import { getTemplateCharts, ChartRecommendation, INDUSTRY_CONFIGS } from "@/lib/dashboard-templates";
+
+// Mappings removed for dynamic templating
 
 const Analytics = () => {
-  const [charts, setCharts] = useState<Array<{ title: string; option: EChartsOption; rec: VisualizationRecommendation }>>([]);
+  const [charts, setCharts] = useState<Array<{ title: string; option: EChartsOption; rec: ChartRecommendation }>>([]);
   const [loading, setLoading] = useState({ dashboard: false });
-  const { selectedDataSourceId, setSelectedDataSourceId } = useAnalytics();
+  const {
+    selectedDataSourceId,
+    setSelectedDataSourceId,
+    selectedTemplate,
+    selectedIndustryName,
+    selectedIndustryId,
+    setSelectedIndustryId,
+    setSelectedIndustryName,
+    setSelectedTemplate // Add setSelectedTemplate from context
+  } = useAnalytics();
+  const [industries, setIndustries] = useState<{ id: string; name: string }[]>([]);
   const [dataSources, setDataSources] = useState<any[]>([]);
+
+  // Effect removed as templates are now dynamic per industry
   const [computedKpis, setComputedKpis] = useState<any[]>([]);
   const [miniChartsData, setMiniChartsData] = useState<any[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
@@ -65,46 +110,183 @@ const Analytics = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const rowsPerPage = 10;
   const [chartSortOrder, setChartSortOrder] = useState<'none' | 'desc' | 'asc'>('none');
-  const [groupByDimension, setGroupByDimension] = useState<string>('original');
+  const [groupByDimension, setGroupByDimension] = useState<string[]>([]); // Changed to array for Multi-Selection
+  const [openGroupPopover, setOpenGroupPopover] = useState(false);
 
-  // Drilldown State
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [dateColumn, setDateColumn] = useState<string | null>(null);
+  const [filteredData, setFilteredData] = useState<any[]>([]);
+
+
+
   const [isDrilldownOpen, setIsDrilldownOpen] = useState(false);
   const [drilldownSourceChart, setDrilldownSourceChart] = useState<any>(null);
-  const [drilldownCharts, setDrilldownCharts] = useState<Array<{ dimension: string, option: EChartsOption, title: string }>>([]);
+  const [drilldownCharts, setDrilldownCharts] = useState<Array<{ dimension: string, option: EChartsOption, title: string, rec: ChartRecommendation }>>([]);
 
-  // Full View State
   const [isFullViewOpen, setIsFullViewOpen] = useState(false);
   const [fullViewChart, setFullViewChart] = useState<any>(null);
 
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+
   useEffect(() => {
     loadDataSources();
+    fetchIndustries();
   }, []);
+
+  const fetchIndustries = async () => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('industries')
+        .select('*');
+
+      if (data && !error) {
+        const mappedData = data.map((item: any) => ({
+          id: String(item.id || item.ID || ''),
+          name: item.name || item.industry_name || item.title || item.label || item.industry || 'Unknown Industry'
+        }));
+        setIndustries(mappedData);
+      }
+    } catch (error) {
+      console.error('Error fetching industries:', error);
+    }
+  };
 
   useEffect(() => {
     if (selectedDataSourceId) {
-      generateDashboard();
+      setDateRange(undefined);
+      setDateColumn(null);
+      setFilteredData([]);
+
+      if (selectedTemplate === 'default') {
+        generateDashboard();
+      } else {
+        loadTemplateDashboard();
+      }
     } else {
       setCharts([]);
     }
-  }, [selectedDataSourceId]);
+  }, [selectedDataSourceId, selectedTemplate, selectedIndustryName]);
+
+  const loadTemplateDashboard = async () => {
+    if (!selectedDataSourceId) return;
+
+    setLoading(prev => ({ ...prev, dashboard: true }));
+    try {
+      let dataToUse = filteredData;
+
+      if (dataToUse.length === 0) {
+        const fetchedData = await fetchAndComputeKpis();
+        if (!fetchedData) {
+          setLoading(prev => ({ ...prev, dashboard: false }));
+          return;
+        }
+        dataToUse = fetchedData;
+      }
+
+      const templateRecs = getTemplateCharts(selectedTemplate, dataToUse, selectedIndustryName);
+
+      const newCharts = templateRecs.map(rec => ({
+        title: rec.title,
+        rec: rec,
+        option: createEChartsOption(rec, dataToUse, chartSortOrder, false, groupByDimension)
+      }));
+
+      setCharts(newCharts);
+      const templateNum = selectedTemplate.replace('template', '');
+      toast.success(`Dashboard Template ${templateNum} applied`);
+    } catch (error) {
+      console.error('Error loading template dashboard:', error);
+      toast.error('Failed to load template');
+    } finally {
+      setLoading(prev => ({ ...prev, dashboard: false }));
+    }
+  };
 
   useEffect(() => {
-    if (selectedDataSourceId) {
-      // Re-generate charts with current sort order AND group by dimension
-      if (charts.length > 0) {
-        setCharts(prev => prev.map(chart => {
-          const effectiveRec = { ...chart.rec };
-          if (groupByDimension !== 'original') {
-            effectiveRec.x_axis = groupByDimension;
-          }
-          return {
-            ...chart,
-            option: createEChartsOption(effectiveRec, rawData, chartSortOrder)
-          };
-        }));
-      }
+    if (selectedDataSourceId && charts.length > 0) {
+      const dataToUse = filteredData;
+      setCharts(prev => prev.map(chart => {
+        const effectiveRec: any = { ...chart.rec };
+        if (groupByDimension.length > 0 && effectiveRec.isHorizontal) {
+          delete effectiveRec.isHorizontal;
+        }
+        return {
+          ...chart,
+          option: createEChartsOption(effectiveRec, dataToUse, chartSortOrder, false, groupByDimension)
+        };
+      }));
     }
-  }, [chartSortOrder, groupByDimension]);
+  }, [chartSortOrder, groupByDimension, filteredData, rawData]);
+
+  useEffect(() => {
+    if (rawData.length > 0) {
+      if (!dateColumn) {
+        const columns = Object.keys(rawData[0]);
+        const dateKeywords = ['date', 'time', 'at', 'when', 'created', 'updated', 'period', 'timestamp', 'day', 'month', 'year', 'dt', 'trans', 'added'];
+
+        let foundCol = columns.find(key => {
+          const k = key.toLowerCase();
+          const hasKeyword = dateKeywords.some(kw => k.includes(kw));
+          const isBlacklisted = /id|by|user|owner|name|description|title|amount|price|qty|total|status|type/i.test(k);
+
+          if (hasKeyword && !isBlacklisted) {
+            for (let i = 0; i < Math.min(rawData.length, 15); i++) {
+              const val = rawData[i][key];
+              if (val) {
+                const dateVal = new Date(val);
+                if (!isNaN(dateVal.getTime()) && dateVal.getFullYear() > 1900 && dateVal.getFullYear() < 2100) return true;
+              }
+            }
+          }
+          return false;
+        });
+
+        if (!foundCol) {
+          foundCol = columns.find(key => {
+            const k = key.toLowerCase();
+            const isBlacklisted = /id|by|user|owner|name|description|title|amount|price|qty|total|status|type|email|url|phone/i.test(k);
+            if (isBlacklisted) return false;
+
+            for (let i = 0; i < Math.min(rawData.length, 5); i++) {
+              const val = rawData[i][key];
+              if (val && (typeof val === 'string' || typeof val === 'number')) {
+                const dateVal = new Date(val);
+                if (!isNaN(dateVal.getTime()) && dateVal.getFullYear() > 2000 && dateVal.getFullYear() < 2100) return true;
+              }
+            }
+            return false;
+          });
+        }
+        if (foundCol) setDateColumn(foundCol);
+      }
+
+      const isFilterActive = dateColumn && dateRange?.from;
+
+      if (isFilterActive) {
+        const start = startOfDay(dateRange.from!);
+        const end = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from!);
+
+        const filtered = rawData.filter(item => {
+          const dateVal = item[dateColumn!];
+          if (!dateVal) return false;
+          try {
+            const date = new Date(dateVal);
+            if (isNaN(date.getTime())) return false;
+            return isWithinInterval(date, { start, end });
+          } catch (e) {
+            return false;
+          }
+        });
+        setFilteredData(filtered);
+        computeMetrics(filtered);
+      } else {
+        setFilteredData(rawData);
+        computeMetrics(rawData);
+      }
+    } else {
+      setFilteredData([]);
+    }
+  }, [rawData, dateRange, dateColumn, selectedIndustryName, selectedIndustryId]);
 
   const loadDataSources = async () => {
     const { data } = await (supabase as any)
@@ -135,22 +317,22 @@ const Analytics = () => {
           'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ data_source_id: selectedDataSourceId }),
+        body: JSON.stringify({
+          data_source_id: selectedDataSourceId,
+          industry: selectedIndustryName
+        }),
       });
 
       if (!response.ok) throw new Error('Failed to generate dashboard');
 
       const result = await response.json();
 
-      // Fetch and Compute Data FIRST
       const data = await fetchAndComputeKpis();
 
-      // Auto-create all charts with the fetched data
       setCharts([]);
       if (data && result.recommendations) {
         for (let i = 0; i < result.recommendations.length; i++) {
           const rec = result.recommendations[i];
-          // Make ALL bar charts horizontal
           if (rec.type === 'bar') {
             rec.isHorizontal = true;
           }
@@ -198,6 +380,7 @@ const Analytics = () => {
 
       const data = records.map((r: any) => r.row_data);
       setRawData(data);
+      setFilteredData(data);
       computeMetrics(data);
       return data;
     } catch (error) {
@@ -207,67 +390,100 @@ const Analytics = () => {
   };
 
   const computeMetrics = (data: any[]) => {
+    if (!data || data.length === 0) return;
     const keys = Object.keys(data[0] || {});
+    const industryKey = selectedIndustryName?.toLowerCase();
+    const industryConfig = INDUSTRY_CONFIGS[industryKey] || null;
 
-    // Heuristic column identification
-    const salesCol = keys.find(k => /sales|total|amount|revenue|price/i.test(k));
-    const brandCol = keys.find(k => /brand|company|vender|manufacturer/i.test(k));
-    const productCol = keys.find(k => /product|item|description|name/i.test(k));
-    const quantityCol = keys.find(k => /qty|quantity|count|unit/i.test(k));
+    let newKpis = [];
 
-    // Calculations
-    const totalSales = salesCol ? data.reduce((sum, item) => sum + (Number(item[salesCol]) || 0), 0) : 0;
-    const uniqueBrands = brandCol ? new Set(data.map(item => item[brandCol])).size : 0;
-    const totalProducts = productCol ? new Set(data.map(item => item[productCol])).size : data.length;
-    const avgOrderValue = totalSales / data.length;
-    const totalQty = quantityCol ? data.reduce((sum, item) => sum + (Number(item[quantityCol]) || 0), 0) : 0;
-
-    const formatter = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      maximumFractionDigits: 2,
-      notation: "compact"
-    });
-
-    const newKpis = [
-      { title: "Dashboard Total Sales", value: formatter.format(totalSales), icon: DollarSign, color: "text-blue-500", bg: "bg-gradient-to-br from-blue-100 to-indigo-50/60" },
-      { title: "Unique Entities", value: String(uniqueBrands || 'N/A'), icon: Layers, color: "text-indigo-500", bg: "bg-gradient-to-br from-indigo-100 to-purple-50/60" },
-      { title: "Items Analyzed", value: String(totalProducts), icon: Package, color: "text-orange-500", bg: "bg-gradient-to-br from-orange-100 to-amber-50/60" },
-      { title: "Avg Insight Value", value: formatter.format(avgOrderValue), icon: Activity, color: "text-emerald-500", bg: "bg-gradient-to-br from-emerald-100 to-teal-50/60" },
-      { title: "Total Units", value: String(totalQty || data.length), icon: Zap, color: "text-cyan-500", bg: "bg-gradient-to-br from-cyan-100 to-blue-50/60" },
-      { title: "Data Rows", value: String(data.length), icon: History, color: "text-slate-500", bg: "bg-gradient-to-br from-slate-100 to-gray-50/60" },
-      { title: "Growth Variance", value: "2.4 %", icon: TrendingUp, color: "text-emerald-500", bg: "bg-gradient-to-br from-emerald-100 to-green-50/60", isGrowth: true, trend: 'up' },
-      { title: "Performance Score", value: "94/100", icon: Target, color: "text-purple-500", bg: "bg-gradient-to-br from-purple-100 to-fuchsia-50/60", isGrowth: true, trend: 'up' },
-    ];
-
-    // Generate Mini Sparkline Data (e.g., Top 4 Brands or Categories)
-    if (brandCol && salesCol) {
-      const brandSales: Record<string, number[]> = {};
-      data.forEach(item => {
-        const brand = item[brandCol] || 'Other';
-        const sale = Number(item[salesCol]) || 0;
-        if (!brandSales[brand]) brandSales[brand] = [];
-        brandSales[brand].push(sale);
+    if (industryConfig) {
+      const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+        notation: "compact"
       });
 
-      // Sort by total sales and take top 4
-      const topBrands = Object.entries(brandSales)
-        .map(([name, values]) => ({
-          name,
-          values: values.slice(-10), // Last 10 points for sparkline
-          total: values.reduce((a, b) => a + b, 0)
-        }))
-        .sort((a, b) => b.total - a.total)
-        .slice(0, 4);
+      newKpis = industryConfig.kpis.map(config => {
+        let matchingKey = keys.find(k => config.keyMatch.test(k));
 
-      const colors = ['#8B5CF6', '#3B82F6', '#EF4444', '#10B981'];
-      const icons = ['☀️', '🌧️', '❄️', '🌸'];
+        if (!matchingKey) {
+          if (config.agg === 'sum' || config.agg === 'avg') {
+            if (config.prefix === '$' || config.title.toLowerCase().includes('revenue') || config.title.toLowerCase().includes('cost')) {
+              matchingKey = keys.find(k => /sales|revenue|amount|price|cost|value|total/i.test(k) && typeof data[0][k] === 'number');
+            }
+            if (!matchingKey) {
+              matchingKey = keys.find(k => typeof data[0][k] === 'number' && !/id|year|month|day|date/i.test(k));
+            }
+          } else if (config.agg === 'count') {
+            matchingKey = keys.find(k => /id|name|title|product|customer|email/i.test(k));
+            if (!matchingKey) {
+              matchingKey = keys.find(k => typeof data[0][k] === 'string');
+            }
+          }
+        }
 
-      setMiniChartsData(topBrands.map((brand, i) => ({
-        ...brand,
-        color: colors[i % colors.length],
-        icon: icons[i % icons.length]
-      })));
+        let value = "0";
+
+        if (matchingKey) {
+          let resultValue = 0;
+          if (config.agg === 'avg') {
+            const sum = data.reduce((s, item) => s + (Number(item[matchingKey]) || 0), 0);
+            resultValue = sum / data.length;
+          } else if (config.agg === 'count') {
+            resultValue = new Set(data.map(item => item[matchingKey])).size;
+          } else {
+            resultValue = data.reduce((s, item) => s + (Number(item[matchingKey]) || 0), 0);
+          }
+
+          if (config.prefix === '$') {
+            value = formatter.format(resultValue);
+          } else {
+            value = String(resultValue > 1000 ? (resultValue / 1000).toFixed(1) + 'K' : Math.round(resultValue));
+          }
+        } else if (config.agg === 'count' && !matchingKey) {
+          const resultValue = data.length;
+          value = String(resultValue > 1000 ? (resultValue / 1000).toFixed(1) + 'K' : Math.round(resultValue));
+        }
+
+        return {
+          title: config.title,
+          value: value,
+          icon: config.icon,
+          color: config.color,
+          bg: config.bg,
+          prefix: config.prefix !== '$' ? config.prefix : '', // Formatter already adds $
+          suffix: config.suffix,
+          isGrowth: Math.random() > 0.3,
+          trend: Math.random() > 0.5 ? 'up' : 'down'
+        };
+      });
+    } else {
+      const salesCol = keys.find(k => /sales|total|amount|revenue|price/i.test(k));
+      const brandCol = keys.find(k => /brand|company|vender|manufacturer/i.test(k));
+      const productCol = keys.find(k => /product|item|description|name/i.test(k));
+      const quantityCol = keys.find(k => /qty|quantity|count|unit/i.test(k));
+
+      const totalSales = salesCol ? data.reduce((sum, item) => sum + (Number(item[salesCol]) || 0), 0) : 0;
+      const uniqueBrands = brandCol ? new Set(data.map(item => item[brandCol])).size : 0;
+      const totalProducts = productCol ? new Set(data.map(item => item[productCol])).size : data.length;
+      const totalQty = quantityCol ? data.reduce((sum, item) => sum + (Number(item[quantityCol]) || 0), 0) : 0;
+
+      const formatter = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 2,
+        notation: "compact"
+      });
+
+      newKpis = [
+        { title: "Total Sales", value: formatter.format(totalSales), icon: DollarSign, color: "white", bg: "bg-gradient-to-br from-pink-500 to-rose-500", isGrowth: true, trend: 'up' },
+        { title: "Unique Entities", value: String(uniqueBrands || 'N/A'), icon: LayersIcon, color: "white", bg: "bg-gradient-to-br from-amber-400 to-orange-500", isGrowth: true, trend: 'up' },
+        { title: "Items Analyzed", value: String(totalProducts), icon: Package, color: "white", bg: "bg-gradient-to-br from-teal-400 to-emerald-600", isGrowth: false },
+        { title: "Total Units", value: String(totalQty || data.length), icon: ZapIcon, color: "white", bg: "bg-gradient-to-br from-green-400 to-emerald-600", isGrowth: true, trend: 'up' },
+        { title: "Data Rows", value: String(data.length), icon: History, color: "white", bg: "bg-gradient-to-br from-purple-500 to-indigo-700", isGrowth: false },
+      ];
     }
 
     setComputedKpis(newKpis);
@@ -275,25 +491,25 @@ const Analytics = () => {
 
 
 
-  const handleDrilldownInit = (chart: { title: string; option: EChartsOption; rec: VisualizationRecommendation }) => {
+  const handleDrilldownInit = (chart: { title: string; option: EChartsOption; rec: ChartRecommendation }) => {
     setDrilldownSourceChart(chart);
-    if (rawData.length > 0) {
-      const sample = rawData[0];
+    const dataToUse = filteredData.length > 0 ? filteredData : rawData;
+    if (dataToUse.length > 0) {
+      const sample = dataToUse[0];
       const dimensions = Object.keys(sample).filter(key => {
         const val = sample[key];
         const isId = key.toLowerCase().includes('id');
         const isCurrentX = key === chart.rec.x_axis;
-        const isCategorical = typeof val === 'string' || (typeof val === 'number' && new Set(rawData.map(d => d[key])).size < 20);
+        const isCategorical = typeof val === 'string' || (typeof val === 'number' && new Set(dataToUse.map(d => d[key])).size < 20);
         return isCategorical && !isCurrentX && !isId;
       });
 
-      // Generate charts for ALL dimensions at once
       const charts = dimensions.map(dimension => {
         const rec = { ...chart.rec };
         rec.x_axis = dimension;
-        rec.title = `${chart.rec.y_axis} by ${dimension}`;
-        const option = createEChartsOption(rec, rawData, chartSortOrder);
-        return { dimension, option, title: rec.title };
+        rec.title = capitalize(`${chart.rec.y_axis} by ${dimension}`);
+        const option = createEChartsOption(rec, dataToUse, chartSortOrder);
+        return { dimension, option, title: rec.title, rec };
       });
 
       setDrilldownCharts(charts);
@@ -303,17 +519,25 @@ const Analytics = () => {
 
   const createChart = async (rec: VisualizationRecommendation, silent = false, providedData?: any[]) => {
     try {
-      const dataToUse = providedData || rawData;
+      const dataToUse = providedData || (filteredData.length > 0 ? filteredData : rawData);
 
       if (!dataToUse.length) {
         const fetchedData = await fetchAndComputeKpis();
         if (!fetchedData) return;
 
-        const option = createEChartsOption(rec, fetchedData, chartSortOrder);
-        setCharts(prev => [...prev, { title: rec.title, option, rec }]);
+        const effectiveRec: any = { ...rec };
+        if (groupByDimension.length > 0 && effectiveRec.isHorizontal) {
+          delete effectiveRec.isHorizontal;
+        }
+        const option = createEChartsOption(effectiveRec, fetchedData, chartSortOrder, false, groupByDimension);
+        setCharts(prev => [...prev, { title: effectiveRec.title, option, rec: effectiveRec }]);
       } else {
-        const option = createEChartsOption(rec, dataToUse, chartSortOrder);
-        setCharts(prev => [...prev, { title: rec.title, option, rec }]);
+        const effectiveRec: any = { ...rec };
+        if (groupByDimension.length > 0 && effectiveRec.isHorizontal) {
+          delete effectiveRec.isHorizontal;
+        }
+        const option = createEChartsOption(effectiveRec, dataToUse, chartSortOrder, false, groupByDimension);
+        setCharts(prev => [...prev, { title: effectiveRec.title, option, rec: effectiveRec }]);
       }
 
       if (!silent) toast.success(`Chart created: ${rec.title}`);
@@ -352,7 +576,6 @@ const Analytics = () => {
     }
 
     try {
-      // Fixing Title Index: chartIndex is absolute index in charts array
       const chartTitle = charts[chartIndex]?.title || 'chart';
 
       if (format === 'pdf') {
@@ -429,8 +652,7 @@ const Analytics = () => {
       const targetChart = { ...newCharts[chartIndex] };
       const updatedRec = { ...targetChart.rec, type: newType };
 
-      // Re-create the ECharts option based on the new type
-      const newOption = createEChartsOption(updatedRec, rawData);
+      const newOption = createEChartsOption(updatedRec, filteredData);
 
       newCharts[chartIndex] = {
         ...targetChart,
@@ -443,23 +665,34 @@ const Analytics = () => {
     toast.success(`Chart type changed to ${newType}`);
   };
 
+  const handleRemoveChart = (chartIndex: number) => {
+    setCharts(prev => {
+      const newCharts = [...prev];
+      newCharts.splice(chartIndex, 1);
+      return newCharts;
+    });
+    if (fullViewChart && charts[chartIndex]?.title === fullViewChart.title) {
+      setIsFullViewOpen(false);
+      setFullViewChart(null);
+    }
+    toast.success("Chart removed from dashboard");
+  };
 
-  // Default KPI references (fallback)
+
+  // Default KPI references
   const defaultKpis = [
     { title: "Dashboard Total Sales", value: "$ 0.00", icon: DollarSign, color: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Unique Entities", value: "0", icon: Layers, color: "text-indigo-600", bg: "bg-blue-50" },
+    { title: "Unique Entities", value: "0", icon: LayersIcon, color: "text-indigo-600", bg: "bg-blue-50" },
     { title: "Items Analyzed", value: "0", icon: Package, color: "text-orange-600", bg: "bg-blue-50" },
     { title: "Avg Insight Value", value: "$ 0.00", icon: Activity, color: "text-emerald-600", bg: "bg-blue-50" },
-    { title: "Total Units", value: "0", icon: Zap, color: "text-yellow-500", bg: "bg-blue-50" },
+    { title: "Total Units", value: "0", icon: ZapIcon, color: "text-yellow-500", bg: "bg-blue-50" },
     { title: "Data Rows", value: "0", icon: History, color: "text-slate-600", bg: "bg-blue-50" },
     { title: "Growth Variance", value: "0.0 %", icon: TrendingUp, color: "text-green-600", bg: "bg-blue-50" },
     { title: "Item Density", value: "# 0", icon: ShoppingBag, color: "text-purple-600", bg: "bg-blue-50" },
   ];
 
-  // Displaying computed KPIs if available, else standard reference
-  const displayedKpis = computedKpis.length > 0 ? computedKpis : defaultKpis;
+  const activeKpis = computedKpis.length > 0 ? computedKpis : defaultKpis.slice(0, 5);
 
-  // Mini Sparkline Component (Surgical Implementation)
   const MiniSparklineCard = ({ item }: { item: any }) => {
     const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -477,7 +710,7 @@ const Analytics = () => {
         type: 'line',
         smooth: true,
         symbol: 'none',
-        lineStyle: { width: 3, color: '#8b8ef9' }, // Fixed blue-ish color like in image
+        lineStyle: { width: 3, color: '#8b8ef9' },
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: '#8b8ef960' },
@@ -512,13 +745,13 @@ const Analytics = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-6 space-y-6">
+    <div className="min-h-screen bg-slate-100 p-6 space-y-6 scrollbar-hide">
       <div className="max-w-[1600px] mx-auto space-y-8">
         <Card className="border-none shadow-sm bg-indigo-50/50 backdrop-blur-sm overflow-hidden">
           <CardContent className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="p-2.5 bg-white rounded-xl shadow-sm">
-                <BarChart3 className="h-6 w-6 text-indigo-600" />
+                <BarChart3Icon className="h-6 w-6 text-indigo-600" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900 font-outfit tracking-tight">Analytics Dashboard</h1>
@@ -527,9 +760,55 @@ const Analytics = () => {
             </div>
 
             <div className="flex items-center gap-3 bg-white/60 p-1.5 pl-4 rounded-xl border border-white shadow-inner w-full md:w-auto">
+              <Select
+                value={selectedIndustryId}
+                onValueChange={(val) => {
+                  setSelectedIndustryId(val);
+                  if (val === 'all') {
+                    setSelectedIndustryName('All Industries');
+                  } else {
+                    const ind = industries.find(i => i.id === val);
+                    if (ind) setSelectedIndustryName(ind.name);
+                  }
+                }}
+              >
+                <SelectTrigger className="w-32 bg-transparent border-none shadow-none h-8 text-[11px] font-bold text-indigo-600 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
+                  <SelectValue placeholder="Industry" />
+                </SelectTrigger>
+                <SelectContent className="bg-white/95 backdrop-blur-md border-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
+                  <SelectItem value="all">All Industries</SelectItem>
+                  {industries.map((ind) => (
+                    <SelectItem key={ind.id} value={ind.id}>{ind.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="w-px h-6 bg-indigo-100 hidden md:block"></div>
+
               <div className="flex items-center gap-2 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                <Database className="h-3.5 w-3.5 text-indigo-500" />
-                Dataroom
+                View
+              </div>
+              <Select
+                value={selectedTemplate === 'default' ? 'template1' : selectedTemplate}
+                onValueChange={(val) => setSelectedTemplate(val)}
+              >
+                <SelectTrigger className="w-32 bg-transparent border-none shadow-none h-8 text-[11px] font-bold text-indigo-600 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
+                  <SelectValue placeholder="Template" />
+                </SelectTrigger>
+                <SelectContent className="bg-white/95 backdrop-blur-md border-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
+                  {Array.from({ length: 10 }, (_, i) => (
+                    <SelectItem key={i} value={`template${i + 1}`}>
+                      View {i + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="w-px h-6 bg-indigo-100 hidden md:block"></div>
+
+
+
+              <div className="flex items-center gap-2 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                Sources
               </div>
               <Select
                 value={selectedDataSourceId || ''}
@@ -549,10 +828,6 @@ const Analytics = () => {
             </div>
           </CardContent>
         </Card>
-
-
-
-
         {/* Loading State for KPIs */}
         {loading.dashboard && (
           <div className="space-y-4">
@@ -595,24 +870,34 @@ const Analytics = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {displayedKpis.map((kpi, idx) => (
-                <div key={idx} className={`${kpi.bg} border border-white/60 rounded-xl p-4 flex items-center justify-between shadow-sm transition-all hover:shadow-md hover:scale-[1.02] active:scale-[0.98] cursor-default group`}>
-                  <div className="flex-1">
-                    <p className="text-[10px] font-bold text-slate-600 uppercase tracking-tighter mb-0.5 truncate">{kpi.title}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-xl font-black text-slate-900 tracking-tight">{kpi.value}</p>
-                      {kpi.isGrowth && (
-                        <div className={`flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[9px] font-bold ${kpi.trend === 'up' ? 'text-emerald-600 bg-emerald-100/50' : 'text-rose-600 bg-rose-100/50'}`}>
-                          {kpi.trend === 'up' ? '▲' : '▼'}
-                        </div>
-                      )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {activeKpis.map((kpi, idx) => (
+                <Card
+                  key={idx}
+                  className={cn(
+                    "border-none shadow-sm group hover:shadow-md transition-all cursor-default overflow-hidden relative",
+                    kpi.bg
+                  )}
+                >
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-white/70 uppercase tracking-wider">{kpi.title}</p>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xl font-black text-white tracking-tight">
+                          {kpi.prefix || ''}{kpi.value}{kpi.suffix || ''}
+                        </h3>
+                        {kpi.isGrowth && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-white/20 text-white">
+                            {kpi.trend === 'up' ? '↑' : '↓'}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className={`w-9 h-9 rounded-full bg-white border border-white/50 shadow-[0_2px_8px_rgba(0,0,0,0.06)] flex items-center justify-center ${kpi.color} transition-all group-hover:scale-110 group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)]`}>
-                    <kpi.icon size={18} />
-                  </div>
-                </div>
+                    <div className="p-2.5 bg-white/20 rounded-xl shadow-sm group-hover:bg-white/30 transition-all">
+                      <kpi.icon className="h-5 w-5 text-white" />
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </>
@@ -648,40 +933,120 @@ const Analytics = () => {
                 Visual Analytics
               </h2>
               <div className="flex items-center gap-3">
-                {/* Group By Filter */}
-                <Select value={groupByDimension} onValueChange={(val: string) => setGroupByDimension(val)}>
-                  <SelectTrigger className="w-40 bg-white/50 border-white/40 shadow-sm h-8 text-xs font-semibold rounded-lg focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
-                    <div className="flex items-center gap-2">
-                      <Layers className="h-3 w-3 text-slate-500" />
-                      <SelectValue placeholder="Group By" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent className="bg-white/95 backdrop-blur-md border-white/20 max-h-[350px]">
-                    <SelectItem value="original" className="text-xs font-bold text-indigo-600">Grouped by</SelectItem>
-                    <div className="h-px bg-slate-100 my-1" />
-                    {rawData.length > 0 && Object.keys(rawData[0])
-                      .filter(key => {
-                        const k = key.toLowerCase();
-                        return !['id', '_id', 'uuid', 'file_id', 'created_at', 'updated_at', 'owner_id'].some(ex => k.includes(ex));
-                      })
-                      .map(dim => (
-                        <SelectItem key={dim} value={dim} className="text-xs capitalize">
-                          {dim.replace(/_/g, ' ')}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                {/* Date Presets & Picker */}
+                <div className="flex items-center gap-2 mr-2 bg-gray-50/50 p-1 rounded-lg border border-gray-100">
+                  <Select onValueChange={(val) => {
+                    const today = new Date();
+                    if (val === 'today') setDateRange({ from: today, to: today });
+                    if (val === '7days') setDateRange({ from: subDays(today, 7), to: today });
+                    if (val === '30days') setDateRange({ from: subDays(today, 30), to: today });
+                    if (val === 'clear') setDateRange(undefined);
+                  }}>
+                    <SelectTrigger className="w-24 bg-gray-200 border-gray-200 shadow-sm h-8 text-[11px] font-medium focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
+                      <SelectValue placeholder="Presets" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="today" className="text-xs">Today</SelectItem>
+                      <SelectItem value="7days" className="text-xs">Last 7 Days</SelectItem>
+                      <SelectItem value="30days" className="text-xs">Last 30 Days</SelectItem>
+                      <SelectItem value="clear" className="text-xs text-red-500">Clear Filter</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <DatePickerWithRange
+                    date={dateRange}
+                    setDate={setDateRange}
+                  />
+                </div>
+
+
+
+                {/* Multi-Select Group By Filter */}
+                <Popover open={openGroupPopover} onOpenChange={setOpenGroupPopover}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-48 bg-gray-200 border-gray/100 shadow-sm h-8 text-xs font-semibold rounded-lg justify-start text-left font-normal px-2 hover:bg-gray-300 transition-colors">
+                      <LayersIcon className="mr-2 h-3.5 w-3.5 text-slate-500" />
+                      {groupByDimension.length > 0 ? (
+                        <span className="truncate flex-1 text-slate-900">
+                          {groupByDimension.length === 1
+                            ? capitalize(groupByDimension[0])
+                            : `${groupByDimension.length} selected`}
+                        </span>
+                      ) : (
+                        <span className="text-slate-500">Group By</span>
+                      )}
+                      <ChevronDown className="ml-2 h-3 w-3 opacity-50 shrink-0" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-0 bg-white/95 backdrop-blur-md border-white/20" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search dimensions..." className="h-8 text-xs" />
+                      <CommandList>
+                        <CommandEmpty>No dimension found.</CommandEmpty>
+                        <CommandGroup className="max-h-64 overflow-y-auto scrollbar-hide">
+                          <CommandItem
+                            onSelect={() => {
+                              setGroupByDimension([]);
+                              setOpenGroupPopover(false);
+                            }}
+                            className="text-xs font-bold text-slate-500 cursor-pointer"
+                          >
+                            <div className={cn(
+                              "mr-2 flex h-3.5 w-3.5 items-center justify-center rounded-sm border border-primary",
+                              groupByDimension.length === 0 ? "bg-primary text-primary-foreground" : "opacity-30"
+                            )}>
+                              {groupByDimension.length === 0 && <Check className="h-3 w-3" />}
+                            </div>
+                            None (Clear)
+                          </CommandItem>
+                          <CommandSeparator className="my-1" />
+                          {rawData.length > 0 && Object.keys(rawData[0])
+                            .filter(key => {
+                              const k = key.toLowerCase();
+                              return !['id', '_id', 'uuid', 'file_id', 'created_at', 'updated_at', 'owner_id'].some(ex => k.includes(ex));
+                            })
+                            .map(dim => {
+                              const isSelected = groupByDimension.includes(dim);
+                              return (
+                                <CommandItem
+                                  key={dim}
+                                  onSelect={() => {
+                                    setGroupByDimension(prev => {
+                                      if (isSelected) {
+                                        return prev.filter(f => f !== dim);
+                                      } else {
+                                        return [...prev, dim];
+                                      }
+                                    });
+                                  }}
+                                  className="text-xs capitalize cursor-pointer"
+                                >
+                                  <div className={cn(
+                                    "mr-2 flex h-3.5 w-3.5 items-center justify-center rounded-sm border border-primary/50",
+                                    isSelected ? "bg-indigo-500 border-indigo-500 text-white" : "opacity-50 [&_svg]:invisible"
+                                  )}>
+                                    <Check className="h-3 w-3" />
+                                  </div>
+                                  {dim.replace(/_/g, ' ')}
+                                </CommandItem>
+                              );
+                            })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
 
                 {/* Sort Filter */}
                 <Select value={chartSortOrder} onValueChange={(val: any) => setChartSortOrder(val)}>
-                  <SelectTrigger className="w-32 bg-white/50 border-white/40 shadow-sm h-8 text-xs font-semibold rounded-lg focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
+                  <SelectTrigger className="w-32 bg-gray-200 border-gray/100 shadow-sm h-8 text-xs font-semibold rounded-lg focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus:outline-none outline-none">
                     <div className="flex items-center gap-2">
-                      <Filter className="h-3 w-3 text-slate-500" />
+                      <FilterIcon className="h-3 w-3 text-slate-500" />
                       <SelectValue placeholder="Sort" />
                     </div>
                   </SelectTrigger>
                   <SelectContent className="bg-white/90 backdrop-blur-md border-white/20">
-                    <SelectItem value="none" className="text-xs">Original</SelectItem>
+                    <SelectItem value="none" className="text-xs">Default</SelectItem>
                     <SelectItem value="desc" className="text-xs">Max to Min</SelectItem>
                     <SelectItem value="asc" className="text-xs">Min to Max</SelectItem>
                   </SelectContent>
@@ -694,118 +1059,133 @@ const Analytics = () => {
             </div>
 
             <div className="space-y-6">
-              {/* Dashboard Layout: 2x2 Grid (4 Charts Total, skipping first) */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {charts.slice(1, 5).map((chart, idx) => (
-                  <Card key={idx} className="border border-gray-100 overflow-hidden bg-indigo-50 backdrop-blur-sm group/chart hover:shadow-md transition-all duration-300 hover:bg-gray-50 hover:border-gray-200">
-                    <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
-                      <div>
-                        <CardTitle className="text-sm font-bold text-slate-800 truncate mb-1">{chart.title}</CardTitle>
-                        <CardDescription className="text-[10px] text-slate-500 leading-tight line-clamp-2 max-w-[200px]">
-                          {chart.rec.reasoning || "AI-powered visualization based on your uploaded data patterns and trends."}
-                        </CardDescription>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 transition-colors focus-visible:ring-0 focus-visible:outline-none outline-none">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-50 bg-white/95 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 duration-200"
-                        >
-                          <DropdownMenuItem onClick={() => handleDrilldownInit(chart)} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-700 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                            <Maximize2 className="mr-2 h-3.5 w-3.5" />
-                            <span>Drill Down</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            setFullViewChart(chart);
-                            setIsFullViewOpen(true);
-                          }} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-700 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                            <Maximize2 className="mr-2 h-3.5 w-3.5" />
-                            <span>Full View</span>
-                          </DropdownMenuItem>
+              {/* Dashboard Layout: Grid logic to show all charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {(selectedTemplate === 'default' ? charts.slice(1) : charts).map((chart, idx) => {
+                  const absoluteIndex = selectedTemplate === 'default' ? idx + 1 : idx;
+                  const isLarge = chart.rec.size === 'large';
 
-                          <DropdownMenuSeparator />
+                  return (
+                    <div
+                      key={idx}
+                      className="lg:col-span-6 min-h-[450px] flex"
+                    >
+                      <Card className="w-full border border-gray-200 overflow-hidden bg-white group/chart hover:shadow-md transition-all duration-300 hover:border-gray-300 flex flex-col">
+                        <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
+                          <div>
+                            <CardTitle className="text-sm font-bold text-slate-800 truncate mb-1">{capitalize(chart.title)}</CardTitle>
+                            <CardDescription className="text-[10px] text-slate-500 leading-tight line-clamp-2 max-w-[200px]">
+                              {chart.rec.reasoning || "AI-powered visualization based on your uploaded data patterns and trends."}
+                            </CardDescription>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600 transition-colors focus-visible:ring-0 focus-visible:outline-none outline-none">
+                                <MoreHorizontalIcon className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-50 bg-white/95 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 duration-200"
+                            >
+                              <DropdownMenuItem onClick={() => handleDrilldownInit(chart)} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-700 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                <Maximize2Icon className="mr-2 h-3.5 w-3.5" />
+                                <span>Drill Down</span>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                setFullViewChart(chart);
+                                setIsFullViewOpen(true);
+                              }} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-700 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                <Maximize2Icon className="mr-2 h-3.5 w-3.5" />
+                                <span>Full View</span>
+                              </DropdownMenuItem>
 
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="text-[11px] font-medium focus:bg-slate-200/80 data-[state=open]:bg-slate-50/80 transition-colors outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                              <BarChart3 className="mr-2 h-3.5 w-3.5" />
-                              <span>Change Chart Type</span>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                              <DropdownMenuSubContent
-                                className="w-48 bg-white/95 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 duration-200"
-                              >
-                                <DropdownMenuItem onClick={() => handleChangeChartType(idx + 1, 'radar')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                                  <Radar className="mr-2 h-3.5 w-3.5" />
-                                  <span>Radar Chart</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleChangeChartType(idx + 1, 'funnel')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                                  <Filter className="mr-2 h-3.5 w-3.5" />
-                                  <span>Funnel Chart</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleChangeChartType(idx + 1, 'scatter')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                                  <Target className="mr-2 h-3.5 w-3.5" />
-                                  <span>Scatter Plot</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleChangeChartType(idx + 1, 'gauge')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                                  <Zap className="mr-2 h-3.5 w-3.5" />
-                                  <span>Gauge Chart</span>
-                                </DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                          </DropdownMenuSub>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="text-[11px] font-medium focus:bg-slate-200/80 data-[state=open]:bg-slate-50/80 transition-colors outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
-                              <Download className="mr-2 h-3.5 w-3.5" />
-                              <span>Export</span>
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                              <DropdownMenuSubContent
-                                className="w-48 bg-white/95 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 duration-200"
-                              >
-                                <DropdownMenuItem
-                                  onClick={() => handleExportChart(idx + 1, 'png')}
-                                  className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
-                                >
-                                  <ImageIcon className="mr-2 h-3.5 w-3.5 text-teal-500" />
-                                  <span>Export as Image (PNG)</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleExportChart(idx + 1, 'jpeg')}
-                                  className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
-                                >
-                                  <FileText className="mr-2 h-3.5 w-3.5 text-orange-500" />
-                                  <span>Export as JPEG</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleExportChart(idx + 1, 'pdf')}
-                                  className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
-                                >
-                                  <FileDown className="mr-2 h-3.5 w-3.5 text-red-500" />
-                                  <span>Export as PDF</span>
-                                </DropdownMenuItem>
-                              </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                          </DropdownMenuSub>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </CardHeader>
-                    <CardContent>
-                      <EChartsWrapper id={`dashboard-chart-${idx + 1}`} option={chart.option} style={{ height: '280px', width: '100%' }} />
-                    </CardContent>
-                  </Card>
-                ))}
+                              <DropdownMenuSeparator />
+
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="text-[11px] font-medium focus:bg-slate-200/80 data-[state=open]:bg-slate-50/80 transition-colors outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                  <BarChart3Icon className="mr-2 h-3.5 w-3.5" />
+                                  <span>Change Chart Type</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                  <DropdownMenuSubContent
+                                    className="w-48 bg-white/95 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 duration-200"
+                                  >
+                                    <DropdownMenuItem onClick={() => handleChangeChartType(absoluteIndex, 'radar')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                      <RadarIcon className="mr-2 h-3.5 w-3.5" />
+                                      <span>Radar Chart</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleChangeChartType(absoluteIndex, 'funnel')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                      <FilterIcon className="mr-2 h-3.5 w-3.5" />
+                                      <span>Funnel Chart</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleChangeChartType(absoluteIndex, 'scatter')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                      <TargetIcon className="mr-2 h-3.5 w-3.5" />
+                                      <span>Scatter Plot</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleChangeChartType(absoluteIndex, 'gauge')} className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                      <ZapIcon className="mr-2 h-3.5 w-3.5" />
+                                      <span>Gauge Chart</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                              </DropdownMenuSub>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="text-[11px] font-medium focus:bg-slate-200/80 data-[state=open]:bg-slate-50/80 transition-colors outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none">
+                                  <DownloadIcon className="mr-2 h-3.5 w-3.5" />
+                                  <span>Export</span>
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                  <DropdownMenuSubContent
+                                    className="w-48 bg-white/95 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 duration-200"
+                                  >
+                                    <DropdownMenuItem
+                                      onClick={() => handleExportChart(absoluteIndex, 'png')}
+                                      className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
+                                    >
+                                      <ImageIconLucide className="mr-2 h-3.5 w-3.5 text-teal-500" />
+                                      <span>Export as Image (PNG)</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => handleExportChart(absoluteIndex, 'jpeg')}
+                                      className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
+                                    >
+                                      <FileTextIcon className="mr-2 h-3.5 w-3.5 text-orange-500" />
+                                      <span>Export as JPEG</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => handleExportChart(absoluteIndex, 'pdf')}
+                                      className="text-[11px] font-medium focus:bg-slate-200/80 focus:text-slate-600 data-[state=open]:bg-slate-50/80 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none"
+                                    >
+                                      <FileDownIcon className="mr-2 h-3.5 w-3.5 text-red-500" />
+                                      <span>Export as PDF</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                              </DropdownMenuSub>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleRemoveChart(absoluteIndex)} className="text-[11px] font-medium text-red-600 focus:bg-red-50 focus:text-red-700 data-[state=open]:bg-red-50 transition-colors cursor-pointer outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none group/delete">
+                                <Trash2Icon className="mr-2 h-3.5 w-3.5 group-hover/delete:animate-bounce" />
+                                <span>Remove from Dashboard</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </CardHeader>
+                        <CardContent>
+                          <EChartsWrapper id={`dashboard-chart-${absoluteIndex}`} option={chart.option} style={{ height: '280px', width: '100%' }} />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
         )}
 
-        {/* AI Recommendations & Insights Section */}
-        {selectedDataSourceId && (
+        {/* AI Recommendations & Insights Section - Only on Default Dashboard */}
+        {selectedDataSourceId && selectedTemplate === 'default' && (
           <AIRecommendationsSection
             selectedDataSourceId={selectedDataSourceId}
             rawData={rawData}
@@ -848,7 +1228,7 @@ const Analytics = () => {
             </div>
 
             <Card className="border border-slate-200 shadow-sm bg-white overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scrollbar-hide">
                 {loading.dashboard ? (
                   <div className="p-4 space-y-4">
                     <Skeleton className="h-8 w-full bg-slate-100" />
@@ -934,22 +1314,27 @@ const Analytics = () => {
 
             <div className="space-y-6 py-4">
               <div className="flex flex-col items-start gap-2 bg-slate-50 p-4 rounded-xl">
-                <h4 className="font-bold text-slate-800">{drilldownSourceChart?.title}</h4>
+                <h4 className="font-bold text-slate-800">{capitalize(drilldownSourceChart?.title)}</h4>
                 <p className="text-xs text-slate-500">Exploring all dimensional breakdowns</p>
               </div>
 
               {drilldownCharts.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {drilldownCharts.map((chart, idx) => (
-                    <Card key={idx} className="border border-gray-100 overflow-hidden bg-indigo-50 backdrop-blur-sm hover:bg-gray-50 hover:border-gray-200">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-bold text-slate-800">{chart.title}</CardTitle>
-                        <CardDescription className="text-xs text-slate-500">Breakdown by {chart.dimension}</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <EChartsWrapper option={chart.option} style={{ height: '280px', width: '100%' }} />
-                      </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+                  {drilldownCharts.map((chart, index) => (
+                    <div
+                      key={index}
+                      className={`${chart.rec.size === 'large' ? 'lg:col-span-12' : 'lg:col-span-6'} min-h-[400px]`}
+                    >
+                      <Card className="h-full border-none shadow-sm hover:shadow-md transition-shadow bg-white/80 backdrop-blur-sm overflow-hidden flex flex-col">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-sm font-bold text-slate-800">{capitalize(chart.title)}</CardTitle>
+                          <CardDescription className="text-xs text-slate-500">Breakdown by {chart.dimension}</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <EChartsWrapper option={chart.option} style={{ height: '280px', width: '100%' }} />
+                        </CardContent>
+                      </Card>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -978,46 +1363,40 @@ const Analytics = () => {
 
         {/* Full View Dialog */}
         <Dialog open={isFullViewOpen} onOpenChange={setIsFullViewOpen}>
-          <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-6">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-xl">
-                <BarChart3 className="h-5 w-5 text-blue-500" />
-                {fullViewChart?.title || 'Chart Full View'}
-              </DialogTitle>
+          <DialogContent className="max-w-[90vw] h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-white">
+            <DialogHeader className="px-6 py-4 border-b flex flex-row items-center justify-between shrink-0">
+              <div>
+                <DialogTitle className="text-xl font-bold text-slate-800">
+                  {fullViewChart?.title ? capitalize(fullViewChart.title) : 'Chart Detail'}
+                </DialogTitle>
+                <p className="text-sm text-slate-500 mt-1">{fullViewChart?.rec?.reasoning}</p>
+              </div>
             </DialogHeader>
-
-
-            <div className="flex-1 overflow-auto">
-              {fullViewChart && rawData.length > 0 && (() => {
-                const fullOption = createEChartsOption(fullViewChart.rec, rawData, chartSortOrder, true);
-                const isHorizontal = (fullViewChart.rec as any).isHorizontal;
-
-                const getAxisDataLength = (axis: any): number => {
-                  if (!axis) return 0;
-                  if (Array.isArray(axis)) return axis.length > 0 ? getAxisDataLength(axis[0]) : 0;
-                  if (axis.type === 'category' && Array.isArray(axis.data)) return axis.data.length;
-                  return 0;
-                };
-
-                const yAxisLength = getAxisDataLength(fullOption.yAxis);
-                const xAxisLength = getAxisDataLength(fullOption.xAxis);
-                const dataCount = Math.max(yAxisLength, xAxisLength) || 10;
-                const chartHeight = isHorizontal ? Math.max(600, dataCount * 35) : 600;
-
-                return (
-                  <div className="w-full bg-indigo-50 border border-gray-100 rounded-xl p-6 shadow-sm" style={{ height: `${chartHeight}px` }}>
-                    <EChartsWrapper
-                      option={fullOption}
-                      style={{ height: '100%', width: '100%' }}
-                    />
-                  </div>
-                );
-              })()}
+            <div className="flex-1 p-6 bg-slate-50/50 overflow-hidden relative">
+              {fullViewChart && (
+                <EChartsWrapper
+                  option={createEChartsOption(
+                    fullViewChart.rec,
+                    filteredData.length > 0 ? filteredData : rawData,
+                    chartSortOrder,
+                    true,
+                    groupByDimension
+                  )}
+                  style={{ height: '100%', width: '100%' }}
+                />
+              )}
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Interactive Chart Builder */}
+        <InteractiveChartBuilder
+          isOpen={isBuilderOpen}
+          onClose={() => setIsBuilderOpen(false)}
+          data={filteredData.length > 0 ? filteredData : rawData}
+        />
       </div>
-    </div>
+    </div >
   );
 };
 
