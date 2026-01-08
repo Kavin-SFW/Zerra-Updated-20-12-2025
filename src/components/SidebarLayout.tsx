@@ -93,7 +93,7 @@ const SidebarLayout = ({ children }: SidebarLayoutProps) => {
         >
           <div className="flex items-center gap-3 justify-center">
             <img
-              src="/logo.jpg"
+              src="/favicon.svg"
               alt="SoftWorks Technologies"
               className={`transition-all duration-300 object-contain ${
                 isHovered ? "h-10" : "h-12"
