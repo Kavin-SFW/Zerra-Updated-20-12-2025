@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: zerra_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: zerra_analytics
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql:
+    image: mysql:8.0
+    container_name: zerra_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password123
+      MYSQL_DATABASE: zerra_analytics
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: zerra_sqlserver
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+      # MSSQL requires at least 8 chars, uppercase, lowercase, numbers, non-alphanumeric
+      MSSQL_SA_PASSWORD: "Password123!" 
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+  oracle:
+    image: gvenzl/oracle-xe:21-slim
+    container_name: zerra_oracle
+    restart: always
+    environment:
+      ORACLE_PASSWORD: password123
+      APP_USER: admin
+      APP_USER_PASSWORD: password123
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+
+volumes:
+  postgres_data:
+  mysql_data:
+  sqlserver_data:
+  oracle_data:
