@@ -1,0 +1,1772 @@
+{
+    "name": "Retail",
+    "kpis": [],
+    "templateKpis": {
+        "0": [
+            {
+                "title": "TOTAL SALES",
+                "keyMatch": "sales|revenue|amount",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$2.5M"
+            },
+            {
+                "title": "TRANSACTIONS",
+                "keyMatch": "transaction|order|count",
+                "icon": "ShoppingCart",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "45K"
+            },
+            {
+                "title": "AVG BASKET SIZE",
+                "keyMatch": "qty|items|basket",
+                "icon": "Package",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "avg",
+                "target": "4.2"
+            },
+            {
+                "title": "CONVERSION RATE",
+                "keyMatch": "cvr|conversion",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "3.5%"
+            },
+            {
+                "title": "REFUND RATE",
+                "keyMatch": "return|refund",
+                "icon": "TrendingDown",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<2%"
+            },
+            {
+                "title": "STORE FOOTFALL",
+                "keyMatch": "visit|footfall",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "120K"
+            }
+        ],
+        "1": [
+            {
+                "title": "ONLINE REVENUE",
+                "keyMatch": "online|ecommerce",
+                "icon": "Globe",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$1.2M"
+            },
+            {
+                "title": "MOBILE SALES",
+                "keyMatch": "mobile|app",
+                "icon": "Smartphone",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$450K"
+            },
+            {
+                "title": "CLICK & COLLECT",
+                "keyMatch": "pickup|collect",
+                "icon": "MapPin",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "count",
+                "target": "8.5K"
+            },
+            {
+                "title": "ACQUISITION COST",
+                "keyMatch": "cac|marketing|spend",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$12"
+            },
+            {
+                "title": "PROMO ADOPTION",
+                "keyMatch": "promo|coupon|discount",
+                "icon": "Ticket",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "22%"
+            },
+            {
+                "title": "LOYALTY SIGNUPS",
+                "keyMatch": "register|member|loyalty",
+                "icon": "UserPlus",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "1.5K"
+            }
+        ],
+        "2": [
+            {
+                "title": "GROSS MARGIN",
+                "keyMatch": "margin|profit",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "38%"
+            },
+            {
+                "title": "MARKDOWN LOSS",
+                "keyMatch": "markdown|clearance",
+                "icon": "TrendingDown",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$15K"
+            },
+            {
+                "title": "NET PROFIT",
+                "keyMatch": "net|profit",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$420K"
+            },
+            {
+                "title": "OPEX RATIO",
+                "keyMatch": "opex|cost|expense",
+                "icon": "Layers",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "18%"
+            },
+            {
+                "title": "CASH ON HAND",
+                "keyMatch": "cash|liquidity",
+                "icon": "Wallet",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$2.1M"
+            },
+            {
+                "title": "TAX LIABILITY",
+                "keyMatch": "tax|duty",
+                "icon": "FileText",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$85K"
+            }
+        ],
+        "3": [
+            {
+                "title": "STOCK TURNOVER",
+                "keyMatch": "turnover|stock",
+                "icon": "RefreshCw",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "8.5x"
+            },
+            {
+                "title": "OUT OF STOCK",
+                "keyMatch": "oos|stockout",
+                "icon": "AlertTriangle",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<1.5%"
+            },
+            {
+                "title": "SKU COUNT",
+                "keyMatch": "sku|product|id",
+                "icon": "List",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "count",
+                "target": "12K"
+            },
+            {
+                "title": "SHIPPING TIME",
+                "keyMatch": "shipping|lead",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "d",
+                "agg": "avg",
+                "target": "2.4d"
+            },
+            {
+                "title": "WHSE CAPACITY",
+                "keyMatch": "warehouse|storage",
+                "icon": "Store",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "82%"
+            },
+            {
+                "title": "SHRINKAGE %",
+                "keyMatch": "shrink|loss|theft",
+                "icon": "ShieldAlert",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<0.8%"
+            }
+        ],
+        "4": [
+            {
+                "title": "AVG RATING",
+                "keyMatch": "rating|stars",
+                "icon": "Star",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/5",
+                "agg": "avg",
+                "target": "4.6"
+            },
+            {
+                "title": "CSAT SCORE",
+                "keyMatch": "csat|satisfaction",
+                "icon": "Smile",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "92%"
+            },
+            {
+                "title": "TICKET VOLUME",
+                "keyMatch": "ticket|support",
+                "icon": "LifeBuoy",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "850"
+            },
+            {
+                "title": "FIRST RESPONSE",
+                "keyMatch": "frt|response",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "h",
+                "agg": "avg",
+                "target": "2h"
+            },
+            {
+                "title": "RESOLUTION RATE",
+                "keyMatch": "resolution|close",
+                "icon": "CheckCircle",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "95%"
+            },
+            {
+                "title": "SOCIAL SENTIMENT",
+                "keyMatch": "sentiment|social",
+                "icon": "MessageSquare",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/100",
+                "agg": "avg",
+                "target": "78"
+            }
+        ],
+        "5": [
+            {
+                "title": "VENDOR LEAD TIME",
+                "keyMatch": "vendor|lead|supply",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "d",
+                "agg": "avg",
+                "target": "14d"
+            },
+            {
+                "title": "FULFILLMENT RATE",
+                "keyMatch": "fulfillment|fill",
+                "icon": "Box",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "98%"
+            },
+            {
+                "title": "PO VOLUME",
+                "keyMatch": "po|purchase|order",
+                "icon": "FileText",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "count",
+                "target": "320"
+            },
+            {
+                "title": "VENDOR QUALITY",
+                "keyMatch": "quality|defect",
+                "icon": "ShieldCheck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "99.5%"
+            },
+            {
+                "title": "LOGISTICS COST",
+                "keyMatch": "freight|logistics|ship",
+                "icon": "Truck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$120K"
+            },
+            {
+                "title": "WHSE PICK RATE",
+                "keyMatch": "pick|pack|speed",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": " p/h",
+                "agg": "avg",
+                "target": "45"
+            }
+        ],
+        "6": [
+            {
+                "title": "SALE PER SQFT",
+                "keyMatch": "sqft|space",
+                "icon": "Maximize",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$450"
+            },
+            {
+                "title": "QUEUE LENGTH",
+                "keyMatch": "queue|wait",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "avg",
+                "target": "3.5"
+            },
+            {
+                "title": "STAFF RATIO",
+                "keyMatch": "staff|labor",
+                "icon": "UserCheck",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": ":1",
+                "agg": "avg",
+                "target": "20:1"
+            },
+            {
+                "title": "UTILITY COST",
+                "keyMatch": "utility|energy|power",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$4.5K"
+            },
+            {
+                "title": "MAINTENANCE",
+                "keyMatch": "repair|maintenance",
+                "icon": "Tool",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$1.2K"
+            },
+            {
+                "title": "RENTAL YIELD",
+                "keyMatch": "yield|lease",
+                "icon": "Home",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "12%"
+            }
+        ],
+        "7": [
+            {
+                "title": "EMAIL CLICKS",
+                "keyMatch": "click|email",
+                "icon": "Mail",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "25K"
+            },
+            {
+                "title": "AD SPEND ROI",
+                "keyMatch": "roas|roi|ad",
+                "icon": "TrendingUp",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "4.5x"
+            },
+            {
+                "title": "SEARCH VOLUME",
+                "keyMatch": "search|keyword",
+                "icon": "Search",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "850K"
+            },
+            {
+                "title": "SOCIAL REACH",
+                "keyMatch": "reach|impression",
+                "icon": "Share2",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "2.4M"
+            },
+            {
+                "title": "CONTENT SHARES",
+                "keyMatch": "share|content",
+                "icon": "MessageSquare",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "12K"
+            },
+            {
+                "title": "BOUNCE RATE",
+                "keyMatch": "bounce",
+                "icon": "ArrowUpRight",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "32%"
+            }
+        ],
+        "8": [
+            {
+                "title": "HEADCOUNT",
+                "keyMatch": "staff|employee|headcount",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "450"
+            },
+            {
+                "title": "TURNOVER RATE",
+                "keyMatch": "attrition|exit",
+                "icon": "UserMinus",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<12%"
+            },
+            {
+                "title": "TRAINING HOURS",
+                "keyMatch": "train|learn",
+                "icon": "BookOpen",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "1.2K"
+            },
+            {
+                "title": "OVERTIME COST",
+                "keyMatch": "ot|overtime",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$12K"
+            },
+            {
+                "title": "ABSENTEEISM",
+                "keyMatch": "absent|leave",
+                "icon": "Calendar",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "2%"
+            },
+            {
+                "title": "SAFETY SCORE",
+                "keyMatch": "safety|incident",
+                "icon": "Shield",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/100",
+                "agg": "avg",
+                "target": "98"
+            }
+        ],
+        "9": [
+            {
+                "title": "GLOBAL SALES",
+                "keyMatch": "global|total|sum",
+                "icon": "Trophy",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$15M"
+            },
+            {
+                "title": "MARKET SHARE",
+                "keyMatch": "share|market",
+                "icon": "PierChart",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "18.5%"
+            },
+            {
+                "title": "BRAND VALUE",
+                "keyMatch": "equity|value",
+                "icon": "Award",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$120M"
+            },
+            {
+                "title": "NEW MARKETS",
+                "keyMatch": "region|market|new",
+                "icon": "Globe",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "4"
+            },
+            {
+                "title": "REVENUE GROWTH",
+                "keyMatch": "growth|yoy",
+                "icon": "TrendingUp",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "22%"
+            },
+            {
+                "title": "EPS",
+                "keyMatch": "eps|earning",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$4.50"
+            }
+        ]
+    },
+    "templates": [
+        [
+            {
+                "type": "area",
+                "title": "Daily Sales Analytics",
+                "reasoning": "Real-time revenue tracking across all categories",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Date",
+                "y_label": "Amount ($)",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Sales vs Transaction Volume",
+                "reasoning": "Correlation between frequency and total value",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "count"
+                ],
+                "x_label": "Hour",
+                "y_label": "$ / Volume",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Regional Performance Distribution",
+                "reasoning": "Comparing sales contribution by store region",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Location",
+                "y_label": "Total Revenue",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Category Sales Density",
+                "reasoning": "Analyzing product mix impact on daily totals",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Category",
+                "y_label": "Revenue",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "AOV Performance Trend",
+                "reasoning": "Tracking average order value longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Period",
+                "y_label": "AOV ($)",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Brand Revenue Comparison",
+                "reasoning": "Performance of manufacturers in the retail mix",
+                "x_axis": "segment",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Brand",
+                "y_label": "Sales Val",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Hourly Footfall Projection",
+                "reasoning": "Forecasting store traffic for staff planning",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Time",
+                "y_label": "Visits",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Conversion Rate Efficiency",
+                "reasoning": "Tracking the ratio of visitors to buyers",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Day",
+                "y_label": "CVR %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Digital Channel Growth",
+                "reasoning": "Tracking online vs mobile contribution",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Date",
+                "y_label": "Revenue",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Click & Collect Conversion",
+                "reasoning": "Efficiency of BOPIS fulfillment models",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Week",
+                "y_label": "Orders / %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Platform Engagement Index",
+                "reasoning": "Usage breakdown across Web, App, and Tablet",
+                "x_axis": "category",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Platform",
+                "y_label": "Sessions",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "E-commerce Basket Metrics",
+                "reasoning": "Analyzing digital order complexity",
+                "x_axis": "time",
+                "y_axis": [
+                    "qty",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "Volume / $",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Mobile App Bounce Velocity",
+                "reasoning": "Monitoring technical performance in retail apps",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Bounce %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Device Revenue Breakdown",
+                "reasoning": "Sales attribution by customer hardware",
+                "x_axis": "segment",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Device",
+                "y_label": "Amount",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Search Term Conversion Trend",
+                "reasoning": "Analyzing intent-driven shopping behavior",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Keyword Cluster",
+                "y_label": "Success",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Payment Latency Analytics",
+                "reasoning": "Speed of digital transaction processing",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Hour",
+                "y_label": "ms",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Margin vs Contribution",
+                "reasoning": "Analyzing profitability across departments",
+                "x_axis": "category",
+                "y_axis": [
+                    "rate",
+                    "sales"
+                ],
+                "x_label": "Unit",
+                "y_label": "% / $",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Markdown Velocity",
+                "reasoning": "Tracking impact of discounts on inventory clear-out",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Clearance Rate",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Profitability by Store Format",
+                "reasoning": "Comparing Mall vs Flagship vs Outlet",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Format",
+                "y_label": "Amount",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "OpEx Efficiency Curve",
+                "reasoning": "Correlation between labor spend and revenue",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "Cost Density",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Gross Profit Growth (YOY)",
+                "reasoning": "Long-term financial health tracking",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Growth %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Refund Impact Analysis",
+                "reasoning": "Net sales deduction by product line",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "cost"
+                ],
+                "x_label": "Dept",
+                "y_label": "Loss Val",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Cash Flow Projections",
+                "reasoning": "Liquidity planning based on sales velocity",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Cash Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Inventory Carrying Cost",
+                "reasoning": "Monitoring cost of holding unsold stock",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "$ Cost",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Stock Turnover Velocity",
+                "reasoning": "Tracking inventory refresh rates",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Turnover Index",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Stockout Correlation",
+                "reasoning": "Impact of missed sales on revenue targets",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Lost Rev / OOS %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Asset Quality by Vendor",
+                "reasoning": "Comparing defect rates across suppliers",
+                "x_axis": "vendor",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Supplier",
+                "y_label": "Quality Grade",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Warehouse Utilization Load",
+                "reasoning": "Monitoring storage capacity efficiency",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "volume"
+                ],
+                "x_label": "Week",
+                "y_label": "Fill %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Lead Time Consistency",
+                "reasoning": "Tracking supply chain reliability",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Period",
+                "y_label": "Days",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Shrinkage by Category",
+                "reasoning": "Loss prevention focus area analysis",
+                "x_axis": "category",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Department",
+                "y_label": "Shrinkage Val",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Replenishment Flow Forecast",
+                "reasoning": "Predicting stock arrival volumes",
+                "x_axis": "time",
+                "y_axis": [
+                    "volume",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Units",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "SKU Profitability Rank",
+                "reasoning": "Monitoring performance of individual products",
+                "x_axis": "product",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "SKU",
+                "y_label": "$ Rank",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "NPS Trend vs Target",
+                "reasoning": "Measuring customer loyalty health",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Date",
+                "y_label": "Index",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Resolution Speed Analytics",
+                "reasoning": "Efficiency of customer support team",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Shift",
+                "y_label": "Hours / %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Sentiment by Platform",
+                "reasoning": "Comparing customer mood across Support, Social, and Store",
+                "x_axis": "category",
+                "y_axis": [
+                    "score",
+                    "count"
+                ],
+                "x_label": "Channel",
+                "y_label": "Score",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Feedback Volume Density",
+                "reasoning": "Tracking consumer response activity",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Week",
+                "y_label": "Entries",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Return Propensity Correlation",
+                "reasoning": "Linking satisfaction to refund requests",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "score"
+                ],
+                "x_label": "Period",
+                "y_label": "% Correlation",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Star Rating by Category",
+                "reasoning": "Quality perception breakdown by department",
+                "x_axis": "category",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Dept",
+                "y_label": "Rating",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Social Reach Projection",
+                "reasoning": "Forecasting brand awareness growth",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Impressions",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Advocacy Rate Momentum",
+                "reasoning": "Tracking customer referral activity",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Referral %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "PO Fulfillment Speed",
+                "reasoning": "Tracking buy-side supply chain speed",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "time"
+                ],
+                "x_label": "Month",
+                "y_label": "Orders / Days",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Logistics Cost vs Volume",
+                "reasoning": "Monitoring shipping efficiency at scale",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "volume"
+                ],
+                "x_label": "Week",
+                "y_label": "$ / Units",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Incoming Quality Audit",
+                "reasoning": "Comparing supplier defect rates",
+                "x_axis": "vendor",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Supplier",
+                "y_label": "Acceptance %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Whse Picking Accuracy",
+                "reasoning": "Fulfillment precision monitoring",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Shift",
+                "y_label": "Accuracy %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Inventory Drift Analytics",
+                "reasoning": "Tracking discrepancy between Book and Physical stock",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Drift %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Freight Mode Efficiency",
+                "reasoning": "Comparing cost/speed across Air, Sea, and Land",
+                "x_axis": "category",
+                "y_axis": [
+                    "cost",
+                    "time"
+                ],
+                "x_label": "Mode",
+                "y_label": "Value",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Peak Season Inbound Load",
+                "reasoning": "Predicting warehouse intake surges",
+                "x_axis": "time",
+                "y_axis": [
+                    "volume",
+                    "volume"
+                ],
+                "x_label": "Month",
+                "y_label": "Containers",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Safety Stock Adherence",
+                "reasoning": "Monitoring buffer stock levels",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Day",
+                "y_label": "Compliance",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Staff Productivity Index",
+                "reasoning": "Revenue per labor hour analytics",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "count"
+                ],
+                "x_label": "Shift",
+                "y_label": "$ / Person",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Wait Time vs Conversion",
+                "reasoning": "Impact of checkout delays on shopper dropout",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Hour",
+                "y_label": "Mins / %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Labor Cost by Department",
+                "reasoning": "Staffing spend breakdown by store unit",
+                "x_axis": "category",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Unit",
+                "y_label": "Cost / Revenue",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Peak Hour Staffing Needs",
+                "reasoning": "Predicting labor demand based on traffic",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Time",
+                "y_label": "Requirement",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Store Energy Efficiency",
+                "reasoning": "Tracking utility consumption trends",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "kW Intensity",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Security Incident Breakdown",
+                "reasoning": "Safety and loss prevention audit",
+                "x_axis": "region",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Location",
+                "y_label": "Incidents",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Fixture ROI Analytics",
+                "reasoning": "Revenue generated per shelving display",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Display Typ",
+                "y_label": "ROI",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Inventory Audit Speed",
+                "reasoning": "Efficiency of cycle counting processes",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "time"
+                ],
+                "x_label": "Month",
+                "y_label": "SKU/h",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Ad Awareness Velocity",
+                "reasoning": "Measuring campaign reach momentum",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Date",
+                "y_label": "Reach Index",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Email Engagement Funnel",
+                "reasoning": "Tracking Open vs Click-through longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Week",
+                "y_label": "CTR %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Marketing Attribution Mix",
+                "reasoning": "Evaluating ROI across Social, Search, and Display",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "cost"
+                ],
+                "x_label": "Channel",
+                "y_label": "$ Contribution",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Loyalty Point Burn Rate",
+                "reasoning": "Analyzing customer reward redemption velocity",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "Points / Value",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Search Intent Relevance",
+                "reasoning": "Monitoring alignment between keywords and sales",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Match %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Cost per Acquisition by Region",
+                "reasoning": "Efficiency of regional marketing spends",
+                "x_axis": "region",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Market",
+                "y_label": "CAC vs LTV",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Influencer Impact Projection",
+                "reasoning": "Forecasting sales surges from social partnerships",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "count"
+                ],
+                "x_label": "Campaign",
+                "y_label": "Proj Peak",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Brand Health Index",
+                "reasoning": "Longitudinal tracking of consumer perception",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Year",
+                "y_label": "Health Score",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Workforce Growth vs Attrition",
+                "reasoning": "Net headcount movement analytics",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Personnel",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Training ROI Correlation",
+                "reasoning": "Linking learning hours to sales performance",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "time"
+                ],
+                "x_label": "Period",
+                "y_label": "$ Performance",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Staff Diversity & Inclusion",
+                "reasoning": "Monitoring personnel demographics for ESG",
+                "x_axis": "category",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Metric",
+                "y_label": "Share %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Overtime Spend Density",
+                "reasoning": "Analyzing labor cost leakage",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "count"
+                ],
+                "x_label": "Shift",
+                "y_label": "$ OT Val",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Employee NPS (eNPS)",
+                "reasoning": "Tracking internal staff satisfaction health",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Happiness",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Absenteeism by Department",
+                "reasoning": "Identifying centers of staffing instability",
+                "x_axis": "category",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Unit",
+                "y_label": "Days Missed",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Promotions vs Tenure",
+                "reasoning": "Analyzing career path velocity in retail",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Velocity",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Payroll Accuracy Analytics",
+                "reasoning": "Monitoring compliance in compensation systems",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Accuracy %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Market Share Velocity",
+                "reasoning": "Tracking competitive positioning momentum",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Share %",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "EPS vs Market Estimates",
+                "reasoning": "Financial performance against expectations",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Amount ($)",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Global Revenue Diversification",
+                "reasoning": "Comparing geographic income streams",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Continent",
+                "y_label": "Contribution",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Brand Equity Curve",
+                "reasoning": "Tracking valuation of intangible assets",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Period",
+                "y_label": "$ Valuation",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "R&D Spend Efficiency",
+                "reasoning": "ROI on retail tech and innovation initiatives",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "cost"
+                ],
+                "x_label": "Month",
+                "y_label": "Innovation ROI",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Debt-to-Equity Composition",
+                "reasoning": "Monitoring corporate capital structure",
+                "x_axis": "category",
+                "y_axis": [
+                    "rate",
+                    "sales"
+                ],
+                "x_label": "Sector",
+                "y_label": "Ratio",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Dividend Payout Forecast",
+                "reasoning": "Predicting shareholder returns",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Fiscal Year",
+                "y_label": "Payout Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "ESG Compliance Momentum",
+                "reasoning": "Tracking sustainability and governance health",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Year",
+                "y_label": "Score",
+                "priority": "low",
+                "size": "normal"
+            }
+        ]
+    ]
+}

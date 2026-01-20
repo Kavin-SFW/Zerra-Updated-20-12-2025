@@ -1,0 +1,1771 @@
+{
+    "name": "HR & People Analytics",
+    "kpis": [],
+    "templateKpis": {
+        "0": [
+            {
+                "title": "TOTAL HEADCOUNT",
+                "keyMatch": "headcount|employee|count",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "1,250"
+            },
+            {
+                "title": "ATTRITION RATE",
+                "keyMatch": "attrition|churn|turnover",
+                "icon": "TrendingDown",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "8.5%"
+            },
+            {
+                "title": "AVG TENURE",
+                "keyMatch": "tenure|years",
+                "icon": "History",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "y",
+                "agg": "avg",
+                "target": "4.2y"
+            },
+            {
+                "title": "GENDER RATIO",
+                "keyMatch": "gender|diversity",
+                "icon": "Target",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": ":1",
+                "agg": "avg",
+                "target": "1:1"
+            },
+            {
+                "title": "REVENUE PER FTE",
+                "keyMatch": "sales|revenue|efficiency",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$240K"
+            },
+            {
+                "title": "HIRING VELOCITY",
+                "keyMatch": "hire|recruit",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "45/mo"
+            }
+        ],
+        "1": [
+            {
+                "title": "TIME TO HIRE",
+                "keyMatch": "time|hire|days",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "d",
+                "agg": "avg",
+                "target": "28d"
+            },
+            {
+                "title": "COST PER HIRE",
+                "keyMatch": "cost|hire|recruit",
+                "icon": "CreditCard",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$4.5K"
+            },
+            {
+                "title": "OFFER ACCEPT RATE",
+                "keyMatch": "accept|offer",
+                "icon": "CheckCircle",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "92%"
+            },
+            {
+                "title": "SOURCE QUALITY",
+                "keyMatch": "source|quality|grade",
+                "icon": "Star",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "/5",
+                "agg": "avg",
+                "target": "4.2"
+            },
+            {
+                "title": "NEW HIRE 90D RET",
+                "keyMatch": "retention|90d",
+                "icon": "ShieldCheck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "98%"
+            },
+            {
+                "title": "OPEN REQS",
+                "keyMatch": "open|req|position",
+                "icon": "FileText",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "120"
+            }
+        ],
+        "2": [
+            {
+                "title": "eNPS SCORE",
+                "keyMatch": "enps|net|promoter",
+                "icon": "Smile",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "avg",
+                "target": "42"
+            },
+            {
+                "title": "ENGAGEMENT RATE",
+                "keyMatch": "engagement|participation",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "85%"
+            },
+            {
+                "title": "SURVEY RESPONSES",
+                "keyMatch": "response|survey",
+                "icon": "MessageSquare",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "950"
+            },
+            {
+                "title": "WELLBEING SCORE",
+                "keyMatch": "wellbeing|health",
+                "icon": "Heart",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/100",
+                "agg": "avg",
+                "target": "78"
+            },
+            {
+                "title": "INTERNAL MOBILITY",
+                "keyMatch": "mobility|move",
+                "icon": "ArrowUpRight",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "12%"
+            },
+            {
+                "title": "PEER RECOGNITION",
+                "keyMatch": "kudos|award|shout",
+                "icon": "Award",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "450"
+            }
+        ],
+        "3": [
+            {
+                "title": "TRAINING HOURS",
+                "keyMatch": "training|hours|learn",
+                "icon": "BookOpen",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "2.4K"
+            },
+            {
+                "title": "COURSE COMPL.%",
+                "keyMatch": "completion|course",
+                "icon": "CheckSquare",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "95%"
+            },
+            {
+                "title": "SKILL PROFICIENCY",
+                "keyMatch": "skill|matrix|score",
+                "icon": "Layers",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "/5",
+                "agg": "avg",
+                "target": "3.8"
+            },
+            {
+                "title": "L&D SPEND",
+                "keyMatch": "learn|spend|cost",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$45K"
+            },
+            {
+                "title": "UP-SKILLING ROI",
+                "keyMatch": "roi|lift|gain",
+                "icon": "TrendingUp",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "15%"
+            },
+            {
+                "title": "CERTIFICATIONS",
+                "keyMatch": "cert|badge",
+                "icon": "Award",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "850"
+            }
+        ],
+        "4": [
+            {
+                "title": "AVG PERF RATING",
+                "keyMatch": "rating|performance",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/5",
+                "agg": "avg",
+                "target": "4.1"
+            },
+            {
+                "title": "PROMOTION SPEED",
+                "keyMatch": "promo|velocity|speed",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "y",
+                "agg": "avg",
+                "target": "2.1y"
+            },
+            {
+                "title": "HIGH PERFORMERS",
+                "keyMatch": "high|performer|top",
+                "icon": "Trophy",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "15%"
+            },
+            {
+                "title": "PIPS ISSUED",
+                "keyMatch": "pip|performance|improve",
+                "icon": "AlertOctagon",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "12"
+            },
+            {
+                "title": "REVIEW COMPL.%",
+                "keyMatch": "review|completion",
+                "icon": "ClipboardCheck",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "100%"
+            },
+            {
+                "title": "GOAL ADHERENCE",
+                "keyMatch": "goal|target|okr",
+                "icon": "Target",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "88%"
+            }
+        ],
+        "5": [
+            {
+                "title": "DIVERSITY INDEX",
+                "keyMatch": "diversity|index|score",
+                "icon": "Globe",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "/100",
+                "agg": "avg",
+                "target": "82"
+            },
+            {
+                "title": "PAY PARITY",
+                "keyMatch": "pay|parity|gap",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "99.2%"
+            },
+            {
+                "title": "MINORITY SHARE",
+                "keyMatch": "minority|diversity",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "32%"
+            },
+            {
+                "title": "LEADERSHIP DIV.",
+                "keyMatch": "exec|diverse",
+                "icon": "ShieldCheck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "25%"
+            },
+            {
+                "title": "VETERAN COUNT",
+                "keyMatch": "veteran",
+                "icon": "UserCheck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "45"
+            },
+            {
+                "title": "ADA COMPLIANCE",
+                "keyMatch": "ada|accessible",
+                "icon": "Wheelchair",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "100%"
+            }
+        ],
+        "6": [
+            {
+                "title": "COMP OVERHEAD",
+                "keyMatch": "payroll|salary|overhead",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$45M"
+            },
+            {
+                "title": "BENEFITS COST",
+                "keyMatch": "benefit|insurance",
+                "icon": "ShieldPlus",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$8.2M"
+            },
+            {
+                "title": "AVG SALARY",
+                "keyMatch": "base|salary|pay",
+                "icon": "Wallet",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$95K"
+            },
+            {
+                "title": "BONUS ACCRUAL",
+                "keyMatch": "bonus|incentive",
+                "icon": "Star",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$3.1M"
+            },
+            {
+                "title": "EQUITY POOL",
+                "keyMatch": "stock|option|equity",
+                "icon": "PieChart",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "1.2%"
+            },
+            {
+                "title": "OVERTIME COST",
+                "keyMatch": "ot|overtime",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$85K"
+            }
+        ],
+        "7": [
+            {
+                "title": "ABSENTEEISM",
+                "keyMatch": "absent|leave|sick",
+                "icon": "CalendarOff",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "2.1%"
+            },
+            {
+                "title": "EAP UTILIZATION",
+                "keyMatch": "eap|support",
+                "icon": "LifeBuoy",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "12%"
+            },
+            {
+                "title": "HEALTH CLAIMS",
+                "keyMatch": "claim|medical",
+                "icon": "Stethoscope",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "450"
+            },
+            {
+                "title": "STRESS INDEX",
+                "keyMatch": "stress|burnout",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "/10",
+                "agg": "avg",
+                "target": "3.5"
+            },
+            {
+                "title": "WELLNESS SUBS",
+                "keyMatch": "gym|wellness",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "650"
+            },
+            {
+                "title": "LOST TIME INJURY",
+                "keyMatch": "injury|incident",
+                "icon": "ShieldAlert",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "0"
+            }
+        ],
+        "8": [
+            {
+                "title": "INTL TRANSFERS",
+                "keyMatch": "relocation|transfer",
+                "icon": "Globe",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "25"
+            },
+            {
+                "title": "VISA EXPIRY",
+                "keyMatch": "visa|expiry|permit",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "12"
+            },
+            {
+                "title": "EXPAT HEADCOUNT",
+                "keyMatch": "expat|foreign",
+                "icon": "MapPin",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "85"
+            },
+            {
+                "title": "TAX COMPLIANCE",
+                "keyMatch": "tax|compliance",
+                "icon": "FileText",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "100%"
+            },
+            {
+                "title": "TRAVEL COST",
+                "keyMatch": "travel|mobility",
+                "icon": "Plane",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$120K"
+            },
+            {
+                "title": "LOCALIZATION %",
+                "keyMatch": "local|national",
+                "icon": "Flag",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "65%"
+            }
+        ],
+        "9": [
+            {
+                "title": "HR TICKET VOL",
+                "keyMatch": "ticket|support",
+                "icon": "MessageCircle",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "1,200"
+            },
+            {
+                "title": "FIRST RESP TIME",
+                "keyMatch": "frt|response",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "h",
+                "agg": "avg",
+                "target": "2.1h"
+            },
+            {
+                "title": "RESOLUTION RATE",
+                "keyMatch": "resolution|close",
+                "icon": "CheckSquare",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "98%"
+            },
+            {
+                "title": "AUTO-RESOLVE %",
+                "keyMatch": "bot|auto|system",
+                "icon": "Cpu",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "45%"
+            },
+            {
+                "title": "HR STAFF RATIO",
+                "keyMatch": "staff|ratio",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": ":500",
+                "agg": "avg",
+                "target": "1"
+            },
+            {
+                "title": "DATA ACCURACY",
+                "keyMatch": "data|integrity",
+                "icon": "Database",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "99.8%"
+            }
+        ]
+    },
+    "templates": [
+        [
+            {
+                "type": "area",
+                "title": "Headcount vs Turnover Velocity",
+                "reasoning": "Tracking net personnel growth against attrition",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Staff / %",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Average Tenure Trajectory",
+                "reasoning": "Monitoring institutional knowledge retention longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Period",
+                "y_label": "Years",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Headcount by Region",
+                "reasoning": "Comparing workforce distribution across markets",
+                "x_axis": "region",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Loc",
+                "y_label": "Personnel",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Departmental Growth Density",
+                "reasoning": "Analyzing scaling efforts by internal unit",
+                "x_axis": "department",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Dept",
+                "y_label": "Employees",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Churn Rate Sync",
+                "reasoning": "Benchmarking departmental exit rates",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Attrition %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Gender Share by Dept",
+                "reasoning": "DEI audit across functional areas",
+                "x_axis": "department",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Unit",
+                "y_label": "Share %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "FTE Efficiency Projection",
+                "reasoning": "Forecasting revenue contribution per headcount unit",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Year",
+                "y_label": "$ Impact",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Hiring Funnel Health",
+                "reasoning": "Longitudinal tracking of recruitment pipelines",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Volume / %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Time to Hire vs Recruiter Load",
+                "reasoning": "Tracking efficiency against personnel capacity",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Days / Reqs",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Cost per Hire Momentum",
+                "reasoning": "Monitoring recruitment spend Longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Period",
+                "y_label": "$ Spend",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Offer Acceptance by Source",
+                "reasoning": "Comparing candidate interest across channels",
+                "x_axis": "source",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Channel",
+                "y_label": "Success %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Requisition Aging Density",
+                "reasoning": "Analyzing bottleneck stages in the hiring cycle",
+                "x_axis": "category",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Level",
+                "y_label": "Days Open",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "New Hire 90D Survival",
+                "reasoning": "Monitoring quality of hire longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Batch",
+                "y_label": "Ret %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Recruitment Spend by Region",
+                "reasoning": "Regional talent acquisition budget audit",
+                "x_axis": "region",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Market",
+                "y_label": "Spend Val",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Applicant Volume Forecast",
+                "reasoning": "Predicting candidate flow for capacity planning",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Resume Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Ref-to-Hire Ratio",
+                "reasoning": "Tracking efficiency of internal referral programs",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Ratio",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "eNPS vs Participation",
+                "reasoning": "Tracking sentiment against survey engagement",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Score / %",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Wellbeing Index Trajectory",
+                "reasoning": "Monitoring employee mental health longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Period",
+                "y_label": "Health Index",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Engagement by Department",
+                "reasoning": "Comparing morale across business units",
+                "x_axis": "department",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Unit",
+                "y_label": "Morale %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Kudos Activity Density",
+                "reasoning": "Analyzing peer-to-peer recognition frequency",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Week",
+                "y_label": "Shoutouts",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Internal Mobility Speed",
+                "reasoning": "Tracking frequency of lateral/upward moves",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Move %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Sentiment by Office Type",
+                "reasoning": "Remote vs Hybrid vs On-site morale audit",
+                "x_axis": "status",
+                "y_axis": [
+                    "score",
+                    "count"
+                ],
+                "x_label": "Mode",
+                "y_label": "Happiness",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Benefit Participation Forecast",
+                "reasoning": "Predicting adoption of new wellbeing schemes",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Enrollees",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Communication Open Rates",
+                "reasoning": "Tracking internal comms effectiveness",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "CTR %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Learning Consumption velocity",
+                "reasoning": "Tracking training hours against targets",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "count"
+                ],
+                "x_label": "Date",
+                "y_label": "Hrs / Users",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Skill Gap Reduction",
+                "reasoning": "Monitoring competency growth longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Period",
+                "y_label": "Gap Index",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Course Completion by Dept",
+                "reasoning": "Comparing mandatory training compliance",
+                "x_axis": "department",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Unit",
+                "y_label": "Done %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "L&D ROI Alpha",
+                "reasoning": "Analyzing productivity lift from training spend",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "ROI %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Certification Momentum",
+                "reasoning": "Tracking badge accumulation longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Issued",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Training Type efficiency",
+                "reasoning": "VILT vs Self-paced vs Workshop impact audit",
+                "x_axis": "category",
+                "y_axis": [
+                    "score",
+                    "cost"
+                ],
+                "x_label": "Mode",
+                "y_label": "Value Score",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Upskilling Path Forecast",
+                "reasoning": "Predicting future talent supply for critical roles",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Year",
+                "y_label": "Qualified",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Learning App Session Time",
+                "reasoning": "Tracking platform engagement longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Period",
+                "y_label": "Mins/Day",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Rating Distribution Curve",
+                "reasoning": "Tracking performance calibration consistency",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "count"
+                ],
+                "x_label": "Date",
+                "y_label": "Avg / Population",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Promotion Speed velocity",
+                "reasoning": "Monitoring career path speed longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Period",
+                "y_label": "Years to Promo",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "High Perf. Share by Dept",
+                "reasoning": "Comparing internal talent hotspots",
+                "x_axis": "department",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Unit",
+                "y_label": "Top Talent %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Goal Alignment Density",
+                "reasoning": "Analyzing okr sync across the org",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Week",
+                "y_label": "Sync %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Review Completion Sync",
+                "reasoning": "Monitoring process adherence longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Cycle",
+                "y_label": "Done %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Rating by Manager Level",
+                "reasoning": "Managerial bias audit in annual reviews",
+                "x_axis": "category",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Seniority",
+                "y_label": "Avg Rating",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": " PIP Success Forecast",
+                "reasoning": "Predicting outcome of performance improvement plans",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Recovery Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Feedback Frequency Index",
+                "reasoning": "Tracking continuous feedback longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Period",
+                "y_label": "Touchpoints",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Diversity Index Velocity",
+                "reasoning": "Tracking DEI health against targets",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Index / %",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Pay Parity Delta",
+                "reasoning": "Monitoring salary gap closure longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Gap %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Leadership Mix by Region",
+                "reasoning": "Comparing diversity in management tiers",
+                "x_axis": "region",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Market",
+                "y_label": "Diverse %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "ADA Requests Density",
+                "reasoning": "Analyzing workplace accessibility demands",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Requests",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Vet/Minority Retention Sync",
+                "reasoning": "Monitoring turnover in protected groups",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Ret Rate",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Inclusion Survey Score",
+                "reasoning": "Psychological safety audit by department",
+                "x_axis": "department",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Unit",
+                "y_label": "Safe Score",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "DEI Hiring Pipeline Forecast",
+                "reasoning": "Predicting diversity growth in new classes",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Candidates",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Employee ERG Activity",
+                "reasoning": "Tracking resource group engagement longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Active Users",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Payroll Overhead Velocity",
+                "reasoning": "Tracking total compensation spend growth",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Date",
+                "y_label": "$ Spend",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Compa-Ratio stability",
+                "reasoning": "Monitoring internal pay alignment with market",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Sync %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Benefits Spend by Region",
+                "reasoning": "Comparing insurance/perks cost by entity",
+                "x_axis": "region",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Market",
+                "y_label": "$ Cost",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Bonus Accrual Density",
+                "reasoning": "Analyzing potential incentive liability reserves",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Month",
+                "y_label": "Accrual Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Overtime Leakage Sync",
+                "reasoning": "Monitoring labor cost inefficiency longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Quarter",
+                "y_label": "$ OT Val",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Perk Usage by Category",
+                "reasoning": "Utility audit of non-cash compensation",
+                "x_axis": "category",
+                "y_axis": [
+                    "count",
+                    "cost"
+                ],
+                "x_label": "Perk",
+                "y_label": "Usage Vol",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Equity Vesting Forecast",
+                "reasoning": "Predicting shares coming to market",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "sales"
+                ],
+                "x_label": "Year",
+                "y_label": "Shares Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Benefit Renewal Sensitivity",
+                "reasoning": "Tracking impact of premium price changes",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Prem. Change",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Absenteeism Rate Velocity",
+                "reasoning": "Tracking lost work days against targets",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Date",
+                "y_label": "% Lost / Days",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Mental Health Index",
+                "reasoning": "Monitoring organistional burnout longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Period",
+                "y_label": "Health Score",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Claims by Risk Category",
+                "reasoning": "Comparing healthcare spend drivers",
+                "x_axis": "category",
+                "y_axis": [
+                    "count",
+                    "cost"
+                ],
+                "x_label": "Type",
+                "y_label": "Claims Vol",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "EAP Support Density",
+                "reasoning": "Analyzing usage of counseling services",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Calls Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Burnout Propensity Sync",
+                "reasoning": "Predicting turnover risk from wellness data",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "score"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Risk Index",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Incident Severity Audit",
+                "reasoning": "Workplace safety case breakdown",
+                "x_axis": "region",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Plant Loc",
+                "y_label": "Severity",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Wellness ROI Forecast",
+                "reasoning": "Predicting healthcare cost savings from prevention",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Year",
+                "y_label": "$ Saved",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Gym/Health Participation",
+                "reasoning": "Tracking preventative health longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Active %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Relocation Volume Velocity",
+                "reasoning": "Tracking global workforce movement",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "sales"
+                ],
+                "x_label": "Date",
+                "y_label": "Cases / $",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Visa Renewal Sync",
+                "reasoning": "Monitoring immigration compliance longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Open Permits",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Expat Share by Region",
+                "reasoning": "Comparing international staff distribution",
+                "x_axis": "region",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Market",
+                "y_label": "Foreign %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Mobility Spend Density",
+                "reasoning": "Analyzing travel and housing cost efficiency",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "$ Spend",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Localisation Index Sync",
+                "reasoning": "Monitoring growth of national talent in intl hubs",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Local %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Relocation Success Audit",
+                "reasoning": "Post-transfer performance and retention",
+                "x_axis": "status",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Case Typ",
+                "y_label": "Success Grade",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Global Payroll Tax Forecast",
+                "reasoning": "Predicting multi-region statutory costs",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Quarter",
+                "y_label": "$ Tax Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Jetlag/Commute Impact Index",
+                "reasoning": "Tracking impact of global mobility on health",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Health Drag",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "HR Service Desk Velocity",
+                "reasoning": "Tracking request volume against staff capacity",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "time"
+                ],
+                "x_label": "Date",
+                "y_label": "Reqs / Hour",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Self-Service Resolution Sync",
+                "reasoning": "Monitoring automation effectiveness longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Bot Success %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Data Accuracy by Module",
+                "reasoning": "Comparing system integrity across HRIS units",
+                "x_axis": "category",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Module",
+                "y_label": "Audit Grade",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "HRBP Ratio Density",
+                "reasoning": "Analyzing personnel coverage efficiency",
+                "x_axis": "department",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Unit",
+                "y_label": "BP Count",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Policy Breach Frequency",
+                "reasoning": "Monitoring compliance risk longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Incidents",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "App Dwell Time Audit",
+                "reasoning": "HR Portal user experience efficiency",
+                "x_axis": "status",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Page",
+                "y_label": "Min Spent",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "HR Tech ROI Forecast",
+                "reasoning": "Predicting software value gain to budget",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Year",
+                "y_label": "$ Value",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Regulatory Filing Speed",
+                "reasoning": "Speed of mandatory government reporting",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Period",
+                "y_label": "TAT Days",
+                "priority": "low",
+                "size": "normal"
+            }
+        ]
+    ]
+}

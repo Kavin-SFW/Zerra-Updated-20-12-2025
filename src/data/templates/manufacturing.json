@@ -1,0 +1,1757 @@
+{
+  "name": "Manufacturing",
+  "kpis": [],
+  "templateKpis": {
+    "0": [
+      {
+        "title": "REVENUE",
+        "keyMatch": "revenue|sales|income",
+        "icon": "DollarSign",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹450Cr"
+      },
+      {
+        "title": "EBITDA",
+        "keyMatch": "ebitda|profit|margin",
+        "icon": "Activity",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹65Cr"
+      },
+      {
+        "title": "MARKET SHARE",
+        "keyMatch": "market|share|percent",
+        "icon": "Target",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "25%"
+      },
+      {
+        "title": "CUSTOMER NPS",
+        "keyMatch": "nps|customer|satisfaction",
+        "icon": "Smile",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "agg": "avg",
+        "target": ">55"
+      },
+      {
+        "title": "EMPLOYEE SATISFACTION",
+        "keyMatch": "employee|satisfaction|score",
+        "icon": "Users",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "suffix": "/5",
+        "agg": "avg",
+        "target": "4.5"
+      },
+      {
+        "title": "CASH POSITION",
+        "keyMatch": "cash|position|liquidity",
+        "icon": "History",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹150Cr"
+      }
+    ],
+    "1": [
+      {
+        "title": "ON-TIME DELIVERY",
+        "keyMatch": "otd|delivery|time",
+        "icon": "Clock",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">93%"
+      },
+      {
+        "title": "INVENTORY TURNOVER",
+        "keyMatch": "turnover|inventory",
+        "icon": "Package",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "suffix": "x",
+        "agg": "avg",
+        "target": ">7x"
+      },
+      {
+        "title": "SUPPLY CHAIN COST",
+        "keyMatch": "cost|supply|chain",
+        "icon": "BarChart3",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹25Cr"
+      },
+      {
+        "title": "SUPPLIER LEAD TIME",
+        "keyMatch": "lead|time|supplier",
+        "icon": "Clock",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "suffix": " days",
+        "agg": "avg",
+        "target": "<14 days"
+      },
+      {
+        "title": "STOCK-OUT RATE",
+        "keyMatch": "stock|out|rate",
+        "icon": "Activity",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "<3%"
+      },
+      {
+        "title": "PERFECT ORDER RATE",
+        "keyMatch": "perfect|rate",
+        "icon": "Target",
+        "color": "white",
+        "bg": "bg-[#1E293B]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">90%"
+      }
+    ],
+    "2": [
+      {
+        "title": "ACTIVE PROJECTS",
+        "keyMatch": "project|active|status",
+        "icon": "LayersIcon",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "count",
+        "target": "24"
+      },
+      {
+        "title": "R&D SPEND",
+        "keyMatch": "spend|r&d|investment",
+        "icon": "DollarSign",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹18.5Cr"
+      },
+      {
+        "title": "PATENTS FILED",
+        "keyMatch": "patent|filed|innovation",
+        "icon": "FileText",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "sum",
+        "target": "12"
+      },
+      {
+        "title": "TIME TO MARKET",
+        "keyMatch": "ttm|months|market",
+        "icon": "Clock",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " months",
+        "agg": "avg",
+        "target": "<9 months"
+      },
+      {
+        "title": "SUCCESS RATE",
+        "keyMatch": "success|rate|project",
+        "icon": "ZapIcon",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">65%"
+      },
+      {
+        "title": "INNOVATION INDEX",
+        "keyMatch": "innovation|index|score",
+        "icon": "TargetIcon",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "/100",
+        "agg": "avg",
+        "target": "78/100"
+      }
+    ],
+    "3": [
+      {
+        "title": "DEFECT RATE",
+        "keyMatch": "defect|rate|quality",
+        "icon": "AlertTriangle",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "<1.5%"
+      },
+      {
+        "title": "FIRST PASS YIELD",
+        "keyMatch": "yield|first|pass",
+        "icon": "CheckCircle",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">98.5%"
+      },
+      {
+        "title": "REWORK COST",
+        "keyMatch": "rework|cost",
+        "icon": "DollarSign",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "L",
+        "agg": "sum",
+        "target": "₹5L"
+      },
+      {
+        "title": "SCRAP VALUE",
+        "keyMatch": "scrap|value",
+        "icon": "Trash2",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "L",
+        "agg": "sum",
+        "target": "₹2L"
+      },
+      {
+        "title": "AUDIT SCORE",
+        "keyMatch": "audit|score|compliance",
+        "icon": "ClipboardCheck",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "/100",
+        "agg": "avg",
+        "target": "95"
+      },
+      {
+        "title": "CUSTOMER REJECTS",
+        "keyMatch": "reject|customer",
+        "icon": "ThumbsDown",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "sum",
+        "target": "0"
+      }
+    ],
+    "4": [
+      {
+        "title": "EQUIPMENT UPTIME",
+        "keyMatch": "uptime|availability",
+        "icon": "Activity",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">99.5%"
+      },
+      {
+        "title": "MTBF",
+        "keyMatch": "mtbf|failure|interval",
+        "icon": "Timer",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " hrs",
+        "agg": "avg",
+        "target": "2400 hrs"
+      },
+      {
+        "title": "MTTR",
+        "keyMatch": "mttr|repair|time",
+        "icon": "Wrench",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " mins",
+        "agg": "avg",
+        "target": "<45 mins"
+      },
+      {
+        "title": "MAINTENANCE COST",
+        "keyMatch": "maintenance|cost",
+        "icon": "DollarSign",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "L",
+        "agg": "sum",
+        "target": "₹12L"
+      },
+      {
+        "title": "PLANNED MAINT.",
+        "keyMatch": "planned|preventive",
+        "icon": "Calendar",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">90%"
+      },
+      {
+        "title": "SPARE PART STOCK",
+        "keyMatch": "spare|part|stock",
+        "icon": "Package",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "sum",
+        "target": "Critical Only"
+      }
+    ],
+    "5": [
+      {
+        "title": "TOTAL SPEND",
+        "keyMatch": "spend|total|purchase",
+        "icon": "ShoppingCart",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹150Cr"
+      },
+      {
+        "title": "SAVINGS %",
+        "keyMatch": "saving|negotiation",
+        "icon": "TrendingDown",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "8%"
+      },
+      {
+        "title": "VENDOR COUNT",
+        "keyMatch": "vendor|supplier|count",
+        "icon": "Users",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "count",
+        "target": "45"
+      },
+      {
+        "title": "PO CYCLE TIME",
+        "keyMatch": "cycle|po|time",
+        "icon": "Clock",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " days",
+        "agg": "avg",
+        "target": "3 days"
+      },
+      {
+        "title": "PROCUREMENT ROI",
+        "keyMatch": "procurement|roi",
+        "icon": "BarChart",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "x",
+        "agg": "avg",
+        "target": "5x"
+      },
+      {
+        "title": "RISK SCORE",
+        "keyMatch": "risk|score|supply",
+        "icon": "ShieldAlert",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "/L",
+        "agg": "avg",
+        "target": "Low"
+      }
+    ],
+    "6": [
+      {
+        "title": "ORDER VALUE",
+        "keyMatch": "order|value|sales",
+        "icon": "DollarSign",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹85Cr"
+      },
+      {
+        "title": "BACKLOG STATUS",
+        "keyMatch": "backlog|pending",
+        "icon": "Clock",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "sum",
+        "target": "<₹5Cr"
+      },
+      {
+        "title": "MARKET REACH",
+        "keyMatch": "reach|market|region",
+        "icon": "Globe",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " regions",
+        "agg": "count",
+        "target": "12"
+      },
+      {
+        "title": "PIPELINE VALUE",
+        "keyMatch": "pipeline|future|sales",
+        "icon": "Activity",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹120Cr"
+      },
+      {
+        "title": "WIN RATE",
+        "keyMatch": "win|rate|deal",
+        "icon": "Trophy",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "35%"
+      },
+      {
+        "title": "CHANNEL ROI",
+        "keyMatch": "channel|roi",
+        "icon": "PieChart",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "x",
+        "agg": "avg",
+        "target": "4x"
+      }
+    ],
+    "7": [
+      {
+        "title": "ENERGY INTENSITY",
+        "keyMatch": "energy|kwh|intensity",
+        "icon": "Zap",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " kWh/U",
+        "agg": "avg",
+        "target": "4.2"
+      },
+      {
+        "title": "CARBON FOOTPRINT",
+        "keyMatch": "carbon|co2|emission",
+        "icon": "Cloud",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " tCO2",
+        "agg": "sum",
+        "target": "540"
+      },
+      {
+        "title": "WATER REUSE",
+        "keyMatch": "water|reuse|recycled",
+        "icon": "Droplets",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">40%"
+      },
+      {
+        "title": "WASTE RECOVERY",
+        "keyMatch": "waste|recovery|recycling",
+        "icon": "RefreshCcw",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">85%"
+      },
+      {
+        "title": "ESG SCORE",
+        "keyMatch": "esg|score|rating",
+        "icon": "Leaf",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "/100",
+        "agg": "avg",
+        "target": "82"
+      },
+      {
+        "title": "COMPLIANCE",
+        "keyMatch": "compliance|env|legal",
+        "icon": "ShieldCheck",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "count",
+        "target": "100%"
+      }
+    ],
+    "8": [
+      {
+        "title": "HC PRODUCTIVITY",
+        "keyMatch": "productivity|employee|output",
+        "icon": "Users",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "/H",
+        "agg": "avg",
+        "target": "12.5"
+      },
+      {
+        "title": "SAFETY INCIDENTS",
+        "keyMatch": "incident|safety|accident",
+        "icon": "Plus",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "sum",
+        "target": "0"
+      },
+      {
+        "title": "TRAINING HRS",
+        "keyMatch": "training|hours|dev",
+        "icon": "Book",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " hrs",
+        "agg": "avg",
+        "target": "40 hrs"
+      },
+      {
+        "title": "ABSENTEEISM",
+        "keyMatch": "absent|leave|attendance",
+        "icon": "UserX",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "<2%"
+      },
+      {
+        "title": "RETENTION RATE",
+        "keyMatch": "retention|turnover",
+        "icon": "Heart",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": ">92%"
+      },
+      {
+        "title": "WAGE EFFICIENCY",
+        "keyMatch": "wage|efficiency|cost",
+        "icon": "Briefcase",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "75%"
+      }
+    ],
+    "9": [
+      {
+        "title": "COGS",
+        "keyMatch": "cogs|cost|goods",
+        "icon": "DollarSign",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "prefix": "₹",
+        "suffix": "Cr",
+        "agg": "sum",
+        "target": "₹320Cr"
+      },
+      {
+        "title": "OP. MARGIN",
+        "keyMatch": "margin|operating|profit",
+        "icon": "TrendingUp",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "18.5%"
+      },
+      {
+        "title": "CASH CYCLE",
+        "keyMatch": "cash|cycle|days",
+        "icon": "RefreshCw",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": " days",
+        "agg": "avg",
+        "target": "42 days"
+      },
+      {
+        "title": "ROI",
+        "keyMatch": "roi|investment|return",
+        "icon": "BarChart3",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "suffix": "%",
+        "agg": "avg",
+        "target": "22%"
+      },
+      {
+        "title": "DEBT/EQUITY",
+        "keyMatch": "debt|equity|leverage",
+        "icon": "Percent",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "avg",
+        "target": "0.4"
+      },
+      {
+        "title": "WC RATIO",
+        "keyMatch": "working|capital|ratio",
+        "icon": "Activity",
+        "color": "white",
+        "bg": "bg-[#0F172A]",
+        "agg": "avg",
+        "target": "1.5"
+      }
+    ]
+  },
+  "templates": [
+    [
+      {
+        "type": "area",
+        "title": "Production Output",
+        "reasoning": "Monthly units produced vs Target",
+        "x_axis": "time",
+        "y_axis": [
+          "output",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Units",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "OEE Trend",
+        "reasoning": "Overall Equipment Effectiveness trend",
+        "x_axis": "time",
+        "y_axis": [
+          "oee",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "OEE %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Production by Line",
+        "reasoning": "Actual output vs capacity by line",
+        "x_axis": "line",
+        "y_axis": [
+          "output",
+          "capacity"
+        ],
+        "x_label": "Line",
+        "y_label": "Units",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Defect Trend",
+        "reasoning": "Historical defect rate analysis",
+        "x_axis": "time",
+        "y_axis": [
+          "defects",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Cycle Time",
+        "reasoning": "Process duration consistency",
+        "x_axis": "time",
+        "y_axis": [
+          "time",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Mins",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Machine Load",
+        "reasoning": "Equipment workload distribution",
+        "x_axis": "machine",
+        "y_axis": [
+          "load",
+          "capacity"
+        ],
+        "x_label": "Machine",
+        "y_label": "Load %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Shift Efficiency",
+        "reasoning": "Output per shift comparison",
+        "x_axis": "shift",
+        "y_axis": [
+          "efficiency",
+          "target"
+        ],
+        "x_label": "Shift",
+        "y_label": "Eff %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Scrap by Line",
+        "reasoning": "Waste generation analysis",
+        "x_axis": "line",
+        "y_axis": [
+          "scrap",
+          "limit"
+        ],
+        "x_label": "Line",
+        "y_label": "Scrap",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "Inventory Levels",
+        "reasoning": "Stock value fluctuations",
+        "x_axis": "time",
+        "y_axis": [
+          "value",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Value",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Delivery OTD",
+        "reasoning": "On-time delivery performance",
+        "x_axis": "time",
+        "y_axis": [
+          "otd",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "OTD %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Supplier Lead Times",
+        "reasoning": "Vendor responsiveness analysis",
+        "x_axis": "vendor",
+        "y_axis": [
+          "leadTime",
+          "target"
+        ],
+        "x_label": "Vendor",
+        "y_label": "Days",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Stock-out Events",
+        "reasoning": "Frequency of stock shortages",
+        "x_axis": "time",
+        "y_axis": [
+          "events",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Freight Cost",
+        "reasoning": "Logistics expense trend",
+        "x_axis": "time",
+        "y_axis": [
+          "cost",
+          "budget"
+        ],
+        "x_label": "Month",
+        "y_label": "Cost",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Warehouse Utilization",
+        "reasoning": "Space efficiency by facility",
+        "x_axis": "warehouse",
+        "y_axis": [
+          "util",
+          "max"
+        ],
+        "x_label": "Warehouse",
+        "y_label": "Util %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Safety Stock",
+        "reasoning": "Buffer inventory health",
+        "x_axis": "category",
+        "y_axis": [
+          "stock",
+          "min"
+        ],
+        "x_label": "Category",
+        "y_label": "Units",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Freight Modes",
+        "reasoning": "Logistics method distribution",
+        "x_axis": "mode",
+        "y_axis": "count",
+        "x_label": "Mode",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "R&D Spend",
+        "reasoning": "Investment in innovation",
+        "x_axis": "time",
+        "y_axis": [
+          "spend",
+          "budget"
+        ],
+        "x_label": "Month",
+        "y_label": "Amount",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "TTM Trend",
+        "reasoning": "Time to market efficiency",
+        "x_axis": "time",
+        "y_axis": [
+          "ttm",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Months",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Project Stage Count",
+        "reasoning": "Pipeline distribution",
+        "x_axis": "stage",
+        "y_axis": [
+          "count",
+          "prev"
+        ],
+        "x_label": "Stage",
+        "y_label": "Projects",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Patent Velocity",
+        "reasoning": "IP creation rate",
+        "x_axis": "time",
+        "y_axis": [
+          "patents",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Success Rate",
+        "reasoning": "Project completion quality",
+        "x_axis": "time",
+        "y_axis": [
+          "rate",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Rate %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Engineer Allocation",
+        "reasoning": "Workforce by project",
+        "x_axis": "project",
+        "y_axis": [
+          "hours",
+          "avail"
+        ],
+        "x_label": "Project",
+        "y_label": "Hours",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Prototype Velocity",
+        "reasoning": "Dev speed to prototype",
+        "x_axis": "time",
+        "y_axis": [
+          "count",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Patent Citations",
+        "reasoning": "Innovation impact",
+        "x_axis": "category",
+        "y_axis": "citations",
+        "x_label": "Tech",
+        "y_label": "Citations",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "Quality Defects",
+        "reasoning": "Incidents by period",
+        "x_axis": "time",
+        "y_axis": [
+          "defects",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Count",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "First Pass Yield",
+        "reasoning": "Manufacturing precision",
+        "x_axis": "time",
+        "y_axis": [
+          "yield",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Yield %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Defects by Category",
+        "reasoning": "Root cause analysis",
+        "x_axis": "category",
+        "y_axis": [
+          "count",
+          "limit"
+        ],
+        "x_label": "Issue",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Rework Hours",
+        "reasoning": "Efficiency loss due to quality",
+        "x_axis": "time",
+        "y_axis": [
+          "hours",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Hours",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Audit Compliance",
+        "reasoning": "Regulatory adherence trend",
+        "x_axis": "time",
+        "y_axis": [
+          "score",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Score",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Supplier Quality",
+        "reasoning": "Performance by vendor",
+        "x_axis": "vendor",
+        "y_axis": [
+          "rating",
+          "avg"
+        ],
+        "x_label": "Vendor",
+        "y_label": "Rating",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Returns Rate",
+        "reasoning": "Customer return frequency",
+        "x_axis": "time",
+        "y_axis": [
+          "returns",
+          "limit"
+        ],
+        "x_label": "Month",
+        "y_label": "Returns",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Calibration Status",
+        "reasoning": "Tool accuracy compliance",
+        "x_axis": "time",
+        "y_axis": [
+          "status",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Compliance %",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "Uptime Status",
+        "reasoning": "Machine availability trend",
+        "x_axis": "time",
+        "y_axis": [
+          "uptime",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Uptime %",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Mean Time Recovery",
+        "reasoning": "Repair efficiency",
+        "x_axis": "time",
+        "y_axis": [
+          "mttr",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Mins",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Maintenance Actions",
+        "reasoning": "Work orders by type",
+        "x_axis": "type",
+        "y_axis": [
+          "count",
+          "prev"
+        ],
+        "x_label": "Task",
+        "y_label": "Volume",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Spare Parts Spend",
+        "reasoning": "Maintenance inventory cost",
+        "x_axis": "time",
+        "y_axis": [
+          "spend",
+          "budget"
+        ],
+        "x_label": "Month",
+        "y_label": "Cost",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Failure Frequency",
+        "reasoning": "Reliability consistency",
+        "x_axis": "time",
+        "y_axis": [
+          "count",
+          "limit"
+        ],
+        "x_label": "Month",
+        "y_label": "Events",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Critical Asset Health",
+        "reasoning": "Score by machine",
+        "x_axis": "machine",
+        "y_axis": [
+          "health",
+          "limit"
+        ],
+        "x_label": "Asset",
+        "y_label": "Score",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Technician Utilization",
+        "reasoning": "Labor efficiency",
+        "x_axis": "tech",
+        "y_axis": [
+          "utilization",
+          "target"
+        ],
+        "x_label": "Tech",
+        "y_label": "Util %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Lubricant Consumption",
+        "reasoning": "Consumables usage",
+        "x_axis": "time",
+        "y_axis": [
+          "liters",
+          "avg"
+        ],
+        "x_label": "Month",
+        "y_label": "Liters",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "Procurement Spend",
+        "reasoning": "Total purchasing volume",
+        "x_axis": "time",
+        "y_axis": [
+          "spend",
+          "budget"
+        ],
+        "x_label": "Month",
+        "y_label": "Amount",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Cost Savings Trend",
+        "reasoning": "Procurement efficiency",
+        "x_axis": "time",
+        "y_axis": [
+          "saving",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Saving %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Spend by Vendor",
+        "reasoning": "Supplier concentration",
+        "x_axis": "vendor",
+        "y_axis": [
+          "spend",
+          "budget"
+        ],
+        "x_label": "Vendor",
+        "y_label": "Amount",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "PO Volume",
+        "reasoning": "Transactional intensity",
+        "x_axis": "time",
+        "y_axis": [
+          "orders",
+          "prev"
+        ],
+        "x_label": "Month",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Procurement Lead Time",
+        "reasoning": "Process speed analysis",
+        "x_axis": "time",
+        "y_axis": [
+          "days",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Days",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Risk by Category",
+        "reasoning": "Supply chain vulnerability",
+        "x_axis": "category",
+        "y_axis": [
+          "risk",
+          "avg"
+        ],
+        "x_label": "Category",
+        "y_label": "Risk Score",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Supplier Risk Index",
+        "reasoning": "Vendor stability tracking",
+        "x_axis": "vendor",
+        "y_axis": [
+          "risk",
+          "limit"
+        ],
+        "x_label": "Vendor",
+        "y_label": "Risk Score",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Contract Compliance",
+        "reasoning": "Adherence to terms",
+        "x_axis": "category",
+        "y_axis": [
+          "rate",
+          "target"
+        ],
+        "x_label": "Category",
+        "y_label": "Compliance %",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "Sales Revenue",
+        "reasoning": "Fulfillment value",
+        "x_axis": "time",
+        "y_axis": [
+          "revenue",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Value",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Order Fulfillment",
+        "reasoning": "Shipping precision",
+        "x_axis": "time",
+        "y_axis": [
+          "rate",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Rate %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Sales by Region",
+        "reasoning": "Geographical performance",
+        "x_axis": "region",
+        "y_axis": [
+          "sales",
+          "target"
+        ],
+        "x_label": "Region",
+        "y_label": "Value",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Backlog Aging",
+        "reasoning": "Pending order duration",
+        "x_axis": "time",
+        "y_axis": [
+          "days",
+          "limit"
+        ],
+        "x_label": "Month",
+        "y_label": "Days",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Win Rate",
+        "reasoning": "Deal conversion efficiency",
+        "x_axis": "time",
+        "y_axis": [
+          "rate",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Win %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Product Sales Mix",
+        "reasoning": "Volume by category",
+        "x_axis": "product",
+        "y_axis": [
+          "volume",
+          "avg"
+        ],
+        "x_label": "Product",
+        "y_label": "Units",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Discount Trends",
+        "reasoning": "Pricing erosion monitor",
+        "x_axis": "time",
+        "y_axis": [
+          "discount",
+          "limit"
+        ],
+        "x_label": "Month",
+        "y_label": "Discount %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Forecast Accuracy",
+        "reasoning": "Demand planning precision",
+        "x_axis": "time",
+        "y_axis": [
+          "accuracy",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Accuracy %",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "Energy Usage",
+        "reasoning": "Consumption efficiency",
+        "x_axis": "time",
+        "y_axis": [
+          "kwh",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "kWh",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Carbon Intensity",
+        "reasoning": "Emissions per unit",
+        "x_axis": "time",
+        "y_axis": [
+          "co2",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "tCO2",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Waste Recovery",
+        "reasoning": "Recycling performance by plant",
+        "x_axis": "plant",
+        "y_axis": [
+          "rate",
+          "avg"
+        ],
+        "x_label": "Plant",
+        "y_label": "Recovery %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Water Consumption",
+        "reasoning": "Resource usage trend",
+        "x_axis": "time",
+        "y_axis": [
+          "volume",
+          "limit"
+        ],
+        "x_label": "Month",
+        "y_label": "Litres",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "ESG Score",
+        "reasoning": "Sustainability rating over time",
+        "x_axis": "time",
+        "y_axis": [
+          "score",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Rating",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Incident Severity",
+        "reasoning": "Safety impact analysis",
+        "x_axis": "category",
+        "y_axis": [
+          "count",
+          "limit"
+        ],
+        "x_label": "Type",
+        "y_label": "Events",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Hazardous Waste",
+        "reasoning": "Toxic material generated",
+        "x_axis": "plant",
+        "y_axis": [
+          "volume",
+          "limit"
+        ],
+        "x_label": "Plant",
+        "y_label": "Kg",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Safety Training Hrs",
+        "reasoning": "Compliance education",
+        "x_axis": "time",
+        "y_axis": [
+          "hours",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Hours",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "area",
+        "title": "Employee Output",
+        "reasoning": "HC productivity trend",
+        "x_axis": "time",
+        "y_axis": [
+          "output",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Output",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Safety Frequency",
+        "reasoning": "Incident rate consistency",
+        "x_axis": "time",
+        "y_axis": [
+          "rate",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "TRIR",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Training Completion",
+        "reasoning": "Skill development by dept",
+        "x_axis": "dept",
+        "y_axis": [
+          "rate",
+          "target"
+        ],
+        "x_label": "Dept",
+        "y_label": "Comp %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Overtime Hours",
+        "reasoning": "Workforce strain analysis",
+        "x_axis": "time",
+        "y_axis": [
+          "hours",
+          "limit"
+        ],
+        "x_label": "Month",
+        "y_label": "Hours",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Retention Rate",
+        "reasoning": "Talent stability trend",
+        "x_axis": "time",
+        "y_axis": [
+          "rate",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Rate %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Cost per Hire",
+        "reasoning": "Recruitment efficiency",
+        "x_axis": "category",
+        "y_axis": [
+          "cost",
+          "avg"
+        ],
+        "x_label": "Role",
+        "y_label": "Cost",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Overtime Cost",
+        "reasoning": "Excess labor spend",
+        "x_axis": "time",
+        "y_axis": [
+          "cost",
+          "budget"
+        ],
+        "x_label": "Month",
+        "y_label": "Cost",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Shift Absenteeism",
+        "reasoning": "Attendance by shift",
+        "x_axis": "shift",
+        "y_axis": [
+          "rate",
+          "avg"
+        ],
+        "x_label": "Shift",
+        "y_label": "Rate %",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ],
+    [
+      {
+        "type": "line",
+        "title": "Defect Rate Trend",
+        "reasoning": "Monthly defect rate (%)",
+        "x_axis": "time",
+        "y_axis": [
+          "defectRate",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Defect Rate %",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "First Pass Yield",
+        "reasoning": "Monthly yield (%)",
+        "x_axis": "time",
+        "y_axis": [
+          "yield",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Yield %",
+        "priority": "high",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Defect Distribution",
+        "reasoning": "By category",
+        "x_axis": "category",
+        "y_axis": "count",
+        "x_label": "Category",
+        "y_label": "Count",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Inspection Volume",
+        "reasoning": "Monthly inspections",
+        "x_axis": "time",
+        "y_axis": "inspections",
+        "x_label": "Month",
+        "y_label": "Inspections",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "CAPA Closure Rate",
+        "reasoning": "Monthly closure rate (%)",
+        "x_axis": "time",
+        "y_axis": [
+          "closure",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Closure Rate %",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "area",
+        "title": "Audit Score Trend",
+        "reasoning": "Monthly audit score",
+        "x_axis": "time",
+        "y_axis": [
+          "score",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Audit Score",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "line",
+        "title": "Customer Complaints",
+        "reasoning": "Monthly complaint count",
+        "x_axis": "time",
+        "y_axis": [
+          "complaints",
+          "target"
+        ],
+        "x_label": "Month",
+        "y_label": "Complaints",
+        "priority": "medium",
+        "size": "normal"
+      },
+      {
+        "type": "bar",
+        "title": "Quality Cost",
+        "reasoning": "Cost of quality (₹ Lakhs)",
+        "x_axis": "time",
+        "y_axis": [
+          "cost",
+          "budget"
+        ],
+        "x_label": "Month",
+        "y_label": "Cost (Lakhs)",
+        "priority": "medium",
+        "size": "normal"
+      }
+    ]
+  ]
+}

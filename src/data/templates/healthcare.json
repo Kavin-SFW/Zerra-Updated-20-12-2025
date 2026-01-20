@@ -1,0 +1,1419 @@
+{
+    "name": "HealthCare",
+    "kpis": [],
+    "templateKpis": {
+        "0": [
+            {
+                "title": "TOTAL PATIENTS",
+                "keyMatch": "patient|user|count",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "15,000"
+            },
+            {
+                "title": "AVG WAIT TIME",
+                "keyMatch": "wait|time",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "m",
+                "agg": "avg",
+                "target": "<20m"
+            },
+            {
+                "title": "BED OCCUPANCY",
+                "keyMatch": "occupancy|bed",
+                "icon": "Store",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": ">85%"
+            },
+            {
+                "title": "READMISSION RATE",
+                "keyMatch": "return|readmission",
+                "icon": "TrendingDown",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<5%"
+            },
+            {
+                "title": "SURGICAL SUCCESS",
+                "keyMatch": "success|rate|score",
+                "icon": "CheckCircle",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": ">98%"
+            },
+            {
+                "title": "TREATMENT COST",
+                "keyMatch": "cost|bill|amount",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$1.2M"
+            }
+        ],
+        "1": [
+            {
+                "title": "OP REVENUE",
+                "keyMatch": "revenue|sales|bill",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$850K"
+            },
+            {
+                "title": "INPATIENT PROFIT",
+                "keyMatch": "profit|margin",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$120K"
+            },
+            {
+                "title": "CLAIM DENIALS",
+                "keyMatch": "denial|reject|rate",
+                "icon": "AlertTriangle",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<2%"
+            },
+            {
+                "title": "PHARMA SPEND",
+                "keyMatch": "pharma|drug|spend",
+                "icon": "ShoppingBag",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$45K"
+            },
+            {
+                "title": "STAFFING COST",
+                "keyMatch": "cost|staff|wage",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$200K"
+            },
+            {
+                "title": "INSURANCE RECOVERY",
+                "keyMatch": "recovery|claim|paid",
+                "icon": "History",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$600K"
+            }
+        ],
+        "2": [
+            {
+                "title": "PATIENT NPS",
+                "keyMatch": "nps|satisfaction|score",
+                "icon": "Smile",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "avg",
+                "target": ">75"
+            },
+            {
+                "title": "HCAHPS SCORE",
+                "keyMatch": "quality|hcahps",
+                "icon": "Target",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/10",
+                "agg": "avg",
+                "target": "9.2"
+            },
+            {
+                "title": "AVG ROOM CLEANLINESS",
+                "keyMatch": "clean|room",
+                "icon": "CheckCircle",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/5",
+                "agg": "avg",
+                "target": "4.8"
+            },
+            {
+                "title": "NURSE RESPONSIVENESS",
+                "keyMatch": "nurse|response",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/5",
+                "agg": "avg",
+                "target": "4.5"
+            },
+            {
+                "title": "FOLLOW-UP RATE",
+                "keyMatch": "follow|up",
+                "icon": "Calendar",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "95%"
+            },
+            {
+                "title": "COMPLAINT VOLUME",
+                "keyMatch": "complaint|issue",
+                "icon": "ThumbsDown",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "<5"
+            }
+        ],
+        "3": [
+            {
+                "title": "ER THROUGHPUT",
+                "keyMatch": "er|throughput|flow",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": " p/h",
+                "agg": "avg",
+                "target": "12"
+            },
+            {
+                "title": "TRIAGE CAPACITY",
+                "keyMatch": "triage|capacity",
+                "icon": "Layers",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "90%"
+            },
+            {
+                "title": "LAB TURNAROUND",
+                "keyMatch": "lab|tat|time",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "h",
+                "agg": "avg",
+                "target": "<2h"
+            },
+            {
+                "title": "AMBULANCE ARRIVALS",
+                "keyMatch": "ambulance|arrival",
+                "icon": "Plus",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "24"
+            },
+            {
+                "title": "PHARMACY DISPENSE",
+                "keyMatch": "dispense|drug",
+                "icon": "Package",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "150"
+            },
+            {
+                "title": "STAFF RATIO",
+                "keyMatch": "staff|ratio|load",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": ":1",
+                "agg": "avg",
+                "target": "5:1"
+            }
+        ],
+        "4": [
+            {
+                "title": "SURGERY VOLUME",
+                "keyMatch": "surgery|procedure",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "45"
+            },
+            {
+                "title": "OR UTILIZATION",
+                "keyMatch": "or|utilization|room",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": ">80%"
+            },
+            {
+                "title": "POST-OP RECOVERY",
+                "keyMatch": "postop|recovery|time",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "h",
+                "agg": "avg",
+                "target": "4h"
+            },
+            {
+                "title": "Surgical Complications",
+                "keyMatch": "complication|issue",
+                "icon": "AlertTriangle",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<1%"
+            },
+            {
+                "title": "BLOCK TIME ADHERENCE",
+                "keyMatch": "block|time|adherence",
+                "icon": "Timer",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": ">90%"
+            },
+            {
+                "title": "ANESTHESIA SAFETY",
+                "keyMatch": "anesthesia|safety|score",
+                "icon": "CheckCircle",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/10",
+                "agg": "avg",
+                "target": "9.9"
+            }
+        ],
+        "5": [
+            {
+                "title": "ICU OCCUPANCY",
+                "keyMatch": "icu|bed|occupancy",
+                "icon": "Store",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "75%"
+            },
+            {
+                "title": "VENTILATOR AVAIL.",
+                "keyMatch": "ventilator|device",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "count",
+                "target": "12"
+            },
+            {
+                "title": "NURSE-PATIENT RATIO",
+                "keyMatch": "nurse|ratio",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": ":1",
+                "agg": "avg",
+                "target": "1:2"
+            },
+            {
+                "title": "SUPPLY CHAIN STOCK",
+                "keyMatch": "stock|inventory",
+                "icon": "Package",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "avg",
+                "target": "Stable"
+            },
+            {
+                "title": "PPE AVAILABILITY",
+                "keyMatch": "ppe|mask|safety",
+                "icon": "ShieldCheck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "100%"
+            },
+            {
+                "title": "ENERGY SAVINGS",
+                "keyMatch": "energy|saving",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "15%"
+            }
+        ],
+        "6": [
+            {
+                "title": "PORTAL ADOPTION",
+                "keyMatch": "portal|app|user",
+                "icon": "Globe",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": ">60%"
+            },
+            {
+                "title": "TELEHEALTH SESSIONS",
+                "keyMatch": "telehealth|remote",
+                "icon": "Video",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "450"
+            },
+            {
+                "title": "AVG RESPONSE TIME",
+                "keyMatch": "response|chat|time",
+                "icon": "MessageSquare",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "m",
+                "agg": "avg",
+                "target": "<15m"
+            },
+            {
+                "title": "APPOINTMENT BOOKING",
+                "keyMatch": "booking|appointment",
+                "icon": "Calendar",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "1,200"
+            },
+            {
+                "title": "ENGAGEMENT SCORE",
+                "keyMatch": "engagement|score",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/100",
+                "agg": "avg",
+                "target": "82"
+            },
+            {
+                "title": "NEW REGISTRATIONS",
+                "keyMatch": "new|user|register",
+                "icon": "UserPlus",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "sum",
+                "target": "85"
+            }
+        ],
+        "7": [
+            {
+                "title": "MORTALITY RATE",
+                "keyMatch": "mortality|death",
+                "icon": "AlertTriangle",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "<0.5%"
+            },
+            {
+                "title": "INFECTION CONTROL",
+                "keyMatch": "infection|safety",
+                "icon": "ShieldCheck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "/100",
+                "agg": "avg",
+                "target": "98"
+            },
+            {
+                "title": "RESEARCH PAPERS",
+                "keyMatch": "paper|research|publication",
+                "icon": "FileText",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "12"
+            },
+            {
+                "title": "ALUMNI ENGAGEMENT",
+                "keyMatch": "alumni|graduate",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "40%"
+            },
+            {
+                "title": "GRANT FUNDING",
+                "keyMatch": "grant|funding",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$2.5M"
+            },
+            {
+                "title": "CLINICAL TRIALS",
+                "keyMatch": "trial|research",
+                "icon": "FlaskConical",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "count",
+                "target": "24"
+            }
+        ]
+    },
+    "templates": [
+        [
+            {
+                "type": "area",
+                "title": "Admission vs Discharge Trend",
+                "reasoning": "Tracking patient flow volume over time",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Date",
+                "y_label": "Patients",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Wait Time vs Patient Satisfaction",
+                "reasoning": "Correlation between operational speed and quality",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "score"
+                ],
+                "x_label": "Hour",
+                "y_label": "Value",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Occupancy by Facility",
+                "reasoning": "Comparing bed availability across departments",
+                "x_axis": "department",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Unit",
+                "y_label": "Rate %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Staff Workload Distribution",
+                "reasoning": "Analyzing nurse-to-patient load across shifts",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Shift",
+                "y_label": "Load",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Response Time Efficiency",
+                "reasoning": "Emergency response speed trends",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Period",
+                "y_label": "Minutes",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Treatment Success by Unit",
+                "reasoning": "Comparing clinical outcomes across departments",
+                "x_axis": "department",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Unit",
+                "y_label": "Score",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Surgical Volume Projections",
+                "reasoning": "Forecasting procedure demand",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Surgeries",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Patient Retention Rate",
+                "reasoning": "Longitudinal care engagement tracking",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Retention %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Revenue vs Operating Cost",
+                "reasoning": "Financial sustainability analysis",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "cost"
+                ],
+                "x_label": "Month",
+                "y_label": "Amount ($)",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Profit Margin Growth",
+                "reasoning": "Tracking net profitability trends",
+                "x_axis": "time",
+                "y_axis": [
+                    "profit",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "% / $",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Service Revenue Breakdown",
+                "reasoning": "Revenue distribution by treatment category",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Treatment",
+                "y_label": "Value",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Billing Cycle Performance",
+                "reasoning": "Days in AR vs Collection Rate",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Week",
+                "y_label": "Metric",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Insurance Denial Velocity",
+                "reasoning": "Tracking speed of claim rejections",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Volume/Rate",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Revenue by Payer Type",
+                "reasoning": "Comparing insurance vs self-pay contributions",
+                "x_axis": "segment",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Payer",
+                "y_label": "Total Revenue",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Capital Expenditure ROI",
+                "reasoning": "Analyzing return on equipment investments",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "ROI %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Audit Compliance Trend",
+                "reasoning": "Tracking financial regulatory adherence",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Compliance Score",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Satisfaction vs Improvement Goals",
+                "reasoning": "Measuring quality against internal targets",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Week",
+                "y_label": "Rating",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Readmission Rate Trend",
+                "reasoning": "Tracking clinical outcome consistency",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Rate %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Feedback Scale by Department",
+                "reasoning": "Comparing survey results across units",
+                "x_axis": "department",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Unit",
+                "y_label": "Score",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Complication Variance",
+                "reasoning": "Analyzing surgical outcomes vs peer benchmarks",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Variance",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Staff Sensitivity Scores",
+                "reasoning": "Tracking patient interaction quality over time",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Period",
+                "y_label": "Score",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Service Quality by Region",
+                "reasoning": "Geographic analysis of patient experience",
+                "x_axis": "region",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Facility Location",
+                "y_label": "Avg Rating",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Preventative Care Adoption",
+                "reasoning": "Tracking push towards value-based care",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Adoption",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Hospice Referral Consistency",
+                "reasoning": "Analyzing end-of-life care quality trends",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Referral Rate",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Throughput vs Intake",
+                "reasoning": "Assessing ER load management",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Shift",
+                "y_label": "P/H",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "TAT (Turnaround Time) Metrics",
+                "reasoning": "Lab and Pharmacy efficiency analysis",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Hour",
+                "y_label": "Minutes",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Operational Load by Shift",
+                "reasoning": "Workload distribution across staffing periods",
+                "x_axis": "segment",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Shift",
+                "y_label": "Metrics",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Ambulance Diversion Hours",
+                "reasoning": "Tracking ER unavailability periods",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Day",
+                "y_label": "Hours",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Pharmacy Stockout Rate",
+                "reasoning": "Monitoring medication availability",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Week",
+                "y_label": "Stockout %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Triage Speed by Urgency",
+                "reasoning": "Comparing wait times across patient priority levels",
+                "x_axis": "category",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Priority",
+                "y_label": "Avg Wait",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Lab Utilization Forecast",
+                "reasoning": "Predicting diagnostic testing volume",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Tests",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Staff Burnout Risk Score",
+                "reasoning": "Analyzing shift density impacts on personnel",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Period",
+                "y_label": "Risk Level",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Surgery Volume vs Capacity",
+                "reasoning": "OR resource allocation analysis",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Day",
+                "y_label": "Units / %",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Recovery Time Variance",
+                "reasoning": "Post-op efficiency monitoring",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Month",
+                "y_label": "Hours",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Procedure Success by Surgeon",
+                "reasoning": "Performance benchmarking for clinical staff",
+                "x_axis": "segment",
+                "y_axis": [
+                    "rate",
+                    "score"
+                ],
+                "x_label": "Surgeon",
+                "y_label": "Metrics",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Block Time Adherence",
+                "reasoning": "Analyzing OR scheduling accuracy",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Shift",
+                "y_label": "Adherence %",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Anesthesia Induction Speed",
+                "reasoning": "Tracking preparation efficiency in surgery",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Date",
+                "y_label": "Minutes",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Complications by Procedure Type",
+                "reasoning": "Comparing risk across different surgery categories",
+                "x_axis": "category",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Procedure",
+                "y_label": "Rate / Vol",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Post-Op Bed Availability",
+                "reasoning": "Predicting ICU/Recovery bed needs",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Hour",
+                "y_label": "Beds",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Instrument Sterilization Cycle",
+                "reasoning": "Monitoring sterile processing throughput",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "time"
+                ],
+                "x_label": "Shift",
+                "y_label": "Volume/TAT",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Bed Utilization vs Availability",
+                "reasoning": "Critical care resource tracking",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Hour",
+                "y_label": "% / Beds",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Nurse Staffing Adherence",
+                "reasoning": "Monitoring compliance with ratio mandates",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Shift",
+                "y_label": "Compliance %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Supply Inventory Heatmap",
+                "reasoning": "Stock levels across essential categories",
+                "x_axis": "category",
+                "y_axis": [
+                    "volume",
+                    "count"
+                ],
+                "x_label": "Item",
+                "y_label": "Volume",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Ventilator Usage Intensity",
+                "reasoning": "Tracking respiratory therapy resource load",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Day",
+                "y_label": "Intensity",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Power Consumption Trends",
+                "reasoning": "Monitoring facility utility efficiency",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Hour",
+                "y_label": "kW / $",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "PPE Distribution by Ward",
+                "reasoning": "Analyzing safety gear consumption across the hospital",
+                "x_axis": "department",
+                "y_axis": [
+                    "volume",
+                    "count"
+                ],
+                "x_label": "Ward",
+                "y_label": "Usage Vol",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Maintenance Downtime Impact",
+                "reasoning": "Forecasting effect of equipment servicing on capacity",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "time"
+                ],
+                "x_label": "Month",
+                "y_label": "Impact %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Oxygen Supply Velocity",
+                "reasoning": "Monitoring liquid oxygen tank depletion rates",
+                "x_axis": "time",
+                "y_axis": [
+                    "volume",
+                    "rate"
+                ],
+                "x_label": "Day",
+                "y_label": "Liters/h",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Engagement vs Adoption Trends",
+                "reasoning": "Digital health platform performance",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Metrics",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Telehealth vs In-Person Growth",
+                "reasoning": "Tracking shift towards remote consultations",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Visits",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "App Usage by Age Segment",
+                "reasoning": "Analyzing demographic engagement across portal features",
+                "x_axis": "segment",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Age Group",
+                "y_label": "Usage",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Remote Monitoring Alerts",
+                "reasoning": "Tracking volume of wearable data notifications",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Week",
+                "y_label": "Alerts",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Patient Portal Sync Speed",
+                "reasoning": "Monitoring data latency in patient apps",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Date",
+                "y_label": "ms",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Feature Popularity Index",
+                "reasoning": "Comparing utilization of Chat, Video, and Results modules",
+                "x_axis": "category",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Portal Feature",
+                "y_label": "Engagement",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Virtual Waiting Room TAT",
+                "reasoning": "Efficiency of digital intake workflows",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "time"
+                ],
+                "x_label": "Shift",
+                "y_label": "Avg Wait",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "e-Prescription Accuracy Rate",
+                "reasoning": "Tracking digital medication safety trends",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Accuracy %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Outcome Benchmarking",
+                "reasoning": "Comparative analysis of clinical results",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Quality",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Infection Risk vs Control Compliance",
+                "reasoning": "Safety protocol effectiveness analysis",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "score"
+                ],
+                "x_label": "Week",
+                "y_label": "Prob / Score",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Research Output vs Funding",
+                "reasoning": "Institutional academic productivity comparison",
+                "x_axis": "category",
+                "y_axis": [
+                    "count",
+                    "sales"
+                ],
+                "x_label": "Institute",
+                "y_label": "Value",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Clinical Trial Enrollment",
+                "reasoning": "Analyzing participant recruitment velocity",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Patients",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Publication Citation Growth",
+                "reasoning": "Tracking research impact and visibility",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Year",
+                "y_label": "Citations",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Graduate Placement Rates",
+                "reasoning": "Comparing career outcomes across medical specialties",
+                "x_axis": "segment",
+                "y_axis": [
+                    "rate",
+                    "count"
+                ],
+                "x_label": "Specialty",
+                "y_label": "Placement %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Grant Pipeline Forecast",
+                "reasoning": "Predicting future institutional research funding",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Fund Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Patent Approval Velocity",
+                "reasoning": "Monitoring innovation speed in medical tech",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "time"
+                ],
+                "x_label": "Year",
+                "y_label": "Count/TAT",
+                "priority": "low",
+                "size": "normal"
+            }
+        ]
+    ]
+}

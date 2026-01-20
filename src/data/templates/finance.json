@@ -1,0 +1,1781 @@
+{
+    "name": "Finance",
+    "kpis": [],
+    "templateKpis": {
+        "0": [
+            {
+                "title": "NET REVENUE",
+                "keyMatch": "revenue|sales|income",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$5.2M"
+            },
+            {
+                "title": "GROSS PROFIT",
+                "keyMatch": "profit|margin",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$2.1M"
+            },
+            {
+                "title": "OPERATING EXPENSE",
+                "keyMatch": "opex|expense|cost",
+                "icon": "TrendingDown",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$1.2M"
+            },
+            {
+                "title": "EBITDA MARGIN",
+                "keyMatch": "ebitda|margin",
+                "icon": "Target",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "24%"
+            },
+            {
+                "title": "CASH FLOW",
+                "keyMatch": "cash|flow",
+                "icon": "RefreshCw",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$850K"
+            },
+            {
+                "title": "NET INCOME",
+                "keyMatch": "net|income|profit",
+                "icon": "Award",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$1.5M"
+            }
+        ],
+        "1": [
+            {
+                "title": "OP REVENUE",
+                "keyMatch": "op|revenue|business",
+                "icon": "Briefcase",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$3.8M"
+            },
+            {
+                "title": "NON-OP INCOME",
+                "keyMatch": "interest|dividend|investment",
+                "icon": "PieChart",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$120K"
+            },
+            {
+                "title": "EFFECTIVE TAX",
+                "keyMatch": "tax|duty",
+                "icon": "FileText",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "18.5%"
+            },
+            {
+                "title": "DEBT RATIO",
+                "keyMatch": "debt|equity|leverage",
+                "icon": "Layers",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "0.4x"
+            },
+            {
+                "title": "INTEREST COVER",
+                "keyMatch": "interest|coverage",
+                "icon": "Shield",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "12x"
+            },
+            {
+                "title": "RETAINED EARNING",
+                "keyMatch": "retained|earning",
+                "icon": "Archive",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$4.1M"
+            }
+        ],
+        "2": [
+            {
+                "title": "TOTAL ASSETS",
+                "keyMatch": "asset|value|property",
+                "icon": "Building",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$25M"
+            },
+            {
+                "title": "LIQUID ASSETS",
+                "keyMatch": "cash|equivalent|liquid",
+                "icon": "Droplet",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$2.1M"
+            },
+            {
+                "title": "TOTAL LIABILITIES",
+                "keyMatch": "liability|debt|payable",
+                "icon": "Lock",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$10M"
+            },
+            {
+                "title": "CURRENT RATIO",
+                "keyMatch": "current|ratio|liquidity",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "2.1x"
+            },
+            {
+                "title": "QUICK RATIO",
+                "keyMatch": "acid|quick|ratio",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "1.8x"
+            },
+            {
+                "title": "WORKING CAPITAL",
+                "keyMatch": "working|capital",
+                "icon": "Settings",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$1.2M"
+            }
+        ],
+        "3": [
+            {
+                "title": "ROI",
+                "keyMatch": "roi|return",
+                "icon": "TrendingUp",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "18%"
+            },
+            {
+                "title": "ROE",
+                "keyMatch": "roe|equity|return",
+                "icon": "UserCheck",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "15%"
+            },
+            {
+                "title": "ROA",
+                "keyMatch": "roa|asset|return",
+                "icon": "Building",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "12%"
+            },
+            {
+                "title": "WACC",
+                "keyMatch": "wacc|cost|capital",
+                "icon": "Globe",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "8.5%"
+            },
+            {
+                "title": "DIVIDEND YIELD",
+                "keyMatch": "dividend|yield",
+                "icon": "ArrowUpRight",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "3.2%"
+            },
+            {
+                "title": "EPS",
+                "keyMatch": "eps|earning|share",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$2.45"
+            }
+        ],
+        "4": [
+            {
+                "title": "RISK SCORE",
+                "keyMatch": "risk|score|credit",
+                "icon": "Shield",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "/100",
+                "agg": "avg",
+                "target": "12"
+            },
+            {
+                "title": "DEFAULT PROB",
+                "keyMatch": "default|prob",
+                "icon": "AlertTriangle",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "0.5%"
+            },
+            {
+                "title": "PROVISION AMT",
+                "keyMatch": "provision|reserve",
+                "icon": "Archive",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$450K"
+            },
+            {
+                "title": "VOLATILITY",
+                "keyMatch": "volatility|vix|fluct",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "1.2%"
+            },
+            {
+                "title": "VaR (95%)",
+                "keyMatch": "var|value|risk",
+                "icon": "TrendingDown",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$150K"
+            },
+            {
+                "title": "SHARPE RATIO",
+                "keyMatch": "sharpe|ratio",
+                "icon": "Target",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "2.1x"
+            }
+        ],
+        "5": [
+            {
+                "title": "PLANNED BUDGET",
+                "keyMatch": "budget|planned",
+                "icon": "Calendar",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$45M"
+            },
+            {
+                "title": "ACTUAL SPEND",
+                "keyMatch": "actual|spend|cost",
+                "icon": "CreditCard",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$38M"
+            },
+            {
+                "title": "BUDGET VARIANCE",
+                "keyMatch": "variance|delta|diff",
+                "icon": "Diff",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "15%"
+            },
+            {
+                "title": "BURN RATE",
+                "keyMatch": "burn|monthly|spend",
+                "icon": "Zap",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$/m",
+                "agg": "avg",
+                "target": "$120K"
+            },
+            {
+                "title": "RUNWAY",
+                "keyMatch": "runway|months|time",
+                "icon": "Clock",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": " m",
+                "agg": "avg",
+                "target": "24m"
+            },
+            {
+                "title": "FUNDS RAISED",
+                "keyMatch": "raise|fund|equity",
+                "icon": "TrendingUp",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$12M"
+            }
+        ],
+        "6": [
+            {
+                "title": "OP CASH FLOW",
+                "keyMatch": "operating|cash",
+                "icon": "RefreshCw",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$1.2M"
+            },
+            {
+                "title": "INV CASH FLOW",
+                "keyMatch": "investing|cash",
+                "icon": "BarChart3",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "-$450K"
+            },
+            {
+                "title": "FIN CASH FLOW",
+                "keyMatch": "financing|cash",
+                "icon": "DollarSign",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$200K"
+            },
+            {
+                "title": "FREE CASH FLOW",
+                "keyMatch": "free|cash",
+                "icon": "Droplet",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$750K"
+            },
+            {
+                "title": "CASH CONVERSION",
+                "keyMatch": "cycle|days",
+                "icon": "History",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "d",
+                "agg": "avg",
+                "target": "45d"
+            },
+            {
+                "title": "DIVIDENDS PAID",
+                "keyMatch": "dividend|payout",
+                "icon": "CheckCircle",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$100K"
+            }
+        ],
+        "7": [
+            {
+                "title": "PORTFOLIO VAL",
+                "keyMatch": "portfolio|holding",
+                "icon": "Briefcase",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$120M"
+            },
+            {
+                "title": "AVG YIELD",
+                "keyMatch": "yield|annual",
+                "icon": "Percent",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "6.5%"
+            },
+            {
+                "title": "ASSET ALLOC.",
+                "keyMatch": "allocation|weight",
+                "icon": "PieChart",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "Stable"
+            },
+            {
+                "title": "TRANSACTION FEE",
+                "keyMatch": "fee|commission",
+                "icon": "CreditCard",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$45K"
+            },
+            {
+                "title": "AUCTION VOL",
+                "keyMatch": "auction|trade",
+                "icon": "Gavel",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "1,200"
+            },
+            {
+                "title": "ACTIVE TRADERS",
+                "keyMatch": "user|trader|active",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "4.5K"
+            }
+        ],
+        "8": [
+            {
+                "title": "AUDIT LOGS",
+                "keyMatch": "audit|log|event",
+                "icon": "FileSearch",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "15K"
+            },
+            {
+                "title": "COMPLIANCE SCORE",
+                "keyMatch": "compliance|score",
+                "icon": "ShieldCheck",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "99.2%"
+            },
+            {
+                "title": "POLICY BREACH",
+                "keyMatch": "breach|violation",
+                "icon": "AlertOctagon",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "0"
+            },
+            {
+                "title": "LEGAL EXPENSE",
+                "keyMatch": "legal|council",
+                "icon": "Gavel",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$12K"
+            },
+            {
+                "title": "REGULATORY FILING",
+                "keyMatch": "filing|seb|sec",
+                "icon": "Bookmark",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "agg": "count",
+                "target": "12"
+            },
+            {
+                "title": "TRAINING COMP.",
+                "keyMatch": "train|learn|score",
+                "icon": "BookOpen",
+                "color": "white",
+                "bg": "bg-[#1E293B]",
+                "suffix": "%",
+                "agg": "avg",
+                "target": "100%"
+            }
+        ],
+        "9": [
+            {
+                "title": "MARKET CAP",
+                "keyMatch": "market|cap|val",
+                "icon": "Trophy",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "sum",
+                "target": "$2.5B"
+            },
+            {
+                "title": "SHARE PRICE",
+                "keyMatch": "price|tick|stock",
+                "icon": "Activity",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "prefix": "$",
+                "agg": "avg",
+                "target": "$145.2"
+            },
+            {
+                "title": "P/E RATIO",
+                "keyMatch": "pe|ratio|price",
+                "icon": "Ratio",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "12.5x"
+            },
+            {
+                "title": "BETA",
+                "keyMatch": "beta|index|sync",
+                "icon": "TrendingUp",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "suffix": "x",
+                "agg": "avg",
+                "target": "1.1x"
+            },
+            {
+                "title": "INVESTOR COUNT",
+                "keyMatch": "investor|shareholder",
+                "icon": "Users",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "sum",
+                "target": "45K"
+            },
+            {
+                "title": "CREDIT RATING",
+                "keyMatch": "rating|grade",
+                "icon": "Award",
+                "color": "white",
+                "bg": "bg-[#0F172A]",
+                "agg": "avg",
+                "target": "AAA"
+            }
+        ]
+    },
+    "templates": [
+        [
+            {
+                "type": "area",
+                "title": "Revenue vs Expense Velocity",
+                "reasoning": "Tracking net burn against income growth",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "cost"
+                ],
+                "x_label": "Date",
+                "y_label": "Value ($)",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Profit Margin Trajectory",
+                "reasoning": "Monitoring longitudinal profitability consistency",
+                "x_axis": "time",
+                "y_axis": [
+                    "profit",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "$ / %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Revenue by Legal Entity",
+                "reasoning": "Comparing contribution across regional subsidiaries",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Entity",
+                "y_label": "Amount",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Cash Inflow Concentration",
+                "reasoning": "Analyzing source diversity in current liquidity",
+                "x_axis": "source",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Channel",
+                "y_label": "Cash Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Tax Liability Sync",
+                "reasoning": "Monitoring tax provision alignment with earnings",
+                "x_axis": "time",
+                "y_axis": [
+                    "profit",
+                    "rate"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Provision",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Operating Cost by Dept",
+                "reasoning": "Departmental efficiency benchmarking",
+                "x_axis": "department",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Unit",
+                "y_label": "Budget Impact",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "EBITDA Projection Growth",
+                "reasoning": "Forecasting core operational earnings",
+                "x_axis": "time",
+                "y_axis": [
+                    "profit",
+                    "profit"
+                ],
+                "x_label": "Year",
+                "y_label": "Volume",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Net Worth Accumulation",
+                "reasoning": "Longitudinal asset growth tracking",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Period",
+                "y_label": "Gross Val",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Non-Operating Income Mix",
+                "reasoning": "Tracking secondary revenue streams",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "count"
+                ],
+                "x_label": "Date",
+                "y_label": "$ / Volume",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Interest Coverage Stability",
+                "reasoning": "Monitoring debt service health longitudinally",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Coverage Ratio",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Dividend Payout Analysis",
+                "reasoning": "Comparing shareholder distribution across classes",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "rate"
+                ],
+                "x_label": "Share Type",
+                "y_label": "Amount",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Invested Capital Velocity",
+                "reasoning": "Analyzing efficiency of capital deployment",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "Intensity",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Retained Earnings Momentum",
+                "reasoning": "Tracking growth in internal reserve build",
+                "x_axis": "time",
+                "y_axis": [
+                    "profit",
+                    "profit"
+                ],
+                "x_label": "Year",
+                "y_label": "Accumulation",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Debt-to-Equity Composition",
+                "reasoning": "Monitoring corporate leverage structure",
+                "x_axis": "segment",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Class",
+                "y_label": "Share %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Tax Credit Utilization",
+                "reasoning": "Analyzing efficiency of tax planning",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "sales"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Credit Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Regulatory Capital Sync",
+                "reasoning": "Monitoring compliance with minimum reserves",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Tier 1 %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Current Asset Liquidity",
+                "reasoning": "Tracking cash and cash-equivalent availability",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Date",
+                "y_label": "Liquidity",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Working Capital Cycle",
+                "reasoning": "Monitoring operational cash efficiency",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Week",
+                "y_label": "Days / %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Liability Maturity Profile",
+                "reasoning": "Analyzing short vs long-term debt obligations",
+                "x_axis": "category",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Maturity",
+                "y_label": "Payable Val",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Inventory Value Obsolescence",
+                "reasoning": "Tracking potential asset write-down risks",
+                "x_axis": "category",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Aisle",
+                "y_label": "Value at Risk",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Current Ratio Stability",
+                "reasoning": "Longitudinal health of liquidity buffers",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Ratio",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Receivables Aging Breakdown",
+                "reasoning": "Analyzing AR risk profiles by regional client",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Market",
+                "y_label": "Aging Amt",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Fixed Asset Depreciation",
+                "reasoning": "Forecasting impact of wear on book value",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Year",
+                "y_label": "Acc. Depr",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Solvency Margin Trend",
+                "reasoning": "Tracking long-term institutional survival buffer",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Margin %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "ROI vs Benchmark",
+                "reasoning": "Analyzing investment performance alpha",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Return %",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "WACC Fluctuations",
+                "reasoning": "Monitoring cost of capital sensitivity",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Weighted Cost",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "ROA by Business Unit",
+                "reasoning": "Comparing asset productivity across divisions",
+                "x_axis": "department",
+                "y_axis": [
+                    "rate",
+                    "sales"
+                ],
+                "x_label": "Unit",
+                "y_label": "Efficiency",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Equity Multiple Expansion",
+                "reasoning": "Tracking shareholder value creation velocity",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Year",
+                "y_label": "Multiple",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Dividend Payout Elasticity",
+                "reasoning": "Alignment of dividends with earnings growth",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Payout %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Market Val vs Book Val",
+                "reasoning": "Institutional valuation audit",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "cost"
+                ],
+                "x_label": "Market",
+                "y_label": "Amount",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Portfolio Alpha Forecast",
+                "reasoning": "Predicting future abnormal returns",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Alpha %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Expense-to-Invest Ratio",
+                "reasoning": "Monitoring overhead relative to capital spend",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Period",
+                "y_label": "Ratio",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Value-at-Risk Snapshot",
+                "reasoning": "Tracking aggregate downside exposure",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "cost"
+                ],
+                "x_label": "Date",
+                "y_label": "VaR Val",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Volatility Clustering",
+                "reasoning": "Monitoring market instability patterns",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Day",
+                "y_label": "Std Dev %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Credit Risk by Sector",
+                "reasoning": "Comparing exposure across lending industries",
+                "x_axis": "category",
+                "y_axis": [
+                    "score",
+                    "rate"
+                ],
+                "x_label": "Sector",
+                "y_label": "Risk Grade",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Stress Test Sensitivity",
+                "reasoning": "Analyzing impact of extreme market movements",
+                "x_axis": "source",
+                "y_axis": [
+                    "rate",
+                    "sales"
+                ],
+                "x_label": "Scenario",
+                "y_label": "Impact",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Sharpe Ratio Consistency",
+                "reasoning": "Risk-adjusted performance longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Month",
+                "y_label": "Ratio",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Asset Correlation Heatmap",
+                "reasoning": "Comparing sync between different holding types",
+                "x_axis": "region",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Asset A vs B",
+                "y_label": "Corr Coeff",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Implied Beta Forecast",
+                "reasoning": "Predicting sensitivity to index movements",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Beta",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Tracking Error Variance",
+                "reasoning": "Monitoring deviation from target benchmarks",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "TE %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Variance Intensity",
+                "reasoning": "Tracking budget overruns across time",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Shift",
+                "y_label": "$ Variance",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Runway Depletion Speed",
+                "reasoning": "Monitoring remaining operational time longitudinally",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "m Left",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Budget Allotment by Dept",
+                "reasoning": "Comparing planned vs actual spend by unit",
+                "x_axis": "department",
+                "y_axis": [
+                    "sales",
+                    "cost"
+                ],
+                "x_label": "Dept",
+                "y_label": "Budget Sync",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Marketing CAC Velocity",
+                "reasoning": "Cost of acquisition impact on burn rate",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Week",
+                "y_label": "$ Intensity",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Funding Milestone CVR",
+                "reasoning": "Tracking success in hitting capital benchmarks",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Date",
+                "y_label": "Success %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Overhead vs Headcount",
+                "reasoning": "Personnel efficiency audit",
+                "x_axis": "segment",
+                "y_axis": [
+                    "cost",
+                    "count"
+                ],
+                "x_label": "Role typ",
+                "y_label": "$ Cost Share",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Cash Burn Forecast",
+                "reasoning": "Predicting future monthly outflow",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Month",
+                "y_label": "Burn Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Capital Utilization Grade",
+                "reasoning": "Monitoring ROI on deployed budget funds",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Period",
+                "y_label": "Utilization",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Operating Cash Density",
+                "reasoning": "Tracking core business cash flow health",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Date",
+                "y_label": "Flow Vol",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Free Cash Flow Conversion",
+                "reasoning": "Monitoring net income to FCF efficiency",
+                "x_axis": "time",
+                "y_axis": [
+                    "profit",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Conv %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Cash Flow by Geo Region",
+                "reasoning": "Comparing regional liquidity contributions",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Entity Loc",
+                "y_label": "Cash Contrib",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Financing Cash Surges",
+                "reasoning": "Analyzing impact of debt/equity injections",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Injection Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Investing Activity Sync",
+                "reasoning": "Tracking CAPEX alignment with business needs",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "cost"
+                ],
+                "x_label": "Year",
+                "y_label": "Investment",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Cash Cycle by Business Unit",
+                "reasoning": "Speed of cash return by department",
+                "x_axis": "department",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Unit",
+                "y_label": "Days TAT",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Liquidity Coverage Forecast",
+                "reasoning": "Predicting cash buffer health",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "LCR Ratio",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Debt Servicing Velocity",
+                "reasoning": "Monitoring speed of interest/principal payout",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "$ Payout",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Portfolio Value Momentum",
+                "reasoning": "Tracking aggregate growth of holdings",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "sales"
+                ],
+                "x_label": "Date",
+                "y_label": "Portfolio Val",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Yield Spread Velocity",
+                "reasoning": "Monitoring interest rate performance against peers",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Spread %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Allocation by Asset Type",
+                "reasoning": "Comparing weight across Equity, Bonds, Cash",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "rate"
+                ],
+                "x_label": "Asset Class",
+                "y_label": "Weight",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Trading Volume Density",
+                "reasoning": "Analyzing liquidity in asset holdings",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Hour",
+                "y_label": "Vol Index",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Fee Leakage Analytics",
+                "reasoning": "Monitoring impact of commissions on net return",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Drag %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Trader Performance Audit",
+                "reasoning": "Efficiency comparison across desk managers",
+                "x_axis": "segment",
+                "y_axis": [
+                    "rate",
+                    "sales"
+                ],
+                "x_label": "Manager",
+                "y_label": "PNL Alpha",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Capital Gain Projection",
+                "reasoning": "Forecasting tax-impacted net returns",
+                "x_axis": "time",
+                "y_axis": [
+                    "profit",
+                    "profit"
+                ],
+                "x_label": "Year",
+                "y_label": "Gains Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "AUM Retention Rate",
+                "reasoning": "Tracking investor loyalty longitudinally",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Retention %",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Compliance Event Density",
+                "reasoning": "Tracking audit activity across the org",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Date",
+                "y_label": "Events",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Breach Mitigation Speed",
+                "reasoning": "Efficiency of legal/compliance response",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Month",
+                "y_label": "Days to Close",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Audit Grade by Subsidiary",
+                "reasoning": "Comparing regulatory health across regional entities",
+                "x_axis": "region",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Entity",
+                "y_label": "Audit Grade",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Legal Spend Efficiency",
+                "reasoning": "Analyzing council costs relative to outcomes",
+                "x_axis": "time",
+                "y_axis": [
+                    "cost",
+                    "sales"
+                ],
+                "x_label": "Year",
+                "y_label": "$ Impact",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Training Adoption Rate",
+                "reasoning": "Monitoring staff adherence to compliance modules",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "Adoption %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Dispute Resolution breakdown",
+                "reasoning": "Analyzing legal case status by category",
+                "x_axis": "category",
+                "y_axis": [
+                    "count",
+                    "rate"
+                ],
+                "x_label": "Case Typ",
+                "y_label": "Resolution %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Filing Volume Projection",
+                "reasoning": "Predicting future regulatory reporting load",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "count"
+                ],
+                "x_label": "Month",
+                "y_label": "Reports",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Governance Score Momentum",
+                "reasoning": "Tracking institutional quality rating",
+                "x_axis": "time",
+                "y_axis": [
+                    "score",
+                    "score"
+                ],
+                "x_label": "Year",
+                "y_label": "ESG Rank",
+                "priority": "low",
+                "size": "normal"
+            }
+        ],
+        [
+            {
+                "type": "area",
+                "title": "Market Cap Expansion",
+                "reasoning": "Tracking enterprise value growth",
+                "x_axis": "time",
+                "y_axis": [
+                    "sales",
+                    "profit"
+                ],
+                "x_label": "Date",
+                "y_label": "$ MCap",
+                "priority": "high",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Share Price Volatility",
+                "reasoning": "Monitoring tick stability against index",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Day",
+                "y_label": "Volatility %",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Equity Structure Breakdown",
+                "reasoning": "Comparing holding weights across Institutional vs Retail",
+                "x_axis": "category",
+                "y_axis": [
+                    "sales",
+                    "rate"
+                ],
+                "x_label": "Holder Class",
+                "y_label": "Share %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Insider Trading Activity",
+                "reasoning": "Monitoring key executive transaction signals",
+                "x_axis": "time",
+                "y_axis": [
+                    "count",
+                    "sales"
+                ],
+                "x_label": "Month",
+                "y_label": "Signal Vol",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "P/E Ratio Devaluation Sync",
+                "reasoning": "Monitoring valuation relative to peer benchmarks",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "rate"
+                ],
+                "x_label": "Period",
+                "y_label": "P/E Rank",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "bar",
+                "title": "Regional Revenue Growth",
+                "reasoning": "Institutional performance across continental markets",
+                "x_axis": "region",
+                "y_axis": [
+                    "sales",
+                    "rate"
+                ],
+                "x_label": "Market",
+                "y_label": "Growth %",
+                "breakdownMode": "grouped",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "area",
+                "title": "Earnings Surprise Forecast",
+                "reasoning": "Predicting beta relative to market estimates",
+                "x_axis": "time",
+                "y_axis": [
+                    "rate",
+                    "sales"
+                ],
+                "x_label": "Quarter",
+                "y_label": "Surprise Est",
+                "priority": "medium",
+                "size": "normal"
+            },
+            {
+                "type": "line",
+                "title": "Shareholder Loyalty Trend",
+                "reasoning": "Tracking holding period longitudinality",
+                "x_axis": "time",
+                "y_axis": [
+                    "time",
+                    "rate"
+                ],
+                "x_label": "Year",
+                "y_label": "Holding Period",
+                "priority": "low",
+                "size": "normal"
+            }
+        ]
+    ]
+}
