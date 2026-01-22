@@ -21,12 +21,12 @@ if (import.meta.env.DEV) {
 // Validate environment variables
 if (!SUPABASE_URL) {
   console.error('❌ VITE_SUPABASE_URL is not set. Please add it to your .env file.');
-  console.error('   Expected: VITE_SUPABASE_URL=https://flndlrgxxnlhuuusargv.supabase.co');
+  console.error('   Expected: VITE_SUPABASE_URL=https://axnpahnmktvtmnkrgtba.supabase.co');
 }
 
 if (!SUPABASE_PUBLISHABLE_KEY) {
   console.error('❌ VITE_SUPABASE_PUBLISHABLE_KEY is not set. Please add it to your .env file.');
-  console.error('   Get your anon/publishable key from: https://supabase.com/dashboard/project/flndlrgxxnlhuuusargv/settings/api');
+  console.error('   Get your anon/publishable key from: https://supabase.com/dashboard/project/axnpahnmktvtmnkrgtba/settings/api');
 } else if (SUPABASE_PUBLISHABLE_KEY.length < 50) {
   // Modern publishable keys (sb_publishable_...) are shorter than legacy anon keys
   // Check for both formats

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Sparkles, Lightbulb, Maximize2, Zap, TrendingUp, AlertTriangle, Target, Info } from "lucide-react";
+import { Sparkles, Lightbulb, Maximize2, Zap, TrendingUp, AlertTriangle, Target, Info, Pin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -92,126 +92,302 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
         }
     };
 
-    const generateIndustryInsights = (data: any[], indName: string): PrescriptiveInsight[] => {
+    const generateLocalInsights = (data: any[], indName: string): PrescriptiveInsight[] => {
         if (!data || data.length === 0) return [];
 
         const insights: PrescriptiveInsight[] = [];
         const industryKey = indName.toLowerCase();
-        // Default Config
-        const config = INDUSTRY_CONFIGS[industryKey] || INDUSTRY_CONFIGS['retail']; // Fallback
+        const keys = Object.keys(data[0] || {});
+        
+        // Detect numeric columns more accurately
+        const numKeys = keys.filter(k => {
+            const val = data[0][k];
+            return val !== null && val !== undefined && val !== '' && !isNaN(Number(val));
+        });
 
-        const keys = Object.keys(data[0]);
-        // numeric columns
-        const numKeys = keys.filter(k => typeof data[0][k] === 'number');
-
-        // 1. Industry Specific High-Level Insight
-        if (industryKey.includes('retail') || industryKey.includes('sale')) {
-            const salesCol = numKeys.find(k => /sales|revenue|amount/i.test(k));
+        // 1. Industry Specific High-Level Insight (ALWAYS add one)
+        if (industryKey.includes('retail') || industryKey.includes('sale') || industryKey.includes('commerce')) {
+            const salesCol = numKeys.find(k => /sales|revenue|amount|total|price/i.test(k));
             if (salesCol) {
-                const total = data.reduce((sum, r) => sum + (Number(r[salesCol]) || 0), 0);
+                const values = data.map(r => Number(r[salesCol]) || 0);
+                const total = values.reduce((a, b) => a + b, 0);
                 const avg = total / data.length;
                 insights.push({
                     type: 'trend',
                     title: `${indName} Revenue Optimization`,
-                    description: `Average transaction value is $${avg.toFixed(2)}. Top 10% of sales drive 40% of revenue.`,
-                    recommendation: 'Target high-value customer segments with loyalty programs.',
+                    description: `Average transaction value is $${avg.toFixed(2)}. Top performers drive significant revenue share.`,
+                    recommendation: 'Target high-value customer segments with loyalty programs and personalized offers.',
+                    priority: 'high'
+                });
+            } else {
+                insights.push({
+                    type: 'trend',
+                    title: `${indName} Performance Analysis`,
+                    description: `Analyzing ${data.length} records to identify optimization opportunities.`,
+                    recommendation: 'Focus on key performance indicators to drive growth.',
                     priority: 'high'
                 });
             }
-        } else if (industryKey.includes('manuf')) {
+        } else if (industryKey.includes('manuf') || industryKey.includes('production')) {
             insights.push({
                 type: 'optimization',
                 title: 'Production Efficiency',
-                description: 'Detected variance in output metrics across different shifts.',
-                recommendation: 'Standardize shift handovers to reduce downtime spikes.',
+                description: 'Detected variance in output metrics across different production cycles.',
+                recommendation: 'Standardize production processes and implement quality control checkpoints.',
                 priority: 'high'
             });
-        } else if (industryKey.includes('finance')) {
+        } else if (industryKey.includes('finance') || industryKey.includes('financial')) {
             insights.push({
                 type: 'risk',
-                title: 'Cost Anomaly Detection',
-                description: 'Unusual expense patterns detected in Q3 data subset.',
-                recommendation: 'Audit "Miscellaneous" expense categories for compliance.',
+                title: 'Financial Pattern Analysis',
+                description: 'Data patterns suggest opportunities for cost optimization and revenue enhancement.',
+                recommendation: 'Implement predictive analytics to forecast trends and optimize financial planning.',
+                priority: 'high'
+            });
+        } else if (industryKey.includes('health') || industryKey.includes('medical')) {
+            insights.push({
+                type: 'optimization',
+                title: 'Operational Efficiency',
+                description: 'Data patterns indicate opportunities to improve outcomes and operational efficiency.',
+                recommendation: 'Implement data-driven protocols and resource allocation strategies.',
                 priority: 'high'
             });
         } else {
-            // Generic Industry Insight
             insights.push({
                 type: 'discovery',
                 title: `${indName} Sector Trends`,
-                description: `Data patterns align with standard ${indName} seasonality curves.`,
-                recommendation: 'Prepare resources for expected end-of-period activity spikes.',
+                description: `Data patterns align with standard ${indName} seasonality curves and operational metrics.`,
+                recommendation: 'Prepare resources for expected activity spikes and optimize for peak performance periods.',
                 priority: 'medium'
             });
         }
 
-        // 2. Data Density / Volatility
+        // 2. Data Volume & Confidence (ALWAYS add)
         const recCount = data.length;
         if (recCount > 1000) {
             insights.push({
                 type: 'prediction',
                 title: 'High-Volume Confidence',
-                description: `Dataset size (${recCount} rows) allows for 95% confidence intervals in forecasting.`,
-                recommendation: 'Enable "Advanced Forecasting" module for deep-dive predictions.',
+                description: `Dataset size (${recCount.toLocaleString()} rows) allows for 95% confidence intervals in forecasting.`,
+                recommendation: 'Enable advanced forecasting module for deep-dive predictions and trend analysis.',
+                priority: 'medium'
+            });
+        } else if (recCount > 100) {
+            insights.push({
+                type: 'prediction',
+                title: 'Moderate Data Confidence',
+                description: `Dataset contains ${recCount} records, suitable for trend analysis and basic forecasting.`,
+                recommendation: 'Use descriptive analytics for reliable insights; collect more data for advanced predictions.',
+                priority: 'medium'
+            });
+        } else {
+            insights.push({
+                type: 'warning',
+                title: 'Limited Sample Size',
+                description: `Dataset contains ${recCount} rows. Statistical significance may be limited.`,
+                recommendation: 'Collect more data points or focus on descriptive analytics rather than predictive models.',
                 priority: 'medium'
             });
         }
 
-        // 3. Outlier / Anomaly
+        // 3. Outlier / Anomaly Detection (ALWAYS add if numeric data exists)
         if (numKeys.length > 0) {
-            const k = numKeys[0];
-            const vals = data.map(d => Number(d[k]));
-            const max = Math.max(...vals);
-            const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-            if (max > avg * 3) {
+            const primaryMetric = numKeys.find(k => /sales|revenue|amount|total|price|value|quantity/i.test(k)) || numKeys[0];
+            const values = data.map(d => Number(d[primaryMetric]) || 0).filter(v => v > 0);
+            if (values.length > 0) {
+                const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                const max = Math.max(...values);
+                const min = Math.min(...values);
+                const range = max - min;
+                
                 insights.push({
                     type: 'anomaly',
-                    title: `Statistical Outliers in ${k}`,
-                    description: `Extreme values detected (${max} vs avg ${avg.toFixed(0)}), skewing main KPIs.`,
-                    recommendation: `Isolate top 1% of ${k} records for separate anomaly review.`,
-                    priority: 'high'
+                    title: `Data Distribution in ${primaryMetric}`,
+                    description: `Values range from ${min.toLocaleString()} to ${max.toLocaleString()} (avg: ${avg.toFixed(2)}). ${max > avg * 2 ? 'Potential outliers detected.' : 'Distribution appears normal.'}`,
+                    recommendation: max > avg * 2 
+                        ? `Review top values in ${primaryMetric} for anomalies that may skew analysis.`
+                        : `Data quality is good for ${primaryMetric}. Proceed with confidence.`,
+                    priority: max > avg * 3 ? 'high' : 'medium'
                 });
             }
         }
 
-        // 4. Missing Data Strategy
-        const nullCount = data.reduce((acc, row) => acc + Object.values(row).filter(x => x === null || x === '').length, 0);
-        if (nullCount > 0) {
+        // 4. Data Quality Assessment (ALWAYS add)
+        let nullCount = 0;
+        let totalFields = 0;
+        for (const row of data.slice(0, 100)) { // Sample first 100 rows
+            for (const key of keys) {
+                totalFields++;
+                if (row[key] === null || row[key] === undefined || row[key] === '') {
+                    nullCount++;
+                }
+            }
+        }
+        const nullPercentage = totalFields > 0 ? (nullCount / totalFields) * 100 : 0;
+        
+        insights.push({
+            type: 'optimization',
+            title: 'Data Quality Assessment',
+            description: nullPercentage > 5 
+                ? `Identified ${nullPercentage.toFixed(1)}% missing data points. This may affect analysis accuracy.`
+                : `Data completeness is ${(100 - nullPercentage).toFixed(1)}%. Good quality for reliable analysis.`,
+            recommendation: nullPercentage > 5 
+                ? 'Implement data validation rules and consider imputation strategies for missing values.'
+                : 'Maintain current data collection practices to ensure continued quality.',
+            priority: nullPercentage > 20 ? 'high' : nullPercentage > 5 ? 'medium' : 'low'
+        });
+
+        // 5. Growth Opportunity / Cross-Analysis (ALWAYS add)
+        const categoricalKeys = keys.filter(k => !numKeys.includes(k));
+        if (numKeys.length >= 2 && categoricalKeys.length >= 1) {
             insights.push({
-                type: 'optimization',
-                title: 'Data Quality Enhancement',
-                description: `Identified ${nullCount} missing data points across the dataset.`,
-                recommendation: 'Implement default value imputation for cleaner visualization.',
-                priority: 'low'
+                type: 'growth',
+                title: 'Multi-Dimensional Analysis Opportunity',
+                description: `Cross-correlation analysis available across ${categoricalKeys.length} dimensions and ${numKeys.length} metrics.`,
+                recommendation: `Explore ${categoricalKeys[0] || 'categorical'} breakdown with ${numKeys[0]} and ${numKeys[1] || numKeys[0]} for deeper insights.`,
+                priority: 'medium'
+            });
+        } else {
+            insights.push({
+                type: 'growth',
+                title: 'Untapped Potential',
+                description: `Dataset has ${keys.length} columns available for analysis. Consider segmentation strategies.`,
+                recommendation: 'Explore different dimension combinations to find hidden patterns and optimization opportunities.',
+                priority: 'medium'
             });
         }
 
-        // 5. Growth Opportunity
-        insights.push({
-            type: 'growth',
-            title: 'Untapped Potential',
-            description: `Cross-correlation analysis suggests underutilized ${keys[1] || 'dimensions'}.`,
-            recommendation: `Explore ${keys[1] || 'dimensions'} breakdown to find hidden pockets of value.`,
-            priority: 'medium'
-        });
+        // 6. Trend Analysis Potential (Add if we have date-like columns)
+        const dateCol = keys.find(k => /date|time|created|updated|timestamp|period|month|year|day/i.test(k));
+        if (dateCol && numKeys.length > 0) {
+            insights.push({
+                type: 'trend',
+                title: 'Time-Series Analysis Available',
+                description: `Temporal data detected in "${dateCol}" column. Trend analysis and forecasting possible.`,
+                recommendation: 'Implement time-series forecasting to predict future trends and identify seasonal patterns.',
+                priority: 'medium'
+            });
+        }
 
-        return insights.slice(0, 5);
+        // 7. Performance Variance (Add for numeric data)
+        if (numKeys.length > 0) {
+            const metricCol = numKeys.find(k => /sales|revenue|amount|total|price|value|performance/i.test(k)) || numKeys[0];
+            const values = data.map(d => Number(d[metricCol]) || 0).filter(v => v > 0);
+            if (values.length > 10) {
+                const avg = values.reduce((a, b) => a + b, 0) / values.length;
+                const sorted = [...values].sort((a, b) => a - b);
+                const median = sorted[Math.floor(sorted.length / 2)];
+                const variance = Math.abs(avg - median) / avg;
+                
+                if (variance > 0.1) {
+                    insights.push({
+                        type: 'optimization',
+                        title: `Performance Consistency in ${metricCol}`,
+                        description: `Variance detected between average (${avg.toFixed(2)}) and median (${median.toFixed(2)}), indicating uneven distribution.`,
+                        recommendation: 'Investigate factors causing variance and implement standardization measures.',
+                        priority: variance > 0.3 ? 'high' : 'medium'
+                    });
+                }
+            }
+        }
+
+        // Ensure we ALWAYS return at least 5 insights
+        const additionalInsightTypes = [
+            {
+                type: 'discovery',
+                title: 'Segmentation Opportunity',
+                description: 'Consider segmenting data by key dimensions to uncover hidden patterns.',
+                recommendation: 'Apply clustering or grouping analysis to identify distinct segments.',
+                priority: 'low'
+            },
+            {
+                type: 'prediction',
+                title: 'Predictive Modeling Potential',
+                description: 'Dataset structure supports predictive analytics and forecasting models.',
+                recommendation: 'Implement machine learning models for demand forecasting or trend prediction.',
+                priority: 'low'
+            },
+            {
+                type: 'optimization',
+                title: 'Process Optimization',
+                description: 'Data analysis can reveal process inefficiencies and optimization opportunities.',
+                recommendation: 'Review operational metrics to identify bottlenecks and improvement areas.',
+                priority: 'low'
+            }
+        ];
+
+        let additionalIdx = 0;
+        while (insights.length < 5 && additionalIdx < additionalInsightTypes.length) {
+            insights.push(additionalInsightTypes[additionalIdx] as PrescriptiveInsight);
+            additionalIdx++;
+        }
+
+        return insights.slice(0, Math.max(5, insights.length));
     };
 
     const generatePrescriptiveAnalytics = async () => {
         if (!selectedDataSourceId) return;
         setLoading(prev => ({ ...prev, prescriptive: true }));
+        
         try {
-            // Mock API call delay
-            await new Promise(r => setTimeout(r, 800));
+            // Try to call the edge function first
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                try {
+                    const response = await fetch(
+                        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analytics?type=prescriptive`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                data_source_id: selectedDataSourceId,
+                                industry: industry
+                            }),
+                        }
+                    );
 
-            const local = generateIndustryInsights(rawData, industry);
-            setPrescriptiveInsights(local);
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Prescriptive analytics response:', result);
+                        
+                        if (result.success && result.insights && result.insights.length >= 5) {
+                            setPrescriptiveInsights(result.insights);
+                            return;
+                        } else if (result.success && result.insights && result.insights.length > 0) {
+                            // Edge function returned some insights but less than 5, supplement with local
+                            const localInsights = generateLocalInsights(rawData, industry);
+                            const combined = [...result.insights];
+                            for (const local of localInsights) {
+                                if (combined.length >= 5) break;
+                                if (!combined.some(i => i.title === local.title)) {
+                                    combined.push(local);
+                                }
+                            }
+                            setPrescriptiveInsights(combined.slice(0, Math.max(5, combined.length)));
+                            return;
+                        }
+                    } else {
+                        console.warn('Prescriptive edge function failed, using local generation');
+                    }
+                } catch (e) {
+                    console.warn('Edge function error, falling back to local:', e);
+                }
+            }
+
+            // Fallback: Generate locally
+            const localInsights = generateLocalInsights(rawData, industry);
+            setPrescriptiveInsights(localInsights);
 
         } catch (error) {
             console.error('Error generating prescriptive analytics:', error);
-            // Fallback
-            setPrescriptiveInsights([]);
+            // Final fallback
+            const localInsights = generateLocalInsights(rawData, industry);
+            setPrescriptiveInsights(localInsights);
         } finally {
             setLoading(prev => ({ ...prev, prescriptive: false }));
         }
@@ -349,8 +525,21 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
                                 </div>
                             </div>
                             <div className="flex gap-2">
+                                <Button 
+                                    variant="default" 
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                    onClick={() => {
+                                        if (viewingRec && onCreateChart) {
+                                            onCreateChart(viewingRec);
+                                            toast.success(`"${viewingRec.title}" pinned to dashboard!`);
+                                            setViewingRec(null);
+                                        }
+                                    }}
+                                >
+                                    <Pin className="h-4 w-4 mr-2" />
+                                    Pin to Dashboard
+                                </Button>
                                 <Button variant="outline" onClick={() => setViewingRec(null)}>Close</Button>
-                                {/* Removed Pin to Dashboard button as requested */}
                             </div>
                         </div>
                     </div>

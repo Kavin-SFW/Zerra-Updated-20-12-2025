@@ -99,7 +99,9 @@ const Analytics = () => {
     selectedIndustryId,
     setSelectedIndustryId,
     setSelectedIndustryName,
-    setSelectedTemplate // Add setSelectedTemplate from context
+    setSelectedTemplate,
+    pendingCharts,
+    clearPendingCharts
   } = useAnalytics();
   const [industries, setIndustries] = useState<{ id: string; name: string }[]>([]);
   const [dataSources, setDataSources] = useState<any[]>([]);
@@ -134,6 +136,22 @@ const Analytics = () => {
     loadDataSources();
     fetchIndustries();
   }, []);
+
+  // Watch for charts pinned from chat or AI recommendations
+  useEffect(() => {
+    if (pendingCharts.length > 0) {
+      const newCharts = clearPendingCharts();
+      setCharts(prev => [
+        ...prev,
+        ...newCharts.map(chart => ({
+          title: chart.title,
+          option: chart.option,
+          rec: chart.rec as ChartRecommendation
+        }))
+      ]);
+      toast.success(`Added ${newCharts.length} chart${newCharts.length > 1 ? 's' : ''} to dashboard`);
+    }
+  }, [pendingCharts, clearPendingCharts]);
 
   useEffect(() => {
     if (!selectedDataSourceId) return;
@@ -369,26 +387,68 @@ const Analytics = () => {
     try {
       // Fetch data first
       const data = await fetchAndComputeKpis();
-      if (!data) throw new Error("No data found");
-
-      // Check if it's a mock source, in which case we don't call the AI endpoint for layout
-      // but generate it locally using templates
-      const isMock = mockDataService.getData(selectedDataSourceId) !== null;
+      if (!data || data.length === 0) {
+        console.error('No data available for chart generation');
+        toast.error('No data available. Please ensure your file was processed correctly.');
+        return;
+      }
       
-      if (isMock) {
-          // Use template generation logic instead of API
-          const templateRecs = getTemplateCharts('template1', data, selectedIndustryName);
-           const newCharts = templateRecs.map(rec => ({
-            title: rec.title,
-            rec: rec,
-            option: createEChartsOption(rec, data, chartSortOrder, false, groupByDimension)
-          }));
-          setCharts(newCharts);
-          toast.success(`Generated ${newCharts.length} charts from connected database`);
-      } else {
-          // Original Logic
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) throw new Error('Not authenticated');
+      // Always use edge function for chart generation
+      // Get current session
+          const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !currentSession) {
+            console.error('Session error:', sessionError);
+            toast.error('Not authenticated. Please log in again.');
+            // Redirect to login after a short delay
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 2000);
+            throw new Error('Not authenticated. Please log in again.');
+          }
+
+          // Always refresh the session to ensure token is valid before making request
+          let session = currentSession;
+          const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+          
+          if (!refreshError && refreshedSession && refreshedSession.access_token) {
+            session = refreshedSession;
+            console.log('Session refreshed successfully');
+          } else if (refreshError) {
+            console.warn('Token refresh warning:', refreshError);
+            // Continue with current session if refresh fails, but log it
+            if (!currentSession || !currentSession.access_token) {
+              const errorMsg = 'Session expired. Please log in again.';
+              toast.error(errorMsg);
+              // Don't redirect immediately - let user see the error
+              throw new Error(errorMsg);
+            }
+          }
+
+          if (!session || !session.access_token) {
+            const errorMsg = 'Invalid session. Please log in again.';
+            toast.error(errorMsg);
+            throw new Error(errorMsg);
+          }
+          
+          // Verify token is still valid by checking user
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) {
+            console.error('User verification failed:', userError);
+            const errorMsg = `Authentication failed: ${userError?.message || 'User not found'}`;
+            toast.error(errorMsg);
+            throw new Error(errorMsg);
+          }
+          
+          console.log('Authentication verified, user:', user.id);
+
+          // Log request details for debugging
+          console.log('Calling analytics Edge Function:', {
+            url: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analytics?type=dashboard`,
+            hasToken: !!session.access_token,
+            tokenLength: session.access_token?.length,
+            dataSourceId: selectedDataSourceId,
+            industry: selectedIndustryName
+          });
 
           const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analytics?type=dashboard`, {
             method: 'POST',
@@ -403,26 +463,223 @@ const Analytics = () => {
             }),
           });
 
-          if (!response.ok) throw new Error('Failed to generate dashboard');
+          if (!response.ok) {
+            const errorText = await response.text();
+            let errorMessage = 'Failed to generate dashboard';
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage = errorData.error || errorData.message || errorMessage;
+            } catch {
+              errorMessage = errorText || errorMessage;
+            }
+            console.error('Dashboard generation error:', {
+              status: response.status,
+              statusText: response.statusText,
+              error: errorMessage,
+              headers: Object.fromEntries(response.headers.entries())
+            });
+            
+            if (response.status === 401) {
+              // Try refreshing session one more time
+              const { data: { session: retrySession }, error: retryError } = await supabase.auth.refreshSession();
+              
+              if (!retryError && retrySession && retrySession.access_token) {
+                console.log('Retrying with refreshed token...');
+                // Retry the request with refreshed token
+                const retryResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analytics?type=dashboard`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${retrySession.access_token}`,
+                    'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    data_source_id: selectedDataSourceId,
+                    industry: selectedIndustryName
+                  }),
+                });
+                
+                if (retryResponse.ok) {
+                  // Success with retry, continue with normal flow
+                  const retryResult = await retryResponse.json();
+                  // Process retryResult the same way as result below
+                  // ... (will continue in next replacement)
+                  console.log('Retry successful, processing response...');
+                  const result = retryResult;
+                  
+                  console.log('Edge function response:', {
+                    success: result.success,
+                    recommendationsCount: result.recommendations?.length,
+                    recommendations: result.recommendations,
+                    dataLength: data?.length
+                  });
+
+                  setCharts([]);
+                  if (data && result.recommendations && result.recommendations.length > 0) {
+                    console.log('Creating charts from recommendations...');
+                    for (let i = 0; i < result.recommendations.length; i++) {
+                      const rec = result.recommendations[i];
+                      console.log(`Processing recommendation ${i + 1}:`, rec);
+                      
+                      // Ensure recommendation has required fields
+                      if (!rec.title) {
+                        console.warn(`Recommendation ${i + 1} missing title, skipping`);
+                        continue;
+                      }
+                      
+                      if (!rec.type) {
+                        console.warn(`Recommendation ${i + 1} missing type, defaulting to bar`);
+                        rec.type = 'bar';
+                      }
+                      
+                      if (!rec.x_axis && !rec.dimension) {
+                        console.warn(`Recommendation ${i + 1} missing x_axis/dimension, skipping`);
+                        continue;
+                      }
+                      
+                      if (!rec.y_axis && !rec.metric) {
+                        console.warn(`Recommendation ${i + 1} missing y_axis/metric, skipping`);
+                        continue;
+                      }
+                      
+                      // Map edge function format to frontend format
+                      if (rec.dimension && !rec.x_axis) {
+                        rec.x_axis = rec.dimension;
+                      }
+                      if (rec.metric && !rec.y_axis) {
+                        rec.y_axis = rec.metric;
+                      }
+                      
+                      if (rec.type === 'bar') {
+                        rec.isHorizontal = true;
+                      }
+                      
+                      try {
+                        await createChart(rec, true, data);
+                        console.log(`Successfully created chart ${i + 1}: ${rec.title}`);
+                      } catch (chartError) {
+                        console.error(`Error creating chart ${i + 1}:`, chartError);
+                      }
+                    }
+                    toast.success(`Created ${result.recommendations.length} charts`);
+                    return; // Exit early since we processed the retry
+                  }
+                } else {
+                  // Retry also failed - get error details
+                  const retryErrorText = await retryResponse.text();
+                  let retryErrorMessage = 'Authentication failed after retry';
+                  try {
+                    const retryErrorData = JSON.parse(retryErrorText);
+                    retryErrorMessage = retryErrorData.error || retryErrorData.message || retryErrorMessage;
+                  } catch {
+                    retryErrorMessage = retryErrorText || retryErrorMessage;
+                  }
+                  console.error('Retry also failed:', {
+                    status: retryResponse.status,
+                    error: retryErrorMessage
+                  });
+                  const authError = `Authentication failed: ${retryErrorMessage}. Please log out and log in again.`;
+                  toast.error(authError);
+                  // Don't auto-redirect - let user see the error and decide
+                  throw new Error(authError);
+                }
+              } else {
+                // Could not refresh
+                const authError = 'Could not refresh session. Please log out and log in again.';
+                toast.error(authError);
+                // Don't auto-redirect - let user see the error
+                throw new Error(authError);
+              }
+            }
+            throw new Error(errorMessage);
+          }
 
           const result = await response.json();
+          
+          console.log('Edge function response:', {
+            success: result.success,
+            recommendationsCount: result.recommendations?.length,
+            recommendations: result.recommendations,
+            dataLength: data?.length
+          });
 
           setCharts([]);
-          if (data && result.recommendations) {
+          if (data && result.recommendations && result.recommendations.length > 0) {
+            console.log('Creating charts from recommendations...');
             for (let i = 0; i < result.recommendations.length; i++) {
               const rec = result.recommendations[i];
+              console.log(`Processing recommendation ${i + 1}:`, rec);
+              
+              // Ensure recommendation has required fields
+              if (!rec.title) {
+                console.warn(`Recommendation ${i + 1} missing title, skipping`);
+                continue;
+              }
+              
+              if (!rec.type) {
+                console.warn(`Recommendation ${i + 1} missing type, defaulting to bar`);
+                rec.type = 'bar';
+              }
+              
+              if (!rec.x_axis && !rec.dimension) {
+                console.warn(`Recommendation ${i + 1} missing x_axis/dimension, skipping`);
+                continue;
+              }
+              
+              if (!rec.y_axis && !rec.metric) {
+                console.warn(`Recommendation ${i + 1} missing y_axis/metric, skipping`);
+                continue;
+              }
+              
+              // Map edge function format to frontend format
+              if (rec.dimension && !rec.x_axis) {
+                rec.x_axis = rec.dimension;
+              }
+              if (rec.metric && !rec.y_axis) {
+                rec.y_axis = rec.metric;
+              }
+              
               if (rec.type === 'bar') {
                 rec.isHorizontal = true;
               }
-              await createChart(rec, true, data);
+              
+              try {
+                await createChart(rec, true, data);
+                console.log(`Successfully created chart ${i + 1}: ${rec.title}`);
+              } catch (chartError) {
+                console.error(`Error creating chart ${i + 1}:`, chartError);
+              }
+            }
+            toast.success(`Created ${result.recommendations.length} charts`);
+          } else {
+            console.warn('No recommendations or data available:', {
+              hasData: !!data,
+              dataLength: data?.length,
+              hasRecommendations: !!result.recommendations,
+              recommendationsLength: result.recommendations?.length
+            });
+            if (!data) {
+              toast.error('No data available to generate charts');
+            } else if (!result.recommendations || result.recommendations.length === 0) {
+              console.error('No chart recommendations received from edge function');
+              toast.error('Failed to generate charts. Please try again or check edge function logs.');
             }
           }
-          toast.success(`Created ${result.recommendations?.length || 0} charts`);
-      }
 
     } catch (error) {
       console.error('Error generating dashboard:', error);
-      toast.error('Failed to generate dashboard');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate dashboard';
+      toast.error(errorMessage);
+      
+      // Only redirect if it's an authentication error and user explicitly needs to re-login
+      if (errorMessage.includes('log in again') || errorMessage.includes('Authentication failed')) {
+        // Give user time to see the error before redirecting
+        setTimeout(() => {
+          supabase.auth.signOut().then(() => {
+            window.location.href = '/';
+          });
+        }, 5000); // 5 seconds instead of 2-3
+      }
     } finally {
       setLoading(prev => ({ ...prev, dashboard: false }));
     }
@@ -715,31 +972,85 @@ const Analytics = () => {
 
   const createChart = async (rec: VisualizationRecommendation, silent = false, providedData?: any[]) => {
     try {
+      console.log('createChart called with:', { 
+        recTitle: rec.title, 
+        recType: rec.type, 
+        hasProvidedData: !!providedData,
+        providedDataLength: providedData?.length,
+        filteredDataLength: filteredData.length,
+        rawDataLength: rawData.length
+      });
+      
       const dataToUse = providedData || (filteredData.length > 0 ? filteredData : rawData);
 
-      if (!dataToUse.length) {
+      if (!dataToUse || dataToUse.length === 0) {
+        console.log('No data available, fetching...');
         const fetchedData = await fetchAndComputeKpis();
-        if (!fetchedData) return;
+        if (!fetchedData || fetchedData.length === 0) {
+          console.error('No data fetched from fetchAndComputeKpis');
+          if (!silent) toast.error('No data available to create chart');
+          return;
+        }
 
         const effectiveRec: any = { ...rec };
         if (groupByDimension.length > 0 && effectiveRec.isHorizontal) {
           delete effectiveRec.isHorizontal;
         }
+        
+        console.log('Creating chart option with:', {
+          rec: effectiveRec,
+          dataLength: fetchedData.length,
+          chartSortOrder,
+          groupByDimension
+        });
+        
         const option = createEChartsOption(effectiveRec, fetchedData, chartSortOrder, false, groupByDimension);
-        setCharts(prev => [...prev, { title: effectiveRec.title, option, rec: effectiveRec }]);
+        
+        if (!option) {
+          console.error('createEChartsOption returned null/undefined');
+          if (!silent) toast.error('Failed to generate chart configuration');
+          return;
+        }
+        
+        console.log('Adding chart to state:', effectiveRec.title);
+        setCharts(prev => {
+          const newCharts = [...prev, { title: effectiveRec.title || 'Untitled Chart', option, rec: effectiveRec }];
+          console.log('Charts state updated, total charts:', newCharts.length);
+          return newCharts;
+        });
       } else {
         const effectiveRec: any = { ...rec };
         if (groupByDimension.length > 0 && effectiveRec.isHorizontal) {
           delete effectiveRec.isHorizontal;
         }
+        
+        console.log('Creating chart option with provided data:', {
+          rec: effectiveRec,
+          dataLength: dataToUse.length,
+          chartSortOrder,
+          groupByDimension
+        });
+        
         const option = createEChartsOption(effectiveRec, dataToUse, chartSortOrder, false, groupByDimension);
-        setCharts(prev => [...prev, { title: effectiveRec.title, option, rec: effectiveRec }]);
+        
+        if (!option) {
+          console.error('createEChartsOption returned null/undefined');
+          if (!silent) toast.error('Failed to generate chart configuration');
+          return;
+        }
+        
+        console.log('Adding chart to state:', effectiveRec.title);
+        setCharts(prev => {
+          const newCharts = [...prev, { title: effectiveRec.title || 'Untitled Chart', option, rec: effectiveRec }];
+          console.log('Charts state updated, total charts:', newCharts.length);
+          return newCharts;
+        });
       }
 
       if (!silent) toast.success(`Chart created: ${rec.title}`);
     } catch (error) {
-      console.error('Error creating chart:', error);
-      if (!silent) toast.error('Failed to create chart');
+      console.error('Error creating chart:', error, { rec, errorStack: (error as Error).stack });
+      if (!silent) toast.error(`Failed to create chart: ${(error as Error).message}`);
     }
   };
 

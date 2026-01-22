@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import {
   MessageCircle, X, Send, Bot, ThumbsUp, ThumbsDown, Copy,
-  TrendingUp, Database, BarChart3, Sparkles, Minimize2, Mic, MicOff
+  TrendingUp, Database, BarChart3, Sparkles, Minimize2, Mic, MicOff, Pin
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -77,7 +77,7 @@ interface Message {
 }
 
 const FloatingChat = () => {
-  const { isChatOpen, setIsChatOpen, selectedDataSourceId } = useAnalytics();
+  const { isChatOpen, setIsChatOpen, selectedDataSourceId, addChartToDashboard } = useAnalytics();
   const [isMinimized, setIsMinimized] = useState(false);
   // ... (keeping existing state hooks) ...
   const [messages, setMessages] = useState<Message[]>([
@@ -308,8 +308,7 @@ const FloatingChat = () => {
             chart_config: lastChartMessage.chart as any,
             file_id: targetFileId || selectedDataSourceId || '',
             insight: dashboardInsight,
-            chart_type: lastChartMessage.chartType || 'custom',
-            user_id: session.user.id
+            chart_type: lastChartMessage.chartType || 'custom'
           } as any);
 
           if (error) {
@@ -421,6 +420,34 @@ const FloatingChat = () => {
 
   const handleFeedback = (messageId: string, type: 'up' | 'down') => {
     toast.success(`Feedback ${type === 'up' ? 'sent' : 'recorded'}`);
+  };
+
+  const handlePinToDashboard = async (message: Message) => {
+    if (!message.chart) {
+      toast.error("No chart to pin");
+      return;
+    }
+
+    try {
+      const chartTitle = message.chartTitle || "Chat Generated Chart";
+      
+      // Add chart to dashboard via context
+      addChartToDashboard({
+        title: chartTitle,
+        option: message.chart,
+        rec: {
+          title: chartTitle,
+          type: message.chartType || 'bar',
+          reasoning: message.content,
+          priority: 'high'
+        }
+      });
+
+      toast.success("Chart pinned to dashboard! Check the Analytics page.");
+    } catch (error) {
+      console.error('Error pinning chart:', error);
+      toast.error("Failed to pin chart to dashboard");
+    }
   };
 
   const startListening = () => {
@@ -550,10 +577,21 @@ const FloatingChat = () => {
                     >
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                       {message.chart && (
-                        <ChatChart
-                          option={message.chart}
-                          title={message.chartTitle}
-                        />
+                        <>
+                          <ChatChart
+                            option={message.chart}
+                            title={message.chartTitle}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 w-full text-xs bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 rounded-lg transition-all"
+                            onClick={() => handlePinToDashboard(message)}
+                          >
+                            <Pin className="w-3 h-3 mr-1.5" />
+                            Pin to Dashboard
+                          </Button>
+                        </>
                       )}
 
                       {message.role === 'assistant' && (
