@@ -165,6 +165,10 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
 
     const validateInputs = () => {
         if (type === 'SFW CRM') {
+            if (!connectionName.trim()) {
+                setError("Connection Name is required");
+                return false;
+            }
             if (!apiConfig.url || !apiConfig.apiKey) {
                 setError("Instance URL and API Key are required");
                 return false;
@@ -456,12 +460,20 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                             </div>
                         )}
                         <div className="space-y-2">
-                            <Label className="text-white/70">Connection Name <span className="text-white/30 text-xs">(Optional)</span></Label>
+                            <Label className="text-white/70">
+                                Connection Name 
+                                {type === 'SFW CRM' ? (
+                                    <span className="text-red-400 text-xs ml-1">*</span>
+                                ) : (
+                                    <span className="text-white/30 text-xs ml-1">(Optional)</span>
+                                )}
+                            </Label>
                             <Input 
                                 value={connectionName}
                                 onChange={e => setConnectionName(e.target.value)}
-                                className="bg-white/5 border-white/10 text-white" 
+                                className={`bg-white/5 border-white/10 text-white ${type === 'SFW CRM' && !connectionName.trim() ? 'border-red-500/50 focus:border-red-500' : ''}`}
                                 placeholder={isApiBased ? "My CRM Prod" : "My Production DB"} 
+                                required={type === 'SFW CRM'}
                             />
                         </div>
 
