@@ -99,6 +99,14 @@ class MockDataService {
     this.save();
   }
 
+  deleteSource(sourceId: string) {
+    // Remove from sources array
+    this.sources = this.sources.filter(s => s.id !== sourceId);
+    // Remove associated data
+    delete this.dataStore[sourceId];
+    this.save();
+  }
+
   getSources() { return this.sources; }
   getData(id: string) { return this.dataStore[id] || null; }
 }

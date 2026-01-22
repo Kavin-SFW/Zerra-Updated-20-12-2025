@@ -3,9 +3,34 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import {
-  MessageCircle, X, Send, Bot, ThumbsUp, ThumbsDown, Copy,
-  TrendingUp, Database, BarChart3, Sparkles, Minimize2, Mic, MicOff, Pin
+  X, Send, Bot, ThumbsUp, ThumbsDown, Copy,
+  TrendingUp, Database, BarChart3, Minimize2, Mic, MicOff, Pin
 } from "lucide-react";
+
+// Custom Logo Icon component matching favicon.svg
+const LogoIcon = ({ className = "", size = 24 }: { className?: string; size?: number }) => (
+  <svg 
+    width={size} 
+    height={size} 
+    viewBox="0 0 121 121" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <circle cx="60.5" cy="60.5" r="60.5" fill="white"/>
+    <circle cx="60.5" cy="60.5" r="58.6385" stroke="#00B7DC" strokeWidth="2" fill="none"/>
+    <path d="M29.9387 35.3692H0V84.1992H29.9387V35.3692Z" fill="white"/>
+    <circle cx="61.5279" cy="59.5692" r="50.2615" fill="white"/>
+    <path d="M60.9981 109.272C55.7645 109.278 50.5644 108.457 45.5854 106.843C45.6338 106.389 45.6951 105.923 45.7713 105.46C46.0631 104.075 46.8102 102.83 47.8956 101.923C49.085 100.84 50.6276 100.225 52.2352 100.195C52.421 100.195 52.6069 100.195 52.7927 100.221C54.2628 100.363 56.8443 100.514 59.6785 100.514C62.89 100.679 66.1052 100.29 69.1848 99.367C71.9001 98.1235 73.1174 94.9254 71.9149 92.1871C71.2012 90.6197 71.5414 88.7749 72.768 87.5668C73.6452 86.77 74.1935 85.6736 74.305 84.4915C74.305 83.3076 72.9538 82.3786 72.9408 82.3693C73.8478 82.293 74.6971 81.8928 75.3327 81.2412C75.5967 80.9248 75.7025 80.5041 75.6226 80.1001C75.3531 79.0968 74.6953 78.2442 73.7958 77.7267C73.2531 77.3711 72.8925 76.7959 72.8107 76.1518C72.6825 75.02 73.0412 73.8863 73.7958 73.0356C74.673 72.1718 75.8698 71.7102 77.0983 71.7623C78.797 71.9075 80.4083 70.9786 81.1387 69.4354C82.0327 67.464 77.5425 61.0584 74.2622 56.3804C73.8478 55.7884 73.4593 55.2356 73.1099 54.7292C71.0656 51.7657 71.0656 51.6968 71.0656 48.0277C71.0656 46.2071 71.0656 43.4539 70.8091 39.0067C69.6754 25.9014 60.6951 14.8048 48.1279 10.9831C72.1807 4.57565 97.2724 16.8804 106.974 39.8369C114.885 58.577 110.657 80.2509 96.2818 94.6257C86.9354 104.017 74.2362 109.287 60.9981 109.272Z" fill="#00B7DC"/>
+    <path d="M27.8773 35.3692H5.5752V39.0923H27.8773V35.3692Z" fill="#00B7DC"/>
+    <circle cx="31.5946" cy="37.2308" r="5.5752" fill="#00B7DC"/>
+    <circle cx="31.5946" cy="59.5692" r="5.5752" fill="#00B7DC"/>
+    <circle cx="31.5946" cy="83.7692" r="5.5752" fill="#00B7DC"/>
+    <path d="M27.8773 57.7077H5.5752V61.4307H27.8773V57.7077Z" fill="#00B7DC"/>
+    <path d="M27.8773 81.9077H5.5752V85.6308H27.8773V81.9077Z" fill="#00B7DC"/>
+    <path d="M5.5753 81.9077H3.7168V85.6308H5.5753V81.9077Z" fill="white"/>
+  </svg>
+);
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
@@ -508,13 +533,13 @@ const FloatingChat = () => {
       {!isChatOpen && (
         <Button
           onClick={() => setIsChatOpen(true)}
-          className="w-14 h-14 rounded-full bg-cyan-500 hover:bg-cyan-600 shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 group relative"
+          className="w-14 h-14 rounded-full bg-cyan-500 hover:bg-cyan-600 shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 group relative p-0 overflow-hidden"
         >
           <div className="relative">
-            <MessageCircle className="w-7 h-7 text-white fill-white/10" />
+            <LogoIcon size={48} />
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-cyan-400"></span>
             </span>
           </div>
           <div className="absolute right-full mr-3 bg-white text-[#075E54] px-3 py-1.5 rounded-lg text-sm font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
@@ -527,8 +552,8 @@ const FloatingChat = () => {
         <Card className={`glass-card border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden flex flex-col transition-all duration-300 origin-bottom-right ${isMinimized ? 'h-16 w-80' : 'h-[550px] w-96'} animate-in fade-in slide-in-from-bottom-5 zoom-in-95`}>
           <div className="bg-gradient-to-r from-[#00D4FF]/20 to-[#6B46C1]/20 border-b border-white/10 p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00D4FF] to-[#6B46C1] flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
+                <LogoIcon size={40} />
               </div>
               <div>
                 <h3 className="font-bold text-white">AI Analytics Chat</h3>

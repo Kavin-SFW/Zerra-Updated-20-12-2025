@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Upload, Search, MoreVertical, Database, FileSpreadsheet,
   CheckCircle2, RefreshCw, AlertCircle, Plus,
-  Server, Cloud, Loader2, Trash2, X
+  Server, Cloud, Loader2, Trash2, X, Check, Square, CheckSquare
 } from "lucide-react";
 import { toast } from "sonner";
 import * as XLSX from 'xlsx';
@@ -18,13 +18,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { DatabaseConnector } from "@/components/DatabaseConnector";
 import { mockDataService } from "@/services/MockDataService";
@@ -70,54 +63,20 @@ const DataSources = () => {
   const [loading, setLoading] = useState(true);
   const [connectorOpen, setConnectorOpen] = useState(false);
   const [connectorType, setConnectorType] = useState("");
+  const [selectedSources, setSelectedSources] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const {
     selectedDataSourceId,
     setSelectedDataSourceId,
-    selectedIndustryId: selectedIndustry,
-    setSelectedIndustryId: setSelectedIndustry,
-    setSelectedIndustryName
   } = useAnalytics();
-  const [industries, setIndustries] = useState<{ id: string; name: string }[]>([]);
 
   // Fetch real data sources from Supabase
   useEffect(() => {
     fetchDataSources();
   }, []);
-
-  const fetchIndustries = async () => {
-    try {
-      console.log('Fetching industries...');
-      const { data, error } = await (supabase as any)
-        .from('industries')
-        .select('*');
-
-      if (error) {
-        console.error('Supabase error fetching industries:', error);
-        // toast.error(`Industries fetch error: ${error.message}`);
-        return;
-      }
-
-      console.log('Fetched industries raw data:', data);
-      if (data && data.length > 0) {
-        // Robust mapping to handle different possible column names
-        const mappedData = data.map((item: any) => ({
-          id: String(item.id || item.ID || ''),
-          name: item.name || item.industry_name || item.title || item.label || item.industry || 'Unknown Industry'
-        }));
-        setIndustries(mappedData);
-        // toast.success(`Successfully fetched ${mappedData.length} industries`);
-      } else {
-        console.log('No industries found in database');
-        // toast.info('No industries found in the database');
-      }
-    } catch (error: any) {
-      console.error('Error fetching industries:', error);
-      // toast.error(`Failed to fetch industries: ${error.message}`);
-    }
-  };
 
   const fetchDataSources = async () => {
     try {
@@ -131,9 +90,6 @@ const DataSources = () => {
       
       let supabaseSources: DataSource[] = [];
       if (session) {
-         // Fetch industries once we have a session
-         fetchIndustries();
-
          const { data: sources, error: sourcesError }: { data: any[] | null, error: any } = await (supabase as any)
           .from('data_sources')
           .select('id, name, type, status, row_count, last_synced_at, created_at')
@@ -184,37 +140,26 @@ const DataSources = () => {
         recordsText = `${(rowCount / 1000).toFixed(1)}K records`;
       }
 
-      // Format last sync time
+      // Format last sync time as date and time stamp
       let lastSync = 'Never';
+      const formatDateTime = (date: Date) => {
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+        }) + ' at ' + date.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        });
+      };
+
       if (source.last_synced_at) {
         const syncDate = new Date(source.last_synced_at);
-        const now = new Date();
-        const diffMs = now.getTime() - syncDate.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
-
-        if (diffMins < 1) {
-          lastSync = 'Just now';
-        } else if (diffMins < 60) {
-          lastSync = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-        } else if (diffHours < 24) {
-          lastSync = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-        } else {
-          lastSync = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-        }
+        lastSync = formatDateTime(syncDate);
       } else if (source.created_at) {
         const createdDate = new Date(source.created_at);
-        const now = new Date();
-        const diffMs = now.getTime() - createdDate.getTime();
-        const diffMins = Math.floor(diffMs / 60000);
-        if (diffMins < 1) {
-          lastSync = 'Just now';
-        } else if (diffMins < 60) {
-          lastSync = `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-        } else {
-          lastSync = 'Recently';
-        }
+        lastSync = formatDateTime(createdDate);
       }
 
       return {
@@ -247,10 +192,8 @@ const DataSources = () => {
   ];
 
   const filteredSources = dataSources.filter((source) => {
-    const matchesSearch = source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    return source.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       source.type.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesIndustry = selectedIndustry === "all" || (source as any).industry_id === selectedIndustry;
-    return matchesSearch && matchesIndustry;
   });
 
   const getStatusBadge = (status: string) => {
@@ -454,6 +397,96 @@ const DataSources = () => {
     }
   };
 
+  const toggleSourceSelection = (sourceId: string) => {
+    setSelectedSources(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(sourceId)) {
+        newSet.delete(sourceId);
+      } else {
+        newSet.add(sourceId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedSources.size === filteredSources.length) {
+      setSelectedSources(new Set());
+    } else {
+      setSelectedSources(new Set(filteredSources.map(s => s.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedSources.size === 0) return;
+
+    const confirmMessage = `Are you sure you want to delete ${selectedSources.size} data source${selectedSources.size > 1 ? 's' : ''}? This action cannot be undone.`;
+    if (!confirm(confirmMessage)) return;
+
+    const toastId = toast.loading(`Deleting ${selectedSources.size} source${selectedSources.size > 1 ? 's' : ''}...`);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      let deletedCount = 0;
+      let errorCount = 0;
+
+      for (const sourceId of selectedSources) {
+        const source = dataSources.find(s => s.id === sourceId);
+        if (!source) continue;
+
+        try {
+          if (source.is_mock) {
+            mockDataService.deleteSource(sourceId);
+            deletedCount++;
+          } else if (session) {
+            const { error } = await supabase
+              .from('data_sources')
+              .delete()
+              .eq('id', sourceId);
+
+            if (error) {
+              console.error(`Failed to delete source ${sourceId}:`, error);
+              errorCount++;
+            } else {
+              deletedCount++;
+            }
+          }
+
+          // Clear selected data source if it was deleted
+          if (selectedDataSourceId === sourceId) {
+            setSelectedDataSourceId(null);
+          }
+        } catch (error) {
+          console.error(`Error deleting source ${sourceId}:`, error);
+          errorCount++;
+        }
+      }
+
+      // Clear selection and exit selection mode
+      setSelectedSources(new Set());
+      setIsSelectionMode(false);
+
+      // Refresh the list
+      await fetchDataSources();
+
+      // Show result toast
+      toast.dismiss(toastId);
+      if (errorCount === 0) {
+        toast.success(`Successfully deleted ${deletedCount} data source${deletedCount > 1 ? 's' : ''}`);
+      } else {
+        toast.warning(`Deleted ${deletedCount} source${deletedCount > 1 ? 's' : ''}, ${errorCount} failed`);
+      }
+    } catch (error) {
+      console.error('Bulk delete error:', error);
+      toast.error('Failed to delete sources', { id: toastId });
+    }
+  };
+
+  const cancelSelection = () => {
+    setSelectedSources(new Set());
+    setIsSelectionMode(false);
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0E27] text-white p-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -466,30 +499,6 @@ const DataSources = () => {
             <p className="text-[#E5E7EB]/70 text-lg">Connect and manage your data sources</p>
           </div>
           <div className="flex items-center gap-4">
-            <Select
-              value={selectedIndustry}
-              onValueChange={(val) => {
-                setSelectedIndustry(val);
-                if (val === 'all') {
-                  setSelectedIndustryName('All Industries');
-                } else {
-                  const ind = industries.find(i => i.id === val);
-                  if (ind) setSelectedIndustryName(ind.name);
-                }
-              }}
-            >
-              <SelectTrigger className="w-[200px] bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Select Industry" />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1a1f3a] border-white/10 text-white">
-                <SelectItem value="all">All Industries</SelectItem>
-                {industries.map((industry) => (
-                  <SelectItem key={industry.id} value={industry.id}>
-                    {industry.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Button
               className="bg-gradient-to-r from-[#6B46C1] to-[#9333EA] hover:from-[#6B46C1]/90 hover:to-[#9333EA]/90 text-white px-6 py-6 rounded-lg shadow-[0_0_20px_rgba(107,70,193,0.3)] hover:shadow-[0_0_30px_rgba(107,70,193,0.5)] transition-all"
             >
@@ -581,16 +590,80 @@ const DataSources = () => {
         {/* Connected Sources */}
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white">Connected Sources</h2>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#E5E7EB]/50" />
-              <Input
-                type="text"
-                placeholder="Search sources..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white/5 border-white/20 text-white placeholder:text-[#E5E7EB]/40 focus:border-[#00D4FF] pl-10 rounded-lg"
-              />
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-bold text-white">Connected Sources</h2>
+              {filteredSources.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (isSelectionMode) {
+                      cancelSelection();
+                    } else {
+                      setIsSelectionMode(true);
+                    }
+                  }}
+                  className={`text-sm ${isSelectionMode ? 'text-[#00D4FF] bg-[#00D4FF]/10' : 'text-[#E5E7EB]/70 hover:text-white'}`}
+                >
+                  {isSelectionMode ? (
+                    <>
+                      <X className="w-4 h-4 mr-1" />
+                      Cancel
+                    </>
+                  ) : (
+                    <>
+                      <CheckSquare className="w-4 h-4 mr-1" />
+                      Select
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Selection Actions */}
+              {isSelectionMode && (
+                <div className="flex items-center gap-2 mr-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={toggleSelectAll}
+                    className="text-[#E5E7EB]/70 hover:text-white text-sm"
+                  >
+                    {selectedSources.size === filteredSources.length ? (
+                      <>
+                        <Square className="w-4 h-4 mr-1" />
+                        Deselect All
+                      </>
+                    ) : (
+                      <>
+                        <CheckSquare className="w-4 h-4 mr-1" />
+                        Select All ({filteredSources.length})
+                      </>
+                    )}
+                  </Button>
+                  {selectedSources.size > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                      className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Delete ({selectedSources.size})
+                    </Button>
+                  )}
+                </div>
+              )}
+              <div className="relative w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#E5E7EB]/50" />
+                <Input
+                  type="text"
+                  placeholder="Search sources..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-white/5 border-white/20 text-white placeholder:text-[#E5E7EB]/40 focus:border-[#00D4FF] pl-10 rounded-lg"
+                />
+              </div>
             </div>
           </div>
 
@@ -614,10 +687,32 @@ const DataSources = () => {
               filteredSources.map((source) => (
                 <Card
                   key={source.id}
-                  className="glass-card p-6 border-white/10 hover:border-[#00D4FF]/30 transition-all"
+                  className={`glass-card p-6 border-white/10 hover:border-[#00D4FF]/30 transition-all ${
+                    selectedSources.has(source.id) ? 'border-[#00D4FF]/50 bg-[#00D4FF]/5' : ''
+                  } ${isSelectionMode ? 'cursor-pointer' : ''}`}
+                  onClick={isSelectionMode ? () => toggleSourceSelection(source.id) : undefined}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1">
+                      {/* Selection Checkbox */}
+                      {isSelectionMode && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSourceSelection(source.id);
+                          }}
+                          className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                            selectedSources.has(source.id)
+                              ? 'bg-[#00D4FF] border-[#00D4FF]'
+                              : 'border-white/30 hover:border-[#00D4FF]/50'
+                          }`}
+                        >
+                          {selectedSources.has(source.id) && (
+                            <Check className="w-4 h-4 text-white" />
+                          )}
+                        </button>
+                      )}
+
                       {/* Icon */}
                       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#00D4FF]/20 to-[#6B46C1]/20 flex items-center justify-center">
                         <source.icon className="text-[#00D4FF]" size={24} />
@@ -642,6 +737,7 @@ const DataSources = () => {
                     </div>
 
                     {/* Actions */}
+                    {!isSelectionMode && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -790,6 +886,7 @@ const DataSources = () => {
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                    )}
                   </div>
                 </Card>
               ))

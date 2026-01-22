@@ -8,7 +8,8 @@ import {
   DollarSign, Package, Activity, ShoppingBag, History, Layers,
   Search, ChevronLeft, ChevronRight, MoreHorizontal, Maximize2, Filter,
   BarChart, LineChart, PieChart, AreaChart, Radar, Zap, Target,
-  Image as ImageIcon, FileText, Download, FileDown, Trash2, Calendar, Plus
+  Image as ImageIcon, FileText, Download, FileDown, Trash2, Calendar, Plus,
+  Share2, Link2, Check as CheckIcon
 } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
@@ -1153,6 +1154,199 @@ const Analytics = () => {
     }
   };
 
+  const handleDownloadDashboard = async () => {
+    if (charts.length === 0) {
+      toast.error("No charts to download");
+      return;
+    }
+
+    const toastId = toast.loading("Generating dashboard PDF...");
+
+    try {
+      // Create a new PDF document in landscape orientation
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'px',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 30;
+      const headerHeight = 60;
+
+      // Add header to first page
+      pdf.setFillColor(99, 102, 241); // Indigo color
+      pdf.rect(0, 0, pageWidth, headerHeight, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Analytics Dashboard Report', margin, 38);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}`, margin, 52);
+      
+      // Add data source info
+      const selectedSource = dataSources.find(ds => ds.id === selectedDataSourceId);
+      if (selectedSource) {
+        pdf.text(`Data Source: ${selectedSource.name}`, pageWidth - margin - 150, 38);
+      }
+
+      let yOffset = headerHeight + 20;
+      const chartWidth = (pageWidth - margin * 3) / 2;
+      const chartHeight = 180;
+      let chartIndex = 0;
+
+      for (let i = 0; i < charts.length; i++) {
+        const chart = charts[i];
+        const chartId = `dashboard-chart-${i}`;
+        const chartDom = document.getElementById(chartId);
+
+        if (!chartDom) continue;
+
+        let instance = echarts.getInstanceByDom(chartDom);
+        if (!instance) {
+          const innerDiv = chartDom.querySelector('div');
+          if (innerDiv) instance = echarts.getInstanceByDom(innerDiv);
+        }
+        if (!instance) {
+          const allDivs = chartDom.querySelectorAll('div');
+          for (const div of Array.from(allDivs)) {
+            instance = echarts.getInstanceByDom(div);
+            if (instance) break;
+          }
+        }
+
+        if (!instance) continue;
+
+        const dataURL = instance.getDataURL({
+          type: 'png',
+          pixelRatio: 2,
+          backgroundColor: '#fff'
+        });
+
+        // Calculate position (2 charts per row)
+        const col = chartIndex % 2;
+        const row = Math.floor(chartIndex % 4 / 2);
+        const xPos = margin + col * (chartWidth + margin);
+        const yPos = yOffset + row * (chartHeight + 40);
+
+        // Check if we need a new page
+        if (chartIndex > 0 && chartIndex % 4 === 0) {
+          pdf.addPage();
+          yOffset = margin;
+        }
+
+        const finalYPos = chartIndex % 4 < 2 ? yOffset : yOffset + chartHeight + 40;
+
+        // Add chart title
+        pdf.setTextColor(30, 41, 59); // Slate-800
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(chart.title || 'Untitled Chart', xPos, finalYPos - 5);
+
+        // Add chart image
+        pdf.addImage(dataURL, 'PNG', xPos, finalYPos, chartWidth, chartHeight);
+
+        chartIndex++;
+      }
+
+      // Add footer to last page
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(148, 163, 184); // Slate-400
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 40, pageHeight - 15);
+        pdf.text('Powered by Zerra Analytics', margin, pageHeight - 15);
+      }
+
+      // Download the PDF
+      const fileName = `dashboard_report_${new Date().toISOString().split('T')[0]}.pdf`;
+      pdf.save(fileName);
+
+      toast.success("Dashboard downloaded successfully!", { id: toastId });
+    } catch (error) {
+      console.error('Dashboard download error:', error);
+      toast.error("Failed to download dashboard", { id: toastId });
+    }
+  };
+
+  const [isShareCopied, setIsShareCopied] = useState(false);
+
+  const handleShareDashboard = async () => {
+    try {
+      // Create a shareable state object
+      const shareState = {
+        dataSourceId: selectedDataSourceId,
+        template: selectedTemplate,
+        industryId: selectedIndustryId,
+        dateRange: dateRange ? {
+          from: dateRange.from?.toISOString(),
+          to: dateRange.to?.toISOString()
+        } : null,
+        groupBy: groupByDimension,
+        sortOrder: chartSortOrder
+      };
+
+      // Encode the state as base64
+      const encodedState = btoa(JSON.stringify(shareState));
+      const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encodedState}`;
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(shareUrl);
+      
+      setIsShareCopied(true);
+      toast.success("Dashboard link copied to clipboard!");
+      
+      // Reset the copied state after 2 seconds
+      setTimeout(() => setIsShareCopied(false), 2000);
+    } catch (error) {
+      console.error('Share error:', error);
+      toast.error("Failed to copy share link");
+    }
+  };
+
+  // Handle shared dashboard URL on load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareParam = urlParams.get('share');
+    
+    if (shareParam) {
+      try {
+        const shareState = JSON.parse(atob(shareParam));
+        
+        if (shareState.dataSourceId) {
+          setSelectedDataSourceId(shareState.dataSourceId);
+        }
+        if (shareState.template) {
+          setSelectedTemplate(shareState.template);
+        }
+        if (shareState.industryId) {
+          setSelectedIndustryId(shareState.industryId);
+        }
+        if (shareState.dateRange?.from) {
+          setDateRange({
+            from: new Date(shareState.dateRange.from),
+            to: shareState.dateRange.to ? new Date(shareState.dateRange.to) : undefined
+          });
+        }
+        if (shareState.groupBy) {
+          setGroupByDimension(shareState.groupBy);
+        }
+        if (shareState.sortOrder) {
+          setChartSortOrder(shareState.sortOrder);
+        }
+
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        toast.success("Shared dashboard loaded!");
+      } catch (error) {
+        console.error('Failed to parse share URL:', error);
+      }
+    }
+  }, []);
+
   const handleChangeChartType = (chartIndex: number, newType: string) => {
     setCharts(prev => {
       const newCharts = [...prev];
@@ -1556,6 +1750,38 @@ const Analytics = () => {
                   <Database className="h-3 w-3" />
                   Live Insights
                 </Badge>
+
+                <div className="w-px h-6 bg-slate-200"></div>
+
+                {/* Share & Download Buttons */}
+                <Button
+                  onClick={handleShareDashboard}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-[11px] font-bold border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100 transition-all gap-1.5"
+                >
+                  {isShareCopied ? (
+                    <>
+                      <CheckIcon className="h-3.5 w-3.5 text-green-600" />
+                      <span className="text-green-600">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="h-3.5 w-3.5" />
+                      Share
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={handleDownloadDashboard}
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-[11px] font-bold border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 transition-all gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  Download
+                </Button>
               </div>
             </div>
 
