@@ -91,9 +91,11 @@ export const createEChartsOption = (
 
     if (chartType === 'funnel') {
         const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const isCountAggregation = yAxis === 'count' || yAxis === '_count_' || !data[0]?.[yAxis];
         const grouped = data.reduce((acc: any, item) => {
             const key = capitalize(item[rec.x_axis]);
-            const value = Number(item[yAxis]) || 0;
+            // If count aggregation or y_axis column doesn't exist, count occurrences
+            const value = isCountAggregation ? 1 : (Number(item[yAxis]) || 0);
             acc[key] = (acc[key] || 0) + value;
             return acc;
         }, {});
@@ -164,6 +166,7 @@ export const createEChartsOption = (
 
     if (chartType === 'pie') {
         const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const isCountAggregation = yAxis === 'count' || yAxis === '_count_' || !data[0]?.[yAxis];
         const dims = Array.isArray(breakdownDimension)
             ? breakdownDimension
             : (breakdownDimension ? [breakdownDimension] : []);
@@ -185,7 +188,8 @@ export const createEChartsOption = (
 
         const grouped = data.reduce((acc: any, item) => {
             const key = getKey(item);
-            const value = Number(item[yAxis]) || 0;
+            // If count aggregation or y_axis column doesn't exist, count occurrences
+            const value = isCountAggregation ? 1 : (Number(item[yAxis]) || 0);
             acc[key] = (acc[key] || 0) + value;
             return acc;
         }, {});
@@ -832,7 +836,11 @@ export const createEChartsOption = (
     // Default: bar/line charts
     const xDataRaw = data.map(d => capitalize(d[rec.x_axis]));
     const yAxisRaw = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
-    const yDataRaw = data.map(d => Number(d[yAxisRaw]) || 0);
+    // Handle count aggregation - if y_axis is 'count' or '_count_' or doesn't exist in data, count occurrences
+    const isCountAggregation = yAxisRaw === 'count' || yAxisRaw === '_count_' || !data[0]?.[yAxisRaw];
+    const yDataRaw = isCountAggregation 
+        ? data.map(() => 1) // Each row counts as 1
+        : data.map(d => Number(d[yAxisRaw]) || 0);
 
     // --- STACKING LOGIC START ---
     const hasBreakdown = Array.isArray(breakdownDimension)
@@ -1115,7 +1123,11 @@ export const createEChartsOption = (
                     }
                 },
                 emphasis: { focus: 'series' },
-                data: Array.isArray(rec.y_axis) ? data.map(d => Number(d[yAxis]) || 0) : yData,
+                data: Array.isArray(rec.y_axis) 
+                    ? (yAxis === 'count' || yAxis === '_count_' || !data[0]?.[yAxis] 
+                        ? data.map(() => 1) 
+                        : data.map(d => Number(d[yAxis]) || 0)) 
+                    : yData,
             };
         }),
         dataZoom: isFullView ? [

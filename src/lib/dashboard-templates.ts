@@ -257,6 +257,26 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
             { title: "Avg Latency", keyMatch: /latency|time|delay/i, icon: Clock, color: "white", bg: "bg-gradient-to-br from-purple-500 to-violet-600", suffix: "d", agg: 'avg' },
             { title: "Projects Completed", keyMatch: /project|done/i, icon: TargetIcon, color: "white", bg: "bg-gradient-to-br from-cyan-500 to-blue-600", agg: 'count' },
         ]
+    },
+    "crm": {
+        name: "CRM / Sales",
+        kpis: [
+            { title: "Pipeline Value", keyMatch: /est_value|total_value|deal|pipeline|value|amount/i, icon: DollarSign, color: "white", bg: "bg-gradient-to-br from-blue-500 to-indigo-700", prefix: "₹", agg: 'sum' },
+            { title: "Total Leads", keyMatch: /lead_id|lead_name|lead|contact|prospect/i, icon: Users, color: "white", bg: "bg-gradient-to-br from-purple-500 to-violet-600", agg: 'count' },
+            { title: "Customers", keyMatch: /customer|contact_type|first_name/i, icon: UserCheck, color: "white", bg: "bg-gradient-to-br from-emerald-500 to-green-600", agg: 'count' },
+            { title: "Avg Deal Size", keyMatch: /est_value|total_value|deal|amount|value/i, icon: Activity, color: "white", bg: "bg-gradient-to-br from-cyan-500 to-blue-600", prefix: "₹", agg: 'avg' },
+            { title: "Activities", keyMatch: /action|activity|task|call|meeting|log/i, icon: Calendar, color: "white", bg: "bg-gradient-to-br from-orange-500 to-amber-600", agg: 'count' },
+        ]
+    },
+    "sfw crm": {
+        name: "SFW CRM",
+        kpis: [
+            { title: "Pipeline Value", keyMatch: /est_value|total_value|deal|pipeline|value|amount/i, icon: DollarSign, color: "white", bg: "bg-gradient-to-br from-blue-500 to-indigo-700", prefix: "₹", agg: 'sum' },
+            { title: "Total Leads", keyMatch: /lead_id|lead_name|lead|contact|prospect/i, icon: Users, color: "white", bg: "bg-gradient-to-br from-purple-500 to-violet-600", agg: 'count' },
+            { title: "Customers", keyMatch: /customer|contact_type|first_name/i, icon: UserCheck, color: "white", bg: "bg-gradient-to-br from-emerald-500 to-green-600", agg: 'count' },
+            { title: "Avg Deal Size", keyMatch: /est_value|total_value|deal|amount|value/i, icon: Activity, color: "white", bg: "bg-gradient-to-br from-cyan-500 to-blue-600", prefix: "₹", agg: 'avg' },
+            { title: "Activities", keyMatch: /action|activity|task|call|meeting|log/i, icon: Calendar, color: "white", bg: "bg-gradient-to-br from-orange-500 to-amber-600", agg: 'count' },
+        ]
     }
 };
 
@@ -484,10 +504,85 @@ const FINANCE_TEMPLATES: ChartRecommendation[][] = [
     ]
 ];
 
+// CRM-Specific Templates - Designed for SFW CRM data structure
+// Tables: leads (lead_status, lead_source, est_value, industry), customers (contact_type, source, status), companies (industry, total_value)
+const CRM_TEMPLATES: ChartRecommendation[][] = [
+    // Template 1: Sales Pipeline Overview
+    [
+        { type: 'funnel', title: 'Lead Pipeline by Status', x_axis: 'lead_status', y_axis: 'est_value', x_label: 'Pipeline Stage', y_label: 'Deal Value', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#F43F5E', '#10B981'] },
+        { type: 'pie', title: 'Leads by Source', x_axis: 'lead_source', y_axis: 'est_value', x_label: 'Lead Source', y_label: 'Value', priority: 'medium', size: 'normal', colorPalette: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6'] },
+        { type: 'bar', title: 'Deal Value by Industry', x_axis: 'industry', y_axis: 'est_value', x_label: 'Industry', y_label: 'Est. Value', priority: 'medium', size: 'normal', colorPalette: ['#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899'] },
+        { type: 'doughnut', title: 'Lead Status Distribution', x_axis: 'lead_status', y_axis: 'count', x_label: 'Status', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: ['#22C55E', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'] },
+    ],
+    // Template 2: Customer Analytics
+    [
+        { type: 'bar', title: 'Customers by Contact Type', x_axis: 'contact_type', y_axis: 'count', x_label: 'Contact Type', y_label: 'Count', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444'] },
+        { type: 'pie', title: 'Customer Sources', x_axis: 'source', y_axis: 'count', x_label: 'Source', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: ['#6366F1', '#EC4899', '#10B981', '#F59E0B'] },
+        { type: 'doughnut', title: 'Customer Status', x_axis: 'status', y_axis: 'count', x_label: 'Status', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: ['#22C55E', '#EF4444'] },
+        { type: 'bar', title: 'Customers by Country', x_axis: 'country', y_axis: 'count', x_label: 'Country', y_label: 'Customers', priority: 'medium', size: 'normal', colorPalette: ['#8B5CF6', '#A855F7', '#D946EF', '#EC4899'] },
+    ],
+    // Template 3: Company Performance
+    [
+        { type: 'bar', title: 'Company Value by Industry', x_axis: 'industry', y_axis: 'total_value', x_label: 'Industry', y_label: 'Total Value', priority: 'high', size: 'large', colorPalette: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'] },
+        { type: 'pie', title: 'Companies by Size', x_axis: 'size', y_axis: 'count', x_label: 'Company Size', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: ['#3B82F6', '#6366F1', '#8B5CF6', '#A855F7'] },
+        { type: 'bar', title: 'Contact Count by Company', x_axis: 'name', y_axis: 'contact_count', x_label: 'Company', y_label: 'Contacts', priority: 'medium', size: 'normal', colorPalette: ['#EC4899', '#F43F5E', '#F59E0B', '#10B981'] },
+        { type: 'doughnut', title: 'Revenue Distribution', x_axis: 'revenue', y_axis: 'count', x_label: 'Revenue Range', y_label: 'Companies', priority: 'medium', size: 'normal', colorPalette: ['#22C55E', '#3B82F6', '#F59E0B', '#EF4444'] },
+    ],
+    // Template 4: Lead Activity Analysis
+    [
+        { type: 'bar', title: 'Activity by Action Type', x_axis: 'action', y_axis: 'count', x_label: 'Action', y_label: 'Count', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'] },
+        { type: 'line', title: 'Activity Timeline', x_axis: 'created_at', y_axis: 'count', x_label: 'Date', y_label: 'Activities', priority: 'medium', size: 'normal', colorPalette: ['#6366F1'] },
+        { type: 'pie', title: 'Actions by Performer', x_axis: 'performed_by', y_axis: 'count', x_label: 'User', y_label: 'Actions', priority: 'medium', size: 'normal', colorPalette: ['#EC4899', '#8B5CF6', '#3B82F6', '#10B981'] },
+        { type: 'bar', title: 'Stage Changes Over Time', x_axis: 'details', y_axis: 'count', x_label: 'Stage Change', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: ['#F59E0B', '#EF4444', '#22C55E', '#3B82F6'] },
+    ],
+    // Template 5: Pipeline Value Analysis
+    [
+        { type: 'gradient-area', title: 'Pipeline Value Trend', x_axis: 'created_at', y_axis: 'est_value', x_label: 'Date', y_label: 'Est. Value', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#6366F1'] },
+        { type: 'bar', title: 'Value by Lead Owner', x_axis: 'lead_owner', y_axis: 'est_value', x_label: 'Sales Owner', y_label: 'Pipeline Value', priority: 'medium', size: 'normal', colorPalette: ['#10B981', '#3B82F6', '#F59E0B'] },
+        { type: 'pie', title: 'Value by Lead Source', x_axis: 'lead_source', y_axis: 'est_value', x_label: 'Source', y_label: 'Value', priority: 'medium', size: 'normal', colorPalette: ['#8B5CF6', '#EC4899', '#3B82F6', '#10B981'] },
+        { type: 'bar', title: 'Avg Deal Size by Industry', x_axis: 'industry', y_axis: 'est_value', x_label: 'Industry', y_label: 'Avg Value', priority: 'medium', size: 'normal', colorPalette: ['#F59E0B', '#EF4444', '#22C55E', '#3B82F6'] },
+    ],
+    // Template 6: Sales Conversion Funnel
+    [
+        { type: 'funnel', title: 'Sales Conversion Funnel', x_axis: 'lead_status', y_axis: 'count', x_label: 'Stage', y_label: 'Leads', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#6366F1', '#8B5CF6', '#A855F7', '#D946EF', '#EC4899', '#22C55E', '#EF4444'] },
+        { type: 'gauge', title: 'Win Rate', x_axis: 'none', y_axis: 'rate', x_label: '', y_label: 'Win %', priority: 'medium', size: 'normal', colorPalette: ['#22C55E'] },
+        { type: 'bar', title: 'Lost Reasons Analysis', x_axis: 'lead_status', y_axis: 'count', x_label: 'Status', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: ['#EF4444', '#F59E0B', '#3B82F6'] },
+        { type: 'pie', title: 'Pipeline Stage Distribution', x_axis: 'lead_stage', y_axis: 'est_value', x_label: 'Stage', y_label: 'Value', priority: 'medium', size: 'normal', colorPalette: ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'] },
+    ],
+    // Template 7: Geographic Analysis
+    [
+        { type: 'bar', title: 'Customers by Region', x_axis: 'state', y_axis: 'count', x_label: 'State/Region', y_label: 'Customers', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#6366F1', '#8B5CF6', '#A855F7'] },
+        { type: 'pie', title: 'Distribution by Country', x_axis: 'country', y_axis: 'count', x_label: 'Country', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: ['#10B981', '#3B82F6', '#F59E0B', '#EF4444'] },
+        { type: 'bar', title: 'Leads by City', x_axis: 'city', y_axis: 'count', x_label: 'City', y_label: 'Leads', priority: 'medium', size: 'normal', colorPalette: ['#EC4899', '#8B5CF6', '#3B82F6'] },
+        { type: 'doughnut', title: 'Market Presence', x_axis: 'country', y_axis: 'est_value', x_label: 'Market', y_label: 'Value', priority: 'medium', size: 'normal', colorPalette: ['#22C55E', '#3B82F6', '#F59E0B'] },
+    ],
+    // Template 8: Team Performance
+    [
+        { type: 'bar', title: 'Pipeline by Sales Owner', x_axis: 'lead_owner', y_axis: 'est_value', x_label: 'Sales Rep', y_label: 'Pipeline Value', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6'] },
+        { type: 'pie', title: 'Lead Distribution by Owner', x_axis: 'lead_owner', y_axis: 'count', x_label: 'Owner', y_label: 'Leads', priority: 'medium', size: 'normal', colorPalette: ['#6366F1', '#EC4899', '#10B981', '#F59E0B'] },
+        { type: 'bar', title: 'Activities by User', x_axis: 'performed_by', y_axis: 'count', x_label: 'User', y_label: 'Activities', priority: 'medium', size: 'normal', colorPalette: ['#8B5CF6', '#A855F7', '#D946EF'] },
+        { type: 'line', title: 'Team Activity Trend', x_axis: 'created_at', y_axis: 'count', x_label: 'Date', y_label: 'Actions', priority: 'medium', size: 'normal', colorPalette: ['#3B82F6'] },
+    ],
+    // Template 9: Product & Quotation Analysis
+    [
+        { type: 'bar', title: 'Products by Category', x_axis: 'category_name', y_axis: 'count', x_label: 'Category', y_label: 'Products', priority: 'high', size: 'large', colorPalette: ['#10B981', '#3B82F6', '#F59E0B'] },
+        { type: 'pie', title: 'Quotation Status', x_axis: 'status', y_axis: 'total_amount', x_label: 'Status', y_label: 'Amount', priority: 'medium', size: 'normal', colorPalette: ['#22C55E', '#3B82F6', '#F59E0B', '#EF4444'] },
+        { type: 'bar', title: 'Product Pricing', x_axis: 'name', y_axis: 'base_price', x_label: 'Product', y_label: 'Price', priority: 'medium', size: 'normal', colorPalette: ['#8B5CF6', '#EC4899', '#3B82F6'] },
+        { type: 'line', title: 'Quotation Trend', x_axis: 'created_at', y_axis: 'total_amount', x_label: 'Date', y_label: 'Value', priority: 'medium', size: 'normal', colorPalette: ['#6366F1'] },
+    ],
+    // Template 10: Executive CRM Dashboard
+    [
+        { type: 'mixed-line-bar', title: 'Pipeline vs Closed Deals', x_axis: 'lead_status', y_axis: ['est_value', 'count'], x_label: 'Status', y_label: 'Value/Count', priority: 'high', size: 'large', colorPalette: ['#3B82F6', '#10B981'] },
+        { type: 'gauge', title: 'Pipeline Health Score', x_axis: 'none', y_axis: 'score', x_label: '', y_label: 'Score', priority: 'medium', size: 'normal', colorPalette: ['#22C55E', '#F59E0B', '#EF4444'] },
+        { type: 'radar', title: 'Sales Performance Metrics', x_axis: 'lead_source', y_axis: 'est_value', x_label: 'Source', y_label: 'Value', priority: 'medium', size: 'normal', colorPalette: ['#8B5CF6', '#3B82F6'] },
+        { type: 'pie', title: 'Revenue by Industry', x_axis: 'industry', y_axis: 'est_value', x_label: 'Industry', y_label: 'Value', priority: 'medium', size: 'normal', colorPalette: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899'] },
+    ]
+];
+
 const industriesList = [
     'finance', 'ecommerce', 'saas', 'manufacturing', 'banking', 'insurance', 'retail', 'marketplace',
     'healthcare', 'pharma', 'logistics', 'telecom', 'energy', 'hr', 'education', 'hospitality',
-    'agriculture', 'government'
+    'agriculture', 'government', 'crm', 'sfw crm'
 ];
 
 // Map JSON icons to Lucide components
@@ -574,6 +669,8 @@ industriesList.forEach(ind => {
     if (!TEMPLATE_VARIATIONS[ind]) {
         if (ind === 'finance') {
             TEMPLATE_VARIATIONS[ind] = FINANCE_TEMPLATES;
+        } else if (ind === 'crm' || ind === 'sfw crm') {
+            TEMPLATE_VARIATIONS[ind] = CRM_TEMPLATES;
         } else {
             TEMPLATE_VARIATIONS[ind] = generateIndustryTemplates(capitalize(ind));
         }
@@ -588,7 +685,8 @@ const getIndustryKey = (industryName?: string): string => {
     let key = "retail";
     if (industryName) {
         const lowerInfo = industryName.toLowerCase();
-        if (lowerInfo.includes('retail')) key = 'retail';
+        if (lowerInfo.includes('crm') || lowerInfo.includes('sfw')) key = 'crm';
+        else if (lowerInfo.includes('retail')) key = 'retail';
         else if (lowerInfo.includes('sale')) key = 'sales';
         else if (lowerInfo.includes('market')) key = 'marketing';
         else if (lowerInfo.includes('manufact')) key = 'manufacturing';
@@ -617,30 +715,83 @@ export const getTemplateCharts = (templateId: string, data: any[], industryName?
     if (!data || data.length === 0) return selectedTemplate;
 
     const keys = Object.keys(data[0]);
-    const numericKeys = keys.filter(k => typeof data[0][k] === 'number');
-    const stringKeys = keys.filter(k => typeof data[0][k] === 'string' && !/id|date|url|email/i.test(k));
-    const mainNumeric = numericKeys[0] || keys.find(k => /sales|total|amount|revenue|price/i.test(k)) || numericKeys[0];
+    const numericKeys = keys.filter(k => {
+        const val = data[0][k];
+        return typeof val === 'number' || (typeof val === 'string' && !isNaN(parseFloat(val)) && /^\d+(\.\d+)?$/.test(val));
+    });
+    const stringKeys = keys.filter(k => typeof data[0][k] === 'string' && !/id|date|url|email|uuid/i.test(k));
+    const mainNumeric = numericKeys[0] || keys.find(k => /sales|total|amount|revenue|price|value|est_value/i.test(k)) || numericKeys[0];
     const secondNumeric = numericKeys[1] || numericKeys[0];
-    const mainString = stringKeys[0] || keys.find(k => /name|type|category|brand/i.test(k)) || stringKeys[0];
+    const mainString = stringKeys[0] || keys.find(k => /name|type|category|brand|status/i.test(k)) || stringKeys[0];
 
-    // Data-aware column mapping
-    const colMap: any = {
-        'sales': numericKeys.find(k => /sales|revenue|amount|income/i.test(k)) || mainNumeric,
-        'profit': numericKeys.find(k => /profit|net|margin|ebitda/i.test(k)) || secondNumeric || mainNumeric,
-        'cost': numericKeys.find(k => /cost|expense|spend|overhead/i.test(k)) || secondNumeric || mainNumeric,
-        'count': numericKeys.find(k => /count|qty|quantity|headcount|req/i.test(k)) || secondNumeric || mainNumeric,
-        'rate': numericKeys.find(k => /rate|ratio|percentage|churn|attrition|occupancy|cvr|roi/i.test(k)) || numericKeys.find(k => /%/i.test(k)) || secondNumeric || mainNumeric,
-        'score': numericKeys.find(k => /score|rating|index|nps|csat|quality/i.test(k)) || secondNumeric || mainNumeric,
-        'time': numericKeys.find(k => /time|days|hours|minutes|duration|period|tenure|lead/i.test(k)) || secondNumeric || mainNumeric,
-        'value': numericKeys[0] || mainNumeric,
-        'date': keys.find(k => /date|time|day|period|month|year/i.test(k)) || mainString,
-        'category': keys.find(k => /category|type|group|status|segment|sector/i.test(k)) || mainString,
-        'region': keys.find(k => /region|city|state|location|market|country/i.test(k)) || mainString,
-        'product': keys.find(k => /product|item|sku|description/i.test(k)) || mainString,
-        'department': keys.find(k => /department|dept|division|team/i.test(k)) || mainString,
-        'vendor': keys.find(k => /vendor|supplier|manufacturer|brand/i.test(k)) || mainString,
-        'source': keys.find(k => /source|channel|platform/i.test(k)) || mainString
-    };
+    // CRM-specific column mapping for accurate chart generation
+    const isCRM = key === 'crm' || key === 'sfw crm' || (industryName && industryName.toLowerCase().includes('crm'));
+    
+    let colMap: any;
+    
+    if (isCRM) {
+        // CRM-specific exact column mappings based on SFW CRM schema
+        colMap = {
+            // Lead table columns
+            'lead_status': keys.find(k => k === 'lead_status') || keys.find(k => /lead_status|status/i.test(k)) || mainString,
+            'lead_source': keys.find(k => k === 'lead_source') || keys.find(k => /lead_source|source/i.test(k)) || mainString,
+            'lead_stage': keys.find(k => k === 'lead_stage') || keys.find(k => /lead_stage|stage/i.test(k)) || mainString,
+            'lead_owner': keys.find(k => k === 'lead_owner') || keys.find(k => /lead_owner|owner|sales_owner/i.test(k)) || mainString,
+            'est_value': keys.find(k => k === 'est_value') || keys.find(k => /est_value|value|amount|total/i.test(k)) || mainNumeric,
+            'industry': keys.find(k => k === 'industry') || mainString,
+            
+            // Customer table columns
+            'contact_type': keys.find(k => k === 'contact_type') || keys.find(k => /contact_type|type/i.test(k)) || mainString,
+            'source': keys.find(k => k === 'source') || keys.find(k => /source|lead_source/i.test(k)) || mainString,
+            'status': keys.find(k => k === 'status') || keys.find(k => /status|lead_status/i.test(k)) || mainString,
+            'country': keys.find(k => k === 'country') || mainString,
+            'state': keys.find(k => k === 'state') || mainString,
+            'city': keys.find(k => k === 'city') || mainString,
+            
+            // Company table columns
+            'total_value': keys.find(k => k === 'total_value') || keys.find(k => /total_value|value|est_value/i.test(k)) || mainNumeric,
+            'contact_count': keys.find(k => k === 'contact_count') || keys.find(k => /contact_count|count/i.test(k)) || mainNumeric,
+            'size': keys.find(k => k === 'size') || mainString,
+            'revenue': keys.find(k => k === 'revenue') || mainString,
+            'name': keys.find(k => k === 'name' || k === 'lead_name' || k === 'company_name') || mainString,
+            
+            // Activity/Log columns
+            'action': keys.find(k => k === 'action') || mainString,
+            'performed_by': keys.find(k => k === 'performed_by') || keys.find(k => /performed_by|user|owner/i.test(k)) || mainString,
+            'details': keys.find(k => k === 'details') || mainString,
+            'created_at': keys.find(k => k === 'created_at') || keys.find(k => /created_at|date|time/i.test(k)) || mainString,
+            
+            // Product/Quotation columns
+            'category_name': keys.find(k => k === 'category_name') || keys.find(k => /category/i.test(k)) || mainString,
+            'base_price': keys.find(k => k === 'base_price') || keys.find(k => /price|cost/i.test(k)) || mainNumeric,
+            'total_amount': keys.find(k => k === 'total_amount') || keys.find(k => /total|amount/i.test(k)) || mainNumeric,
+            
+            // Generic mappings
+            'count': '_count_', // Special marker for count aggregation
+            'rate': keys.find(k => /rate|percentage|score/i.test(k)) || mainNumeric,
+            'score': keys.find(k => /score|rating/i.test(k)) || mainNumeric,
+            'value': keys.find(k => /value|amount|total|est_value/i.test(k)) || mainNumeric,
+        };
+    } else {
+        // Standard column mapping for non-CRM data
+        colMap = {
+            'sales': numericKeys.find(k => /sales|revenue|amount|income/i.test(k)) || mainNumeric,
+            'profit': numericKeys.find(k => /profit|net|margin|ebitda/i.test(k)) || secondNumeric || mainNumeric,
+            'cost': numericKeys.find(k => /cost|expense|spend|overhead/i.test(k)) || secondNumeric || mainNumeric,
+            'count': numericKeys.find(k => /count|qty|quantity|headcount|req/i.test(k)) || secondNumeric || mainNumeric,
+            'rate': numericKeys.find(k => /rate|ratio|percentage|churn|attrition|occupancy|cvr|roi/i.test(k)) || numericKeys.find(k => /%/i.test(k)) || secondNumeric || mainNumeric,
+            'score': numericKeys.find(k => /score|rating|index|nps|csat|quality/i.test(k)) || secondNumeric || mainNumeric,
+            'time': numericKeys.find(k => /time|days|hours|minutes|duration|period|tenure|lead/i.test(k)) || secondNumeric || mainNumeric,
+            'value': numericKeys[0] || mainNumeric,
+            'date': keys.find(k => /date|time|day|period|month|year/i.test(k)) || mainString,
+            'category': keys.find(k => /category|type|group|status|segment|sector/i.test(k)) || mainString,
+            'region': keys.find(k => /region|city|state|location|market|country/i.test(k)) || mainString,
+            'product': keys.find(k => /product|item|sku|description/i.test(k)) || mainString,
+            'department': keys.find(k => /department|dept|division|team/i.test(k)) || mainString,
+            'vendor': keys.find(k => /vendor|supplier|manufacturer|brand/i.test(k)) || mainString,
+            'source': keys.find(k => /source|channel|platform/i.test(k)) || mainString
+        };
+    }
 
     return selectedTemplate.map((chart, index) => {
         let x = colMap[chart.x_axis as string] || chart.x_axis;

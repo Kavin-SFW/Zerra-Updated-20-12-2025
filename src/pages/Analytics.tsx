@@ -242,7 +242,12 @@ const Analytics = () => {
         dataToUse = fetchedData;
       }
 
-      const templateRecs = getTemplateCharts(selectedTemplate, dataToUse, selectedIndustryName);
+      // Detect CRM sources to use appropriate templates
+      const sourceInfo = mockDataService.getSources().find(s => s.id === selectedDataSourceId);
+      const isCrmSource = sourceInfo?.type === 'SFW CRM' || sourceInfo?.type?.toLowerCase().includes('crm');
+      const industryToUse = isCrmSource ? 'crm' : selectedIndustryName;
+
+      const templateRecs = getTemplateCharts(selectedTemplate, dataToUse, industryToUse);
 
       const newCharts = templateRecs.map(rec => ({
         title: rec.title,
@@ -670,6 +675,38 @@ const Analytics = () => {
     } catch (error) {
       console.error('Error generating dashboard:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate dashboard';
+      
+      // Check if this is a mock/CRM data source - if so, generate charts locally
+      const sourceInfo = mockDataService.getSources().find(s => s.id === selectedDataSourceId);
+      if (sourceInfo && sourceInfo.is_mock) {
+        console.log('Falling back to local chart generation for mock/CRM data source');
+        try {
+          const data = mockDataService.getData(selectedDataSourceId);
+          if (data && data.length > 0) {
+            // Detect industry based on source type - use 'crm' for SFW CRM sources
+            const isCrmSource = sourceInfo.type === 'SFW CRM' || sourceInfo.type?.toLowerCase().includes('crm');
+            const industryToUse = isCrmSource ? 'crm' : (selectedIndustryName || 'retail');
+            
+            console.log('Generating local charts with industry:', industryToUse, 'for source type:', sourceInfo.type);
+            
+            // Generate charts locally using templates
+            const templateRecs = getTemplateCharts('template1', data, industryToUse);
+            
+            const newCharts = templateRecs.map(rec => ({
+              title: rec.title,
+              rec: rec,
+              option: createEChartsOption(rec, data, chartSortOrder, false, groupByDimension)
+            }));
+            
+            setCharts(newCharts);
+            toast.success(`Generated ${newCharts.length} charts from your ${isCrmSource ? 'CRM' : industryToUse} data`);
+            return;
+          }
+        } catch (localError) {
+          console.error('Local chart generation also failed:', localError);
+        }
+      }
+      
       toast.error(errorMessage);
       
       // Only redirect if it's an authentication error and user explicitly needs to re-login

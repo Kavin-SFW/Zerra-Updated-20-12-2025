@@ -119,7 +119,7 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
 
     // API Config (SFW CRM)
     const [apiConfig, setApiConfig] = useState({
-        url: 'https://flndlrgxxnlhuuusargv.supabase.co',
+        url: '',
         apiKey: '',
         clientId: ''
     });
@@ -277,9 +277,15 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
         if (result.success) {
             // Auto-discover tables
             if (type === 'SFW CRM') {
+                console.log('[DatabaseConnector] Attempting to discover tables...');
                 const discoveredTables = await supabaseService.fetchAvailableTables(apiConfig.url, apiConfig.apiKey);
+                console.log('[DatabaseConnector] Discovered tables:', discoveredTables);
                 if (discoveredTables.length > 0) {
                     setTables(discoveredTables.map(t => ({ ...t, selected: true })));
+                } else {
+                    // If no tables discovered, show empty state with manual input option
+                    console.log('[DatabaseConnector] No tables auto-discovered, user can add manually');
+                    setTables([]);
                 }
             } else {
                 // Fetch tables from Backend API
@@ -309,7 +315,7 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
             
             setLoading(false);
             setStep('schema');
-            toast.success("Connected successfully!");
+            toast.success("Connected successfully! Select tables to import.");
         } else {
             setLoading(false);
             setError(result.message || "Connection failed. Please check credentials.");
@@ -325,26 +331,31 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
 
         setStep('importing');
 
-        const sourceName = connectionName.trim() || `SFW CRM - ${selectedTables.map(t => t.name).join(', ')}`;
+        const sourceName = connectionName.trim() || `${type} - ${selectedTables.map(t => t.name).join(', ')}`;
 
         try {
-            // 1. Create the client for the REMOTE database
-            // const activeSupabase = (type === 'SFW CRM' && apiConfig.url && apiConfig.apiKey)
-            //    ? supabaseService.createClient(apiConfig.url, apiConfig.apiKey)
-            //    : defaultSupabase;
-
             let totalRecords = 0;
-            let firstDataSourceId = null;
+            let firstDataSourceId: string | null = null;
+            let allImportedData: any[] = [];
 
-            // 2. Fetch data from each selected table
+            // Fetch data from each selected table
             for (const table of selectedTables) {
-                let remoteData = [];
+                let remoteData: any[] = [];
+
+                console.log(`[DatabaseConnector] Fetching data from table: ${table.name}`);
 
                 if (type === 'SFW CRM') {
                     const activeSupabase = supabaseService.createClient(apiConfig.url, apiConfig.apiKey);
                     const { data, error } = await supabaseService.fetchTableData(activeSupabase, table.name);
-                    if (error) throw new Error(error);
+                    
+                    if (error) {
+                        console.error(`[DatabaseConnector] Error fetching ${table.name}:`, error);
+                        toast.error(`Failed to fetch ${table.name}: ${error}`);
+                        continue; // Skip this table but continue with others
+                    }
+                    
                     remoteData = data || [];
+                    console.log(`[DatabaseConnector] Fetched ${remoteData.length} records from ${table.name}`);
                 } else {
                     // SQL Backend Fetch
                     const dbType = getBackendType(type);
@@ -365,58 +376,86 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                         })
                     });
                     const resData = await response.json();
-                    if (!resData.success) throw new Error(resData.message);
-                    remoteData = resData.data;
+                    if (!resData.success) {
+                        console.error(`[DatabaseConnector] Error fetching ${table.name}:`, resData.message);
+                        toast.error(`Failed to fetch ${table.name}: ${resData.message}`);
+                        continue;
+                    }
+                    remoteData = resData.data || [];
                 }
 
                 if (remoteData && remoteData.length > 0) {
                     totalRecords += remoteData.length;
+                    allImportedData = [...allImportedData, ...remoteData];
 
                     // --- INTELLIGENT FIELD MAPPING ---
-                    // We analyze the first row to determine the best columns for visualization
+                    // Analyze the first row to determine the best columns for visualization
                     const sampleRow = remoteData[0];
                     const columns = Object.keys(sampleRow);
                     
-                    const mapping = {
-                        dateCol: columns.find(k => /date|time|created_at|updated_at|timestamp/i.test(k)) || null,
-                        metricCol: columns.find(k => /amount|price|cost|revenue|sales|total|value|qty|quantity/i.test(k) && typeof sampleRow[k] === 'number') || 
-                                   columns.find(k => typeof sampleRow[k] === 'number' && !/id|code|zip/i.test(k)) || null,
-                        categoryCol: columns.find(k => /status|type|category|region|country|source|industry|segment/i.test(k)) || 
-                                     columns.find(k => typeof sampleRow[k] === 'string' && sampleRow[k].length < 50 && !/id|url|email|uuid/i.test(k)) || null
-                    };
+                    // Find date column
+                    const dateCol = columns.find(k => /date|time|created_at|updated_at|timestamp/i.test(k)) || null;
+                    
+                    // Find metric/numeric column for aggregation
+                    const metricCol = columns.find(k => 
+                        /amount|price|cost|revenue|sales|total|value|qty|quantity|count|score/i.test(k) && 
+                        typeof sampleRow[k] === 'number'
+                    ) || columns.find(k => 
+                        typeof sampleRow[k] === 'number' && 
+                        !/id|code|zip|year|month|day/i.test(k)
+                    ) || null;
+                    
+                    // Find category column for grouping
+                    const categoryCol = columns.find(k => 
+                        /status|type|category|region|country|source|industry|segment|department|name/i.test(k)
+                    ) || columns.find(k => 
+                        typeof sampleRow[k] === 'string' && 
+                        String(sampleRow[k]).length < 50 && 
+                        !/id|url|email|uuid|description|notes|address/i.test(k)
+                    ) || null;
 
-                    console.log(`[Mapping Analysis] Table: ${table.name}`, mapping);
+                    const mapping = { dateCol, metricCol, categoryCol };
+                    console.log(`[DatabaseConnector] Mapping Analysis for ${table.name}:`, mapping);
+                    console.log(`[DatabaseConnector] Sample row:`, sampleRow);
 
-                    // 3. Store the fetched data LOCALLY with the mapping metadata
+                    // Store the fetched data LOCALLY with the mapping metadata
                     const newSource = mockDataService.addSource(
-                        `${sourceName} (${table.name})`, 
+                        selectedTables.length === 1 ? sourceName : `${sourceName} (${table.name})`, 
                         type, 
                         remoteData,
-                        mapping, // Pass the explicit mapping
-                        table.name // Pass the table name
+                        mapping,
+                        table.name
                     );
+
+                    console.log(`[DatabaseConnector] Created data source: ${newSource.id} with ${remoteData.length} records`);
 
                     if (!firstDataSourceId) firstDataSourceId = newSource.id;
                 }
             }
 
             if (totalRecords === 0) {
-                toast.warning("Connected, but the selected tables appear to be empty.");
-            } else {
-                toast.success(`Successfully imported ${totalRecords} records from ${selectedTables.length} tables.`);
+                toast.warning("Connected, but the selected tables appear to be empty. Try a different table name.");
+                setStep('schema');
+                return;
             }
             
-            // 4. Set the selected source and navigate
+            toast.success(`Successfully imported ${totalRecords} records from ${selectedTables.length} table(s). Generating visualizations...`);
+            
+            // Set the selected source and navigate to analytics
             if (firstDataSourceId) {
+                console.log(`[DatabaseConnector] Setting selected data source: ${firstDataSourceId}`);
                 setSelectedDataSourceId(firstDataSourceId);
             }
             
             onClose();
+            
+            // Navigate to analytics page - the page will auto-generate visualizations
             navigate('/analytics');
 
         } catch (error: any) {
+            console.error('[DatabaseConnector] Import error:', error);
             supabaseService.logError(error, "Import Remote Data");
-            toast.error(`Import failed: ${error.message}. Check if the table name is correct.`);
+            toast.error(`Import failed: ${error.message}. Check if the table name is correct and you have access.`);
             setStep('schema'); // Go back to schema step to let them fix table name
         }
     };
@@ -609,7 +648,7 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                                 <Button 
                                     onClick={handleTest} 
                                     variant="outline"
-                                    className="border-white/20 text-white hover:bg-white/10"
+                                    className="border-[#00D4FF]/50 bg-[#00D4FF]/10 text-[#00D4FF] hover:bg-[#00D4FF]/20 hover:border-[#00D4FF]/70"
                                     disabled={loading || testStatus === 'testing'}
                                 >
                                     {testStatus === 'testing' ? 'Handshaking...' : 'Test Handshake'}

@@ -86,13 +86,74 @@ export class SupabaseService {
 
     public async fetchAvailableTables(url: string, key: string) {
         try {
+            // First, try to get tables from the information_schema via RPC or direct query
+            // Supabase exposes table info through the PostgREST OpenAPI spec
             const res = await fetch(`${url}/rest/v1/`, {
-                headers: { apikey: key, Authorization: `Bearer ${key}` }
+                headers: { 
+                    apikey: key, 
+                    Authorization: `Bearer ${key}`,
+                    'Accept': 'application/openapi+json'
+                }
             });
-            if (!res.ok) return [];
+            
+            if (!res.ok) {
+                console.warn('[SupabaseService] Failed to fetch OpenAPI spec:', res.status);
+                return [];
+            }
+            
             const spec = await res.json();
-            return Object.keys(spec.definitions || {}).map(name => ({ name, rows: 0 }));
-        } catch {
+            
+            // Extract table names from OpenAPI paths (each path like /tablename is a table)
+            const tableNames: string[] = [];
+            
+            if (spec.paths) {
+                // OpenAPI spec exposes tables as paths
+                Object.keys(spec.paths).forEach(path => {
+                    // Paths are like "/tablename" - extract the table name
+                    const tableName = path.replace(/^\//, '').split('/')[0];
+                    if (tableName && !tableName.startsWith('rpc/') && tableName !== '') {
+                        // Avoid duplicates
+                        if (!tableNames.includes(tableName)) {
+                            tableNames.push(tableName);
+                        }
+                    }
+                });
+            } else if (spec.definitions) {
+                // Fallback to definitions if paths not available
+                Object.keys(spec.definitions).forEach(name => {
+                    if (!name.startsWith('_')) {
+                        tableNames.push(name);
+                    }
+                });
+            }
+            
+            // Now fetch actual row counts for each table
+            const tables: { name: string; rows: number }[] = [];
+            const client = this.createClient(url, key);
+            
+            for (const tableName of tableNames) {
+                try {
+                    // Use count query to get actual row count
+                    const { count, error } = await client
+                        .from(tableName)
+                        .select('*', { count: 'exact', head: true });
+                    
+                    tables.push({ 
+                        name: tableName, 
+                        rows: error ? 0 : (count || 0) 
+                    });
+                } catch {
+                    tables.push({ name: tableName, rows: 0 });
+                }
+            }
+            
+            // Sort tables by row count (descending) so tables with data appear first
+            tables.sort((a, b) => b.rows - a.rows);
+            
+            console.log('[SupabaseService] Discovered tables with counts:', tables);
+            return tables;
+        } catch (error) {
+            console.error('[SupabaseService] Error fetching tables:', error);
             return [];
         }
     }
