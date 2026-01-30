@@ -1,11 +1,9 @@
+require('dotenv').config();
 const { Client } = require('pg');
 
 const client = new Client({
-  host: 'localhost',
-  port: 5432,
-  user: 'postgres',
-  password: 'password123',
-  database: 'zerra_analytics',
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:password123@localhost:5432/zerra_analytics',
+  ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost') ? { rejectUnauthorized: false } : false
 });
 
 async function seed() {

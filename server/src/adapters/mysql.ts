@@ -34,14 +34,27 @@ export class MysqlAdapter implements IDatabaseAdapter {
     async getTables(): Promise<TableSchema[]> {
         await this.connect();
         try {
+            // 1. Get Table List
             const [rows] = await this.connection!.execute('SHOW TABLES');
-            // rows is an array of objects like { "Tables_in_dbname": "tablename" }
-            // We need to extract the values
-            const tables = (rows as any[]).map(row => {
-                const key = Object.keys(row)[0];
-                return { name: row[key], rows: 0 };
-            });
-            return tables;
+            const tablesList = (rows as any[]).map(row => Object.values(row)[0] as string);
+            
+            const result: TableSchema[] = [];
+
+            // 2. Dedicated Counting
+            for (const tableName of tablesList) {
+                try {
+                    // Use execute for safety, though table names from SHOW TABLES are generally safe
+                    // Note: You can't parameterize table names in standard SQL, so we construct the string
+                    const [countRows] = await this.connection!.execute(`SELECT COUNT(*) as c FROM 
+${tableName}
+`);
+                    const count = (countRows as any[])[0].c;
+                    result.push({ name: tableName, rows: Number(count) });
+                } catch (e) {
+                     result.push({ name: tableName, rows: 0 });
+                }
+            }
+            return result;
         } finally {
             await this.disconnect();
         }

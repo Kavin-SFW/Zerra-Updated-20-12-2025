@@ -7,6 +7,7 @@ export class PostgresAdapter implements IDatabaseAdapter {
 
     constructor(config: DatabaseConfig) {
         this.config = config;
+        console.log(`[PostgresAdapter] Initializing with: host=${config.host}, port=${config.port}, database=${config.database}, user=${config.username}, ssl=${!!config.ssl}`);
         this.client = new Client({
             host: config.host,
             port: config.port,
@@ -18,7 +19,14 @@ export class PostgresAdapter implements IDatabaseAdapter {
     }
 
     async connect(): Promise<void> {
-        await this.client.connect();
+        console.log(`[PostgresAdapter] Attempting connection to ${this.config.host}...`);
+        try {
+            await this.client.connect();
+            console.log(`[PostgresAdapter] ✅ Connection successful to ${this.config.host}`);
+        } catch (err: any) {
+            console.error(`[PostgresAdapter] ❌ Connection failed to ${this.config.host}:`, err.message);
+            throw err;
+        }
     }
 
     async disconnect(): Promise<void> {
@@ -34,12 +42,34 @@ export class PostgresAdapter implements IDatabaseAdapter {
     async getTables(): Promise<TableSchema[]> {
         await this.connect();
         try {
+            // 1. Get List of Tables
             const res = await this.client.query(`
-                SELECT schemaname || '.' || tablename as name
+                SELECT schemaname, tablename
                 FROM pg_catalog.pg_tables
                 WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
             `);
-            return res.rows.map(row => ({ name: row.name, rows: 0 }));
+            
+            const tables = res.rows;
+            const result: TableSchema[] = [];
+
+            // 2. Dedicated Counting Functionality
+            // We loop through each table to get the EXACT count
+            for (const t of tables) {
+                const fullTableName = `"${t.schemaname}"."${t.tablename}"`;
+                const displayName = `${t.schemaname}.${t.tablename}`;
+                try {
+                    const countRes = await this.client.query(`SELECT COUNT(*) as c FROM ${fullTableName}`);
+                    result.push({ 
+                        name: displayName, 
+                        rows: parseInt(countRes.rows[0].c) 
+                    });
+                } catch (e) {
+                    // Fallback or error handling for individual tables
+                    console.warn(`Failed to count rows for ${displayName}`, e);
+                    result.push({ name: displayName, rows: 0 });
+                }
+            }
+            return result;
         } finally {
             await this.disconnect();
         }

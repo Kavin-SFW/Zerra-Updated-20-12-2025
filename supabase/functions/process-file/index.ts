@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { EdgeLogger } from "../shared-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,6 +12,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { status: 200, headers: corsHeaders });
   }
+
+  let logger: EdgeLogger | null = null;
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -62,15 +65,24 @@ Deno.serve(async (req) => {
       },
     });
 
+    // Initialize Logger
+    logger = new EdgeLogger(supabase, userId);
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
+      await logger.warn("ProcessFile", "MISSING_FILE", "No file provided in request");
       return new Response(
         JSON.stringify({ error: "No file provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    await logger.action("ProcessFile", "PROCESS_START", `Processing file: ${file.name}`, { 
+        fileSize: file.size, 
+        fileType: file.type 
+    });
 
     const fileBuffer = await file.arrayBuffer();
 
@@ -82,6 +94,7 @@ Deno.serve(async (req) => {
       const text = new TextDecoder().decode(fileBuffer);
       const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
       if (lines.length === 0) {
+        await logger.warn("ProcessFile", "EMPTY_FILE", "CSV file is empty", { fileName: file.name });
         return new Response(
           JSON.stringify({ error: "Empty file" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -116,6 +129,7 @@ Deno.serve(async (req) => {
         const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
         if (!json || json.length === 0) {
+          await logger.warn("ProcessFile", "EMPTY_EXCEL", "Excel file has no rows", { fileName: file.name });
           return new Response(
             JSON.stringify({ error: "Excel file has no rows" }),
             { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -132,13 +146,14 @@ Deno.serve(async (req) => {
           return out;
         });
       } catch (err) {
-        console.error("Excel parse error:", err);
+        await logger.error("ProcessFile", "PARSE_ERROR", "Failed to parse Excel file", err, { fileName: file.name });
         return new Response(
           JSON.stringify({ error: "Failed to parse Excel file", details: (err as Error).message }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
     } else {
+      await logger.warn("ProcessFile", "INVALID_TYPE", "Unsupported file type", { fileName: file.name, type: file.type });
       return new Response(
         JSON.stringify({ error: "Unsupported file type. Upload CSV/XLS/XLSX." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -164,7 +179,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (dsError || !dataSource) {
-      console.error("Failed to create data_source:", dsError);
+      await logger.error("ProcessFile", "DB_INSERT_ERROR", "Failed to create data_source", dsError);
       return new Response(
         JSON.stringify({ error: "Failed to create data source" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -194,8 +209,15 @@ Deno.serve(async (req) => {
       const { error: recError } = await supabase
         .from("data_records")
         .insert(records);
-      if (recError) console.error("Batch insert error:", recError);
+      if (recError) {
+           await logger.warn("ProcessFile", "BATCH_INSERT_ERROR", "Batch insert warning", recError);
+      }
     }
+
+    await logger.info("ProcessFile", "PROCESS_SUCCESS", `Successfully processed file: ${file.name}`, { 
+        rowsCount: rows.length, 
+        dataSourceId: dataSource.id 
+    });
 
     return new Response(
       JSON.stringify({
@@ -207,7 +229,7 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
-    console.error("Unhandled error in process-file:", err);
+    if (logger) await logger.error("ProcessFile", "CRITICAL_ERROR", "Unhandled error in process-file", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },

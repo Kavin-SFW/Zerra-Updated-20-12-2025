@@ -18,7 +18,8 @@ export class MssqlAdapter implements IDatabaseAdapter {
             database: this.config.database || 'master',
             options: {
                 encrypt: false, // For Docker/Local development mostly
-                trustServerCertificate: true // Important for self-signed certs (common in Docker)
+                trustServerCertificate: true, // Important for self-signed certs (common in Docker)
+                connectTimeout: 30000 // Increase timeout to 30s
             }
         };
     }
@@ -42,12 +43,33 @@ export class MssqlAdapter implements IDatabaseAdapter {
     async getTables(): Promise<TableSchema[]> {
         await this.connect();
         try {
-            const result = await this.pool!.request().query(`
-                SELECT TABLE_SCHEMA + '.' + TABLE_NAME as name
+            // 1. Get List
+            const listResult = await this.pool!.request().query(`
+                SELECT TABLE_SCHEMA, TABLE_NAME
                 FROM INFORMATION_SCHEMA.TABLES
                 WHERE TABLE_TYPE = 'BASE TABLE'
             `);
-            return result.recordset.map(row => ({ name: row.name, rows: 0 }));
+            
+            const result: TableSchema[] = [];
+
+            // 2. Dedicated Counting
+            for (const row of listResult.recordset) {
+                const schema = row.TABLE_SCHEMA;
+                const table = row.TABLE_NAME;
+                const fullName = `${schema}.${table}`;
+                const safeName = `[${schema}].[${table}]`;
+
+                try {
+                    const countRes = await this.pool!.request().query(`SELECT COUNT(*) as c FROM ${safeName}`);
+                    result.push({ 
+                        name: fullName, 
+                        rows: countRes.recordset[0].c 
+                    });
+                } catch (e) {
+                    result.push({ name: fullName, rows: 0 });
+                }
+            }
+            return result;
         } finally {
             await this.disconnect();
         }

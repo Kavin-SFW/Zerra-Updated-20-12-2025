@@ -1,5 +1,5 @@
 export interface DatabaseConfig {
-    type: 'postgres' | 'mysql' | 'mssql';
+    type: 'postgres' | 'mysql' | 'mssql' | 'oracle' | 'mongodb' | 'odoo';
     host: string;
     port: number;
     database?: string;

@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { EdgeLogger } from "../shared-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,10 +10,10 @@ const corsHeaders = {
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-async function callGroqChat(question: string, context: any) {
+async function callGroqChat(question: string, context: any, logger?: EdgeLogger) {
   const apiKey = Deno.env.get("GROQ_API_KEY");
   if (!apiKey) {
-    console.warn("GROQ_API_KEY not set; returning simple fallback answer");
+    if (logger) await logger.warn("Chat", "GROQ_KEY_MISSING", "GROQ_API_KEY not set");
     return "AI is not fully configured yet. Please set GROQ_API_KEY in your Supabase project.";
   }
 
@@ -47,7 +48,8 @@ async function callGroqChat(question: string, context: any) {
   });
 
   if (!res.ok) {
-    console.error("Groq chat error", res.status, await res.text());
+    const errorText = await res.text();
+    if (logger) await logger.error("Chat", "GROQ_API_ERROR", `Groq chat error ${res.status}`, errorText);
     return "I had trouble reaching the analytics engine. Please try again.";
   }
 
@@ -62,6 +64,8 @@ Deno.serve(async (req) => {
       headers: corsHeaders
     });
   }
+
+  let logger: EdgeLogger | null = null;
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -88,8 +92,12 @@ Deno.serve(async (req) => {
       }
     });
 
+    // Initialize logger
+    logger = new EdgeLogger(supabase);
+
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
+      await logger.warn("Chat", "AUTH_FAILED", "User unauthorized or not found", userError);
       return new Response(JSON.stringify({
         error: "Unauthorized"
       }), {
@@ -100,6 +108,8 @@ Deno.serve(async (req) => {
         }
       });
     }
+
+    logger.setUserId(user.id);
 
     const body = await req.json();
     const { question, dataSourceId } = body;
@@ -115,6 +125,8 @@ Deno.serve(async (req) => {
         }
       });
     }
+
+    await logger.action("Chat", "CHAT_REQUEST", "Processing chat request", { hasDataSource: !!dataSourceId, questionLength: question.length });
 
     let context = null;
     if (dataSourceId) {
@@ -137,10 +149,14 @@ Deno.serve(async (req) => {
           schema: dataSource.schema_info,
           sample_data: (records ?? []).map((r) => r.row_data)
         };
+      } else {
+          await logger.warn("Chat", "DATA_SOURCE_MISSING", "Data source not found for context", { dataSourceId });
       }
     }
 
-    const answer = await callGroqChat(question, context);
+    const answer = await callGroqChat(question, context, logger);
+
+    await logger.info("Chat", "CHAT_SUCCESS", "Chat response generated");
 
     return new Response(JSON.stringify({
       answer,
@@ -153,7 +169,7 @@ Deno.serve(async (req) => {
       }
     });
   } catch (err: any) {
-    console.error("Error in chat function:", err);
+    if (logger) await logger.error("Chat", "CRITICAL_ERROR", "Internal server error in chat function", err);
     return new Response(JSON.stringify({
       error: "Internal server error",
       details: err?.message
