@@ -4,13 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Database, CheckCircle2, AlertCircle, Table as TableIcon, Key, Link as LinkIcon } from "lucide-react";
+import { Loader2, Database, CheckCircle2, AlertCircle, Table as TableIcon, Key, Link as LinkIcon, Search } from "lucide-react";
 import { toast } from "sonner";
 import { mockDataService } from "@/services/MockDataService";
 import { useNavigate } from "react-router-dom";
 import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { supabase as defaultSupabase } from "@/integrations/supabase/client";
 import { supabaseService, ConnectionStatus } from "@/integrations/supabase/supabase-service";
+import LoggerService from "@/services/LoggerService";
+import odooLogo from "@/assets/logos/odoo.png";
+import gccLogo from "@/assets/logos/gcc logo.png";
+import postgresLogo from "@/assets/logos/Postgresql_elephant.svg";
+import dynamicsLogo from "@/assets/logos/Dynamics-365-logo.jpg";
 
 interface DatabaseConnectorProps {
     isOpen: boolean;
@@ -18,118 +23,36 @@ interface DatabaseConnectorProps {
     type: string;
 }
 
-// Generate realistic mock data based on industry/type
-const generateMockData = (type: string, rowCount = 500) => {
-    const regions = ['North America', 'Europe', 'Asia Pacific', 'Latin America'];
-    const categories = ['Electronics', 'Clothing', 'Home & Garden', 'Automotive', 'Beauty'];
-    const products = [
-        ['Laptop', 'Smartphone', 'Tablet', 'Headphones', 'Monitor'],
-        ['T-Shirt', 'Jeans', 'Jacket', 'Sneakers', 'Dress'],
-        ['Sofa', 'Lamp', 'Desk', 'Chair', 'Rug'],
-        ['Tires', 'Oil', 'Battery', '', 'Lights'],
-        ['Lipstick', 'Perfume', 'Lotion', 'Cream', 'Shampoo']
-    ];
-
-    const data = [];
-    const now = new Date();
-
-    for (let i = 0; i < rowCount; i++) {
-        const date = new Date(now.getTime() - Math.random() * 90 * 24 * 60 * 60 * 1000); // Last 90 days
-        const catIdx = Math.floor(Math.random() * categories.length);
-        const prodIdx = Math.floor(Math.random() * products[catIdx].length);
-        const region = regions[Math.floor(Math.random() * regions.length)];
-        
-        const quantity = Math.floor(Math.random() * 10) + 1;
-        const price = Math.floor(Math.random() * 500) + 20;
-        const cost = Math.floor(price * (0.4 + Math.random() * 0.3)); // 40-70% of price
-        
-        data.push({
-            id: i + 1,
-            date: date.toISOString().split('T')[0],
-            category: categories[catIdx],
-            product: products[catIdx][prodIdx],
-            region: region,
-            quantity: quantity,
-            unit_price: price,
-            total_sales: quantity * price,
-            total_cost: quantity * cost,
-            profit: (quantity * price) - (quantity * cost),
-            customer_satisfaction: Math.floor(Math.random() * 5) + 1,
-            is_return: Math.random() < 0.05 ? 'Yes' : 'No'
-        });
-    }
-    return data;
-};
-
-// Generate CRM specific data
-const generateCrmData = (rowCount = 200) => {
-    const statuses = ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
-    const sources = ['Website', 'Referral', 'LinkedIn', 'Cold Call', 'Partner'];
-    const industries = ['Technology', 'Finance', 'Healthcare', 'Manufacturing', 'Retail'];
-    
-    const data = [];
-    const now = new Date();
-
-    for (let i = 0; i < rowCount; i++) {
-        const date = new Date(now.getTime() - Math.random() * 90 * 24 * 60 * 60 * 1000);
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
-        const dealValue = status === 'Closed Lost' ? 0 : Math.floor(Math.random() * 50000) + 5000;
-        
-        // Map CRM fields to Dashboard expected fields for visualization
-        // Deal Value -> Total Sales
-        // Status -> Category (to see sales by stage)
-        // Source -> Product (to see sales by source)
-        
-        data.push({
-            id: `LEAD-${1000 + i}`,
-            date: date.toISOString().split('T')[0],
-            category: status, // Mapping Status to Category for charts
-            product: sources[Math.floor(Math.random() * sources.length)], // Mapping Source to Product
-            region: industries[Math.floor(Math.random() * industries.length)], // Mapping Industry to Region
-            quantity: 1,
-            unit_price: dealValue,
-            total_sales: dealValue,
-            total_cost: dealValue * 0.3, // Estimated cost of acquisition
-            profit: dealValue * 0.7,
-            customer_satisfaction: Math.floor(Math.random() * 5) + 1,
-            is_return: 'No',
-            // CRM Specific fields (preserved)
-            lead_status: status,
-            lead_source: sources[Math.floor(Math.random() * sources.length)],
-            company_industry: industries[Math.floor(Math.random() * industries.length)]
-        });
-    }
-    return data;
-};
-
 export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorProps) => {
     const [step, setStep] = useState<'connect' | 'schema' | 'importing'>('connect');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
     
     // DB Config
     const [config, setConfig] = useState({
-        host: 'localhost',
-        port: '5432',
-        database: '',
-        username: '',
-        password: '',
-        ssl: false
+        host: import.meta.env.VITE_PGHOST || 'localhost',
+        port: import.meta.env.VITE_PGPORT || '5432',
+        database: import.meta.env.VITE_PGDATABASE || '',
+        username: import.meta.env.VITE_PGUSER || '',
+        password: import.meta.env.VITE_PGPASSWORD || '',
+        ssl: import.meta.env.VITE_PGSSL === 'true'
     });
 
     // API Config (SFW CRM)
     const [apiConfig, setApiConfig] = useState({
-        url: '',
+        url: 'https://flndlrgxxnlhuuusargv.supabase.co',
         apiKey: '',
         clientId: ''
     });
 
     const [connectionName, setConnectionName] = useState("");
+    const [tableSearch, setTableSearch] = useState("");
     
     const [tables, setTables] = useState<{name: string, rows: number, selected: boolean}[]>([]);
 
     const navigate = useNavigate();
-    const { setSelectedDataSourceId } = useAnalytics();
+    const { setSelectedDataSourceId, setSelectedIndustryName } = useAnalytics();
 
     const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'success' | 'error'>('idle');
 
@@ -138,57 +61,115 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
         if (isOpen) {
             setStep('connect');
             setError(null);
+            setFieldErrors({}); // Reset field errors
             setLoading(false);
             setTestStatus('idle');
             setConnectionName("");
-            
-            // Set default tables based on type
-            if (type === 'SFW CRM') {
-                // Static entities removed per request
-                setTables([]);
-            } else {
-                // Default DB tables
-                setTables([
-                    { name: 'public.orders', rows: 12500, selected: true },
-                    { name: 'public.customers', rows: 840, selected: false },
-                    { name: 'public.products', rows: 120, selected: false },
-                    { name: 'public.inventory', rows: 3500, selected: false },
-                ]);
-            }
+            setTableSearch("");
+            setTables([]); // Start with empty tables for all types
 
-            // Set default ports
-            if (type.includes('Postgre')) setConfig(p => ({ ...p, port: '5432' }));
-            else if (type.includes('MySQL')) setConfig(p => ({ ...p, port: '3306' }));
-            else if (type.includes('SQL Server')) setConfig(p => ({ ...p, port: '1433' }));
+            // Set default ports and credentials
+            if (type.includes('Postgre') || type === 'GCC' || type === 'Odoo') {
+                setConfig({
+                    host: 'localhost',
+                    port: '5432',
+                    database: 'zerra_analytics',
+                    username: 'postgres',
+                    password: 'password123',
+                    ssl: false
+                });
+            }
+            else if (type.includes('MySQL')) {
+                setConfig(p => ({ 
+                    ...p, 
+                    port: '3306',
+                    username: 'admin',
+                    password: 'password123',
+                    database: 'zerra_analytics'
+                }));
+            }
+            else if (type.includes('SQL Server')) {
+                setConfig(p => ({ 
+                    ...p, 
+                    port: '1433',
+                    username: 'sa',
+                    password: 'Password123!',
+                    database: 'zerra_analytics'
+                }));
+            }
         }
     }, [isOpen, type]);
 
     const validateInputs = () => {
-        if (type === 'SFW CRM') {
-            if (!connectionName.trim()) {
-                setError("Connection Name is required");
-                return false;
-            }
-            if (!apiConfig.url || !apiConfig.apiKey) {
-                setError("Instance URL and API Key are required");
-                return false;
-            }
-        } else {
-            if (!config.host || !config.username) {
-                setError("Host and Username are required");
-                return false;
-            }
+        const newFieldErrors: Record<string, string> = {};
+        let isValid = true;
+
+        if (!connectionName.trim()) {
+            newFieldErrors.connectionName = "Connection name is required";
         }
-        return true;
+
+        if (type === 'SFW CRM') {
+            if (!apiConfig.url) newFieldErrors.url = "Instance URL is required";
+            if (!apiConfig.apiKey) newFieldErrors.apiKey = "API Key is required";
+        } else if (type === 'Odoo') {
+            if (!config.host.trim()) newFieldErrors.host = "Instance URL is required";
+            if (!config.database.trim()) newFieldErrors.database = "Database name is required";
+            if (!config.username.trim()) newFieldErrors.username = "Username/Email is required";
+            if (!config.password) newFieldErrors.password = "API Key/Password is required";
+        } else {
+            if (!config.host.trim()) newFieldErrors.host = "Host is required";
+            
+            if (!config.port) {
+                newFieldErrors.port = "Port is required";
+            } else if (isNaN(parseInt(config.port))) {
+                newFieldErrors.port = "Port must be a number";
+            }
+            
+            if (!config.database.trim()) newFieldErrors.database = "Database name is required";
+            if (!config.username.trim()) newFieldErrors.username = "Username is required";
+            // Password might be optional for some local configs, but usually required for remote. 
+            // We'll leave it optional if empty string is valid for the DB, but warn if missing? 
+            // For now, let's assume it's required for GCC.
+            if (!config.password) newFieldErrors.password = "Password is required";
+        }
+
+        if (Object.keys(newFieldErrors).length > 0) {
+            setFieldErrors(newFieldErrors);
+            isValid = false;
+        }
+        else {
+            setFieldErrors({});
+        }
+        return isValid;
     };
 
     const getBackendType = (uiType: string) => {
+        if (uiType === 'GCC') return 'postgres';
+        if (uiType === 'Odoo') return 'odoo';
         if (uiType.includes('Postgre')) return 'postgres';
         if (uiType.includes('MySQL')) return 'mysql';
         if (uiType.includes('SQL Server')) return 'mssql';
         if (uiType.includes('Oracle')) return 'oracle';
         if (uiType.includes('MongoDB')) return 'mongodb';
         return 'postgres';
+    };
+
+    const handleConnectionStringChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const connStr = e.target.value;
+        try {
+            // Basic parsing for postgres://user:pass@host:port/db
+            const url = new URL(connStr);
+            setConfig({
+                host: url.hostname,
+                port: url.port || '5432',
+                database: url.pathname.replace('/', ''),
+                username: url.username,
+                password: url.password,
+                ssl: true // Assume SSL for URL-based connections usually
+            });
+        } catch (err) {
+            // Invalid URL, just ignore or could show validation state
+        }
     };
 
     const checkCredentials = async (): Promise<ConnectionStatus> => {
@@ -198,7 +179,7 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
             try {
                 const dbType = getBackendType(type);
                 const backendUrl = 'http://localhost:3005/api/connect';
-                console.log(`[DatabaseConnector] Connecting to: ${backendUrl} as ${dbType}`);
+                LoggerService.debug('DatabaseConnector', 'HANDSHAKE_ATTEMPT', `Connecting to: ${backendUrl} as ${dbType}`);
                 
                 const response = await fetch(backendUrl, {
                     method: 'POST',
@@ -225,13 +206,71 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                     };
                 }
             } catch (error) {
+                const errorMsg = error instanceof Error ? error.message : String(error);
+                console.error("[DatabaseConnector] Connection Error:", error);
+                // Return the raw error message to the user
                 return { 
                     success: false, 
                     errorType: 'NETWORK', 
-                    message: "Failed to reach backend server. Is it running on port 3001?" 
+                    message: `Error: ${errorMsg}` 
                 };
             }
         }
+    };
+
+    const getFriendlyErrorMessage = (errMsg: string) => {
+        const msg = errMsg.toLowerCase();
+        
+        if (msg.includes('password') || msg.includes('authentication failed') || msg.includes('access denied')) {
+            return { 
+                field: 'password', 
+                message: "Authentication Failed: The password or username provided is incorrect." 
+            };
+        }
+        
+        if (msg.includes('port') || msg.includes('connection refused') || msg.includes('econnrefused')) {
+            return { 
+                field: 'port', 
+                message: "Port Error: Could not connect on this port. Please ensure the port number is correct and the database is accepting connections." 
+            };
+        }
+
+        if (msg.includes('getaddrinfo') || msg.includes('enotfound') || msg.includes('connect to host') || msg.includes('network')) {
+            return { 
+                field: 'host', 
+                message: "Host Error: The host address is incorrectly filled or unreachable. Please verify the hostname or IP address." 
+            };
+        }
+
+        if (msg.includes('database') && (msg.includes('does not exist') || msg.includes('unknown'))) {
+            return { 
+                field: 'database', 
+                message: `Invalid Database: The database '${config.database}' was not found on this server. Please enter the correct database name.` 
+            };
+        }
+
+        if (msg.includes('ssl') || msg.includes('tls') || msg.includes('certificate')) {
+            return { 
+                field: 'ssl', 
+                message: "SSL/TLS Error: Connection failed due to SSL settings. Try toggling the SSL checkbox." 
+            };
+        }
+
+        if (msg.includes('timeout')) {
+            return { 
+                field: 'host', 
+                message: "Connection Timed Out: The server at this host is not responding. Check your network or firewall." 
+            };
+        }
+
+        if (msg.includes('fetch') || msg.includes('failed to fetch')) {
+            return { 
+                field: 'general', 
+                message: "Backend Service Unreachable: Ensure the Zerra Backend server is running (npm run dev)." 
+            };
+        }
+
+        return { field: 'general', message: `Connection Error: ${errMsg}` };
     };
 
     const handleTest = async () => {
@@ -239,7 +278,14 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
 
         setLoading(true);
         setError(null);
+        setFieldErrors({});
         setTestStatus('testing');
+        
+        LoggerService.action('DatabaseConnector', 'TEST_CONNECTION_START', `Testing connection to ${type}`, { 
+            type, 
+            host: config.host,
+            database: config.database
+        });
 
         const result = await checkCredentials();
         setLoading(false);
@@ -247,17 +293,19 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
         if (result.success) {
             setTestStatus('success');
             toast.success(result.message || "Test Connection Successful!");
+            LoggerService.info('DatabaseConnector', 'TEST_CONNECTION_SUCCESS', `Connection test successful for ${type}`);
         } else {
             setTestStatus('error');
+            const { field, message } = getFriendlyErrorMessage(result.message);
             
-            // Construct a detailed error message
-            let displayMessage = result.message;
-            if ('details' in result && (result as any).details?.hint) {
-                displayMessage += ` ${(result as any).details.hint}`;
+            if (field !== 'general') {
+                setFieldErrors({ [field]: message });
+            } else {
+                setError(message);
             }
             
-            setError(displayMessage);
-            toast.error(result.message);
+            toast.error("Connection Failed", { description: message });
+            LoggerService.error('DatabaseConnector', 'TEST_CONNECTION_FAILED', message, result.message, { type });
         }
     };
 
@@ -272,20 +320,16 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
         setLoading(true);
         setError(null);
 
+        LoggerService.action('DatabaseConnector', 'CONNECT_START', `Connecting to ${type}`, { type, host: config.host });
+
         const result = await checkCredentials();
         
         if (result.success) {
             // Auto-discover tables
             if (type === 'SFW CRM') {
-                console.log('[DatabaseConnector] Attempting to discover tables...');
                 const discoveredTables = await supabaseService.fetchAvailableTables(apiConfig.url, apiConfig.apiKey);
-                console.log('[DatabaseConnector] Discovered tables:', discoveredTables);
                 if (discoveredTables.length > 0) {
-                    setTables(discoveredTables.map(t => ({ ...t, selected: true })));
-                } else {
-                    // If no tables discovered, show empty state with manual input option
-                    console.log('[DatabaseConnector] No tables auto-discovered, user can add manually');
-                    setTables([]);
+                    setTables(discoveredTables.map(t => ({ ...t, selected: false })));
                 }
             } else {
                 // Fetch tables from Backend API
@@ -306,19 +350,37 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                     });
                     const data = await response.json();
                     if (data.success && Array.isArray(data.tables)) {
-                         setTables(data.tables.map((t: any) => ({ ...t, selected: false })));
+                         setTables(data.tables.map((t: { name: string; rows: number }) => ({ ...t, selected: false })));
+                    } else {
+                        throw new Error(data.message || "Failed to retrieve tables");
                     }
-                } catch (e) {
-                    console.error("Failed to fetch tables", e);
+                } catch (e: unknown) {
+                    const error = e instanceof Error ? e : new Error(String(e));
+                    console.error("Failed to fetch tables", error);
+                    setLoading(false);
+                    const { field, message } = getFriendlyErrorMessage(error.message);
+                   if (field !== 'general') {
+                        setFieldErrors({ [field]: message });
+                    }
+                    setError(`Connected, but failed to list tables: ${message}`);
+                    LoggerService.error('DatabaseConnector', 'TABLE_FETCH_FAILED', message, error, { type });
+                    return;
                 }
             }
             
             setLoading(false);
             setStep('schema');
-            toast.success("Connected successfully! Select tables to import.");
+            toast.success("Connected successfully!");
+            LoggerService.info('DatabaseConnector', 'CONNECT_SUCCESS', `Connected and fetched tables for ${type}`);
         } else {
             setLoading(false);
-            setError(result.message || "Connection failed. Please check credentials.");
+            const { field, message } = getFriendlyErrorMessage(result.message);
+            if (field !== 'general') {
+                setFieldErrors({ [field]: message });
+            } else {
+                setError(message);
+            }
+            LoggerService.error('DatabaseConnector', 'CONNECT_FAILED', message, result.message, { type });
         }
     };
 
@@ -330,121 +392,253 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
         }
 
         setStep('importing');
+        LoggerService.action('DatabaseConnector', 'IMPORT_START', `Importing ${selectedTables.length} tables from ${type}`, {
+            type,
+            tables: selectedTables.map(t => t.name)
+        });
 
         const sourceName = connectionName.trim() || `${type} - ${selectedTables.map(t => t.name).join(', ')}`;
 
         try {
+            const { data: { session } } = await defaultSupabase.auth.getSession();
+            if (!session) {
+                toast.error("You must be logged in to save this connection.");
+                setStep('schema');
+                LoggerService.warn('DatabaseConnector', 'IMPORT_UNAUTHORIZED', 'Import attempted without session');
+                return;
+            }
+
             let totalRecords = 0;
-            let firstDataSourceId: string | null = null;
-            let allImportedData: any[] = [];
+            let firstDataSourceId = null;
 
-            // Fetch data from each selected table
+            // 2. Fetch data from each selected table
+            const createdSources: { id: string; name: string }[] = [];
+            
+            // Reuse client for SFW CRM
+            let activeSupabase: any = null;
+            if (type === 'SFW CRM') {
+                 activeSupabase = supabaseService.createClient(apiConfig.url, apiConfig.apiKey);
+            }
+
             for (const table of selectedTables) {
-                let remoteData: any[] = [];
+                try {
+                    let remoteData: Record<string, unknown>[] = [];
 
-                console.log(`[DatabaseConnector] Fetching data from table: ${table.name}`);
+                    if (type === 'SFW CRM') {
+                        if (!activeSupabase) throw new Error("Supabase client not initialized");
+                        
+                        const { data, error } = await supabaseService.fetchTableData(activeSupabase, table.name);
+                        if (error) {
+                            LoggerService.warn('DatabaseConnector', 'TABLE_FETCH_DATA_ERROR', `Failed to fetch data for ${table.name}`, { error });
+                            continue; // Skip this table but continue with others
+                        }
+                        
+                        // SFW CRM Specific Preprocessing (Standardizing Schema like Odoo/GCC)
+                        if (data && Array.isArray(data)) {
+                            remoteData = data.map((row: any) => {
+                                const newRow = { ...row };
+                                // Normalize columns for CRM Templates to ensure visualization success
+                                
+                                // 1. Status / Stage
+                                if (!newRow.lead_status) {
+                                    if (newRow.status) newRow.lead_status = newRow.status;
+                                    else if (newRow.stage) newRow.lead_status = newRow.stage;
+                                    else if (newRow.pipeline_stage) newRow.lead_status = newRow.pipeline_stage;
+                                    // Odoo/GCC compatibility
+                                    else if (newRow.Stage) newRow.lead_status = newRow.Stage; 
+                                }
+                                
+                                // 2. Value / Revenue
+                                if (!newRow.est_value) {
+                                    if (newRow.value) newRow.est_value = newRow.value;
+                                    else if (newRow.amount) newRow.est_value = newRow.amount;
+                                    else if (newRow.total_value) newRow.est_value = newRow.total_value;
+                                    else if (newRow.revenue) newRow.est_value = newRow.revenue;
+                                    else if (newRow.expected_revenue) newRow.est_value = newRow.expected_revenue;
+                                    // Odoo/GCC compatibility
+                                    else if (newRow.Revenue) newRow.est_value = newRow.Revenue;
+                                }
 
-                if (type === 'SFW CRM') {
-                    const activeSupabase = supabaseService.createClient(apiConfig.url, apiConfig.apiKey);
-                    const { data, error } = await supabaseService.fetchTableData(activeSupabase, table.name);
-                    
-                    if (error) {
-                        console.error(`[DatabaseConnector] Error fetching ${table.name}:`, error);
-                        toast.error(`Failed to fetch ${table.name}: ${error}`);
-                        continue; // Skip this table but continue with others
+                                // 3. Source
+                                if (!newRow.lead_source && newRow.source) newRow.lead_source = newRow.source;
+                                
+                                // 4. Contact Type
+                                if (!newRow.contact_type && newRow.type) newRow.contact_type = newRow.type;
+
+                                // 5. Industry (ensure it exists if possible)
+                                if (!newRow.industry && newRow.sector) newRow.industry = newRow.sector;
+
+                                return newRow;
+                            });
+                        } else {
+                            remoteData = data || [];
+                        }
+                    } else {
+                        // SQL Backend Fetch
+                        const dbType = getBackendType(type);
+                        const response = await fetch('http://localhost:3005/api/query', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                config: {
+                                    type: dbType,
+                                    host: config.host,
+                                    port: parseInt(config.port),
+                                    database: config.database,
+                                    username: config.username,
+                                    password: config.password,
+                                    ssl: config.ssl
+                                },
+                                query: `SELECT * FROM ${table.name} LIMIT 1000` 
+                            })
+                        });
+                        const resData = await response.json();
+                        if (!resData.success) {
+                            LoggerService.warn('DatabaseConnector', 'TABLE_QUERY_ERROR', `Failed to fetch data for ${table.name}`, { message: resData.message });
+                            continue;
+                        }
+                        remoteData = resData.data;
+
+                        // Odoo Specific Processing
+                        if (type === 'Odoo' && Array.isArray(remoteData)) {
+                            remoteData = remoteData.map((row: Record<string, unknown>) => {
+                                const newRow: Record<string, unknown> = { ...row };
+                                // Map Odoo fields to friendly names if not already done by adapter
+                                if (newRow.stage_id !== undefined) newRow['Stage'] = newRow.stage_id;
+                                if (newRow.user_id !== undefined) newRow['Owner'] = newRow.user_id;
+                                if (newRow.expected_revenue !== undefined) newRow['Revenue'] = newRow.expected_revenue;
+                                return newRow;
+                            });
+                        }
                     }
-                    
-                    remoteData = data || [];
-                    console.log(`[DatabaseConnector] Fetched ${remoteData.length} records from ${table.name}`);
-                } else {
-                    // SQL Backend Fetch
-                    const dbType = getBackendType(type);
-                    const response = await fetch('http://localhost:3005/api/query', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            config: {
-                                type: dbType,
-                                host: config.host,
-                                port: parseInt(config.port),
-                                database: config.database,
-                                username: config.username,
-                                password: config.password,
-                                ssl: config.ssl
-                            },
-                            query: `SELECT * FROM ${table.name} LIMIT 1000` 
-                        })
-                    });
-                    const resData = await response.json();
-                    if (!resData.success) {
-                        console.error(`[DatabaseConnector] Error fetching ${table.name}:`, resData.message);
-                        toast.error(`Failed to fetch ${table.name}: ${resData.message}`);
-                        continue;
+
+                    if (remoteData && remoteData.length > 0) {
+                        totalRecords += remoteData.length;
+
+                        // 1. Create Data Source in Supabase
+                        // Truncate name if too long
+                        const safeSourceName = sourceName.length > 50 ? sourceName.substring(0, 47) + '...' : sourceName;
+                        
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const { data: dsData, error: dsError } = await defaultSupabase
+                            .from('data_sources' as any)
+                            .insert({
+                                name: `${safeSourceName} (${table.name})`,
+                                type: type,
+                                status: 'active',
+                                row_count: remoteData.length,
+                                created_by: session.user.id,
+                                last_synced_at: new Date().toISOString()
+                            })
+                            .select()
+                            .single();
+
+                        if (dsError || !dsData) {
+                            LoggerService.error('DatabaseConnector', 'DATA_SOURCE_CREATE_ERROR', `Failed to create data source for ${table.name}`, dsError);
+                            continue;
+                        }
+                        
+                        const newSourceId = dsData.id;
+                        createdSources.push({ id: newSourceId, name: table.name });
+
+                        // 2. Create Virtual File Record (Required for Analytical Engine)
+                        const { data: fileData, error: fileError } = await defaultSupabase
+                            .from('uploaded_files')
+                            .insert({
+                                file_name: `${safeSourceName} (${table.name})`,
+                                // file_path: 'virtual://' + newSourceId, // Not in schema
+                                file_type: 'database',
+                                file_size: JSON.stringify(remoteData).length,
+                                user_id: session.user.id
+                            })
+                            .select()
+                            .single();
+
+                        if (fileError || !fileData) {
+                             LoggerService.error('DatabaseConnector', 'FILE_RECORD_CREATE_ERROR', `Failed to create file record for ${table.name}`, fileError);
+                             continue;
+                        }
+
+                        // 3. Insert Records in Batches
+                        const BATCH_SIZE = 100;
+                        for (let i = 0; i < remoteData.length; i += BATCH_SIZE) {
+                            const batch = remoteData.slice(i, i + BATCH_SIZE).map((row: Record<string, unknown>) => ({
+                                file_id: fileData.id,
+                                row_data: row
+                            }));
+
+                            const { error: rowsError } = await defaultSupabase
+                                .from('data_records')
+                                .insert(batch);
+                            
+                            if (rowsError) LoggerService.error('DatabaseConnector', 'BATCH_INSERT_ERROR', `Error inserting rows for ${table.name}`, rowsError);
+                        }
                     }
-                    remoteData = resData.data || [];
-                }
-
-                if (remoteData && remoteData.length > 0) {
-                    totalRecords += remoteData.length;
-                    allImportedData = [...allImportedData, ...remoteData];
-
-                    // --- INTELLIGENT FIELD MAPPING ---
-                    // Analyze the first row to determine the best columns for visualization
-                    const sampleRow = remoteData[0];
-                    const columns = Object.keys(sampleRow);
-                    
-                    // Find date column
-                    const dateCol = columns.find(k => /date|time|created_at|updated_at|timestamp/i.test(k)) || null;
-                    
-                    // Find metric/numeric column for aggregation
-                    const metricCol = columns.find(k => 
-                        /amount|price|cost|revenue|sales|total|value|qty|quantity|count|score/i.test(k) && 
-                        typeof sampleRow[k] === 'number'
-                    ) || columns.find(k => 
-                        typeof sampleRow[k] === 'number' && 
-                        !/id|code|zip|year|month|day/i.test(k)
-                    ) || null;
-                    
-                    // Find category column for grouping
-                    const categoryCol = columns.find(k => 
-                        /status|type|category|region|country|source|industry|segment|department|name/i.test(k)
-                    ) || columns.find(k => 
-                        typeof sampleRow[k] === 'string' && 
-                        String(sampleRow[k]).length < 50 && 
-                        !/id|url|email|uuid|description|notes|address/i.test(k)
-                    ) || null;
-
-                    const mapping = { dateCol, metricCol, categoryCol };
-                    console.log(`[DatabaseConnector] Mapping Analysis for ${table.name}:`, mapping);
-                    console.log(`[DatabaseConnector] Sample row:`, sampleRow);
-
-                    // Store the fetched data LOCALLY with the mapping metadata
-                    const newSource = mockDataService.addSource(
-                        selectedTables.length === 1 ? sourceName : `${sourceName} (${table.name})`, 
-                        type, 
-                        remoteData,
-                        mapping,
-                        table.name
-                    );
-
-                    console.log(`[DatabaseConnector] Created data source: ${newSource.id} with ${remoteData.length} records`);
-
-                    if (!firstDataSourceId) firstDataSourceId = newSource.id;
+                } catch (tableError) {
+                    console.error(`Error processing table ${table.name}:`, tableError);
+                    LoggerService.error('DatabaseConnector', 'TABLE_PROCESS_ERROR', `Error processing table ${table.name}`, tableError, { type });
+                    // Continue to next table
                 }
             }
 
             if (totalRecords === 0) {
-                toast.warning("Connected, but the selected tables appear to be empty. Try a different table name.");
-                setStep('schema');
-                return;
+                toast.warning("Connected, but the selected tables appear to be empty or failed to sync.");
+                LoggerService.warn('DatabaseConnector', 'IMPORT_EMPTY', 'Import finished with 0 records', { type });
+            } else {
+                toast.success(`Successfully imported ${totalRecords} records from ${createdSources.length} tables.`);
+                LoggerService.info('DatabaseConnector', 'IMPORT_SUCCESS', `Successfully imported ${totalRecords} records from ${createdSources.length} tables`, {
+                    type,
+                    totalRecords,
+                    tablesCount: createdSources.length
+                });
             }
             
-            toast.success(`Successfully imported ${totalRecords} records from ${selectedTables.length} table(s). Generating visualizations...`);
-            
-            // Set the selected source and navigate to analytics
-            if (firstDataSourceId) {
-                console.log(`[DatabaseConnector] Setting selected data source: ${firstDataSourceId}`);
-                setSelectedDataSourceId(firstDataSourceId);
+            // 4. Set the selected source and navigate
+            if (createdSources.length > 0) {
+                // Smart selection logic to pick the best table for visualization
+                // Prioritize business objects (Leads, Deals) over logs/settings
+                const priorityKeywords = ['lead', 'opportunity', 'deal', 'sale', 'order', 'revenue', 'invoice', 'crm', 'pipeline', 'customer', 'contact', 'company', 'person', 'people', 'entity'];
+                const deprioritizeKeywords = ['log', 'history', 'audit', 'setting', 'config', 'preference', 'param', 'meta'];
+
+                let bestSource = createdSources[0];
+                let highestScore = -1;
+
+                for (const source of createdSources) {
+                    let score = 0;
+                    const name = source.name.toLowerCase();
+
+                    // 1. Keyword Match (+10)
+                    if (priorityKeywords.some(k => name.includes(k))) score += 10;
+                    
+                    // 2. "Log" Penalty (-50) - We really don't want logs as default
+                    if (deprioritizeKeywords.some(k => name.includes(k))) score -= 50;
+
+                    // 3. Exact/Start Match Bonus (+5)
+                    // Prefers "leads" over "my_leads" or "lead_source"
+                    if (priorityKeywords.some(k => name === k || name === k + 's' || name.startsWith(k + '_'))) score += 5;
+
+                    // 4. Row Count Bonus (if available in local state tables)
+                    // We want the table with data, but not if it's a log
+                    const tableInfo = tables.find(t => t.name === source.name);
+                    if (tableInfo && tableInfo.rows > 0) {
+                         // Small bonus for having data, but content type matters more
+                         score += 1; 
+                    }
+
+                    if (score > highestScore) {
+                        highestScore = score;
+                        bestSource = source;
+                    }
+                }
+
+                LoggerService.info('DatabaseConnector', 'BEST_SOURCE_SELECTED', `Selected best source: ${bestSource.name} (Score: ${highestScore})`, { sourceName: bestSource.name, score: highestScore });
+                setSelectedDataSourceId(bestSource.id);
+
+                if (type === 'Odoo') {
+                    setSelectedIndustryName('Odoo CRM');
+                } else if (type === 'SFW CRM') {
+                    setSelectedIndustryName('CRM');
+                }
             }
             
             onClose();
@@ -452,11 +646,12 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
             // Navigate to analytics page - the page will auto-generate visualizations
             navigate('/analytics');
 
-        } catch (error: any) {
-            console.error('[DatabaseConnector] Import error:', error);
-            supabaseService.logError(error, "Import Remote Data");
-            toast.error(`Import failed: ${error.message}. Check if the table name is correct and you have access.`);
-            setStep('schema'); // Go back to schema step to let them fix table name
+        } catch (error: unknown) {
+            const e = error instanceof Error ? error : new Error(String(error));
+            supabaseService.logError(e, "Import Remote Data");
+            toast.error(`Import failed: ${e.message}`);
+            setStep('schema');
+            LoggerService.error('DatabaseConnector', 'IMPORT_CRITICAL_ERROR', e.message, e, { type });
         }
     };
 
@@ -480,12 +675,26 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
         setManualTableInput("");
     };
 
+    const filteredTables = tables.filter(t => 
+        t.name.toLowerCase().includes(tableSearch.toLowerCase())
+    );
+
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="sm:max-w-[500px] bg-[#1a1f3a] text-white border-white/10">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
-                        <Database className="w-5 h-5 text-[#00D4FF]" />
+                        {type === 'PostgreSQL' ? (
+                            <img src={postgresLogo} alt="PostgreSQL Logo" className="w-5 h-5 object-contain" />
+                        ) : type === 'Odoo' ? (
+                            <img src={odooLogo} alt="Odoo Logo" className="w-5 h-5 object-contain" />
+                        ) : type === 'GCC' ? (
+                            <img src={gccLogo} alt="GCC Logo" className="w-5 h-5 object-contain" />
+                        ) : type === 'Dynamics 365' ? (
+                            <img src={dynamicsLogo} alt="Dynamics 365 Logo" className="w-5 h-5 object-contain" />
+                        ) : (
+                            <Database className="w-5 h-5 text-[#00D4FF]" />
+                        )}
                         Connect to {type}
                     </DialogTitle>
                 </DialogHeader>
@@ -501,19 +710,18 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                         <div className="space-y-2">
                             <Label className="text-white/70">
                                 Connection Name 
-                                {type === 'SFW CRM' ? (
-                                    <span className="text-red-400 text-xs ml-1">*</span>
-                                ) : (
-                                    <span className="text-white/30 text-xs ml-1">(Optional)</span>
-                                )}
+                                <span className="text-red-400 text-xs ml-1">*</span>
                             </Label>
                             <Input 
                                 value={connectionName}
-                                onChange={e => setConnectionName(e.target.value)}
-                                className={`bg-white/5 border-white/10 text-white ${type === 'SFW CRM' && !connectionName.trim() ? 'border-red-500/50 focus:border-red-500' : ''}`}
+                                onChange={e => {
+                                    setConnectionName(e.target.value);
+                                    if (fieldErrors.connectionName) setFieldErrors({ ...fieldErrors, connectionName: '' });
+                                }}
+                                className={`bg-white/5 text-white ${fieldErrors.connectionName ? 'border-red-500/50' : 'border-white/10'}`}
                                 placeholder={isApiBased ? "My CRM Prod" : "My Production DB"} 
-                                required={type === 'SFW CRM'}
                             />
+                            {fieldErrors.connectionName && <p className="text-xs text-red-400">{fieldErrors.connectionName}</p>}
                         </div>
 
                         {/* API Config for SFW CRM (Using Supabase credentials manually) */}
@@ -576,70 +784,116 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                                 </div>
                             </>
                         ) : (
-                            /* Standard Database Form */
                             <>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-white/70">Host</Label>
-                                        <Input 
-                                            value={config.host}
-                                            onChange={e => setConfig({ ...config, host: e.target.value })}
-                                            className="bg-white/5 border-white/10 text-white" 
-                                            placeholder="localhost" 
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-white/70">Port</Label>
-                                        <Input 
-                                            value={config.port}
-                                            onChange={e => setConfig({ ...config, port: e.target.value })}
-                                            className="bg-white/5 border-white/10 text-white" 
-                                            placeholder="5432" 
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-white/70">Database Name</Label>
-                                    <Input 
-                                        value={config.database}
-                                        onChange={e => setConfig({ ...config, database: e.target.value })}
-                                        className="bg-white/5 border-white/10 text-white" 
-                                        placeholder="my_analytics_db" 
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-white/70">Username</Label>
-                                        <Input 
-                                            value={config.username}
-                                            onChange={e => setConfig({ ...config, username: e.target.value })}
-                                            className="bg-white/5 border-white/10 text-white" 
-                                            placeholder="postgres" 
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-white/70">Password</Label>
-                                        <Input 
-                                            type="password"
-                                            value={config.password}
-                                            onChange={e => setConfig({ ...config, password: e.target.value })}
-                                            className="bg-white/5 border-white/10 text-white" 
-                                            placeholder="••••••••" 
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex items-center space-x-2 pt-2">
-                                    <Checkbox 
-                                        id="ssl" 
-                                        checked={config.ssl} 
-                                        onCheckedChange={(checked) => setConfig({ ...config, ssl: checked as boolean })}
-                                        className="border-white/30 data-[state=checked]:bg-[#00D4FF] data-[state=checked]:border-[#00D4FF]"
-                                    />
-                                    <Label htmlFor="ssl" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white/70">
-                                        Enable SSL/TLS Connection
-                                    </Label>
-                                </div>
-                            </>
+                                                                                                        {/* Standard Database Form - Connection String */}
+                                                                                                        {!isApiBased && (
+                                                                                                            <div className="space-y-2 pb-2">
+                                                                                                                <Label className="text-white/70">Connection String (Optional)</Label>                                                                                        <div className="relative">
+                                                                                            <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/50" />
+                                                                                            <Input 
+                                                                                                onChange={handleConnectionStringChange}
+                                                                                                className="bg-white/5 border-white/10 text-white pl-10" 
+                                                                                                placeholder="postgresql://user:pass@host:5432/db" 
+                                                                                            />
+                                                                                        </div>
+                                                                                        <p className="text-xs text-white/40">Paste a connection URL to auto-fill the fields below</p>
+                                                                                    </div>
+                                                                                )}
+                                                                                {/* Standard Database Form - Fields */}
+                                                                                {!isApiBased && (
+                                                                                    <>
+                                                                                                                        <div className="grid grid-cols-2 gap-4">
+                                                                                                                            <div className="space-y-2">
+                                                                                                                                <Label className="text-white/70">
+                                                                                                                                    Host <span className="text-red-400">*</span>
+                                                                                                                                </Label>
+                                                                                                                                <Input 
+                                                                                                                                    value={config.host}
+                                                                                                                                    onChange={e => {
+                                                                                                                                        setConfig({ ...config, host: e.target.value });
+                                                                                                                                        if (fieldErrors.host) setFieldErrors({ ...fieldErrors, host: '' });
+                                                                                                                                    }}
+                                                                                                                                    className={`bg-white/5 text-white ${fieldErrors.host ? 'border-red-500/50' : 'border-white/10'}`}
+                                                                                                                                    placeholder="localhost" 
+                                                                                                                                />
+                                                                                                                                {fieldErrors.host && <p className="text-xs text-red-400">{fieldErrors.host}</p>}
+                                                                                                                            </div>                                                                                            
+                                                                                            <div className="space-y-2">
+                                                                                                <Label className="text-white/70">Port <span className="text-red-400">*</span></Label>
+                                                                                                <Input 
+                                                                                                    value={config.port}
+                                                                                                    onChange={e => {
+                                                                                                        setConfig({ ...config, port: e.target.value });
+                                                                                                        if (fieldErrors.port) setFieldErrors({ ...fieldErrors, port: '' });
+                                                                                                    }}
+                                                                                                    className={`bg-white/5 text-white ${fieldErrors.port ? 'border-red-500/50' : 'border-white/10'}`}
+                                                                                                    placeholder="5432" 
+                                                                                                />
+                                                                                                {fieldErrors.port && <p className="text-xs text-red-400">{fieldErrors.port}</p>}
+                                                                                            </div>
+                                                                                        </div>
+                                                        
+                                                                                        <div className="space-y-2">
+                                                                                            <Label className="text-white/70">
+                                                                                                Database Name <span className="text-red-400">*</span>
+                                                                                            </Label>
+                                                                                            <Input 
+                                                                                                value={config.database}
+                                                                                                onChange={e => {
+                                                                                                    setConfig({ ...config, database: e.target.value });
+                                                                                                    if (fieldErrors.database) setFieldErrors({ ...fieldErrors, database: '' });
+                                                                                                }}
+                                                                                                className={`bg-white/5 text-white ${fieldErrors.database ? 'border-red-500/50' : 'border-white/10'}`}
+                                                                                                placeholder="my_analytics_db" 
+                                                                                            />
+                                                                                            {fieldErrors.database && <p className="text-xs text-red-400">{fieldErrors.database}</p>}
+                                                                                        </div>
+                                                        
+                                                                                                                        <div className="grid grid-cols-2 gap-4">
+                                                                                                                            <div className="space-y-2">
+                                                                                                                                <Label className="text-white/70">
+                                                                                                                                    Username <span className="text-red-400">*</span>
+                                                                                                                                </Label>
+                                                                                                                                <Input 
+                                                                                                                                    value={config.username}
+                                                                                                                                    onChange={e => {
+                                                                                                                                        setConfig({ ...config, username: e.target.value });
+                                                                                                                                        if (fieldErrors.username) setFieldErrors({ ...fieldErrors, username: '' });
+                                                                                                                                    }}
+                                                                                                                                    className={`bg-white/5 text-white ${fieldErrors.username ? 'border-red-500/50' : 'border-white/10'}`}
+                                                                                                                                    placeholder="postgres" 
+                                                                                                                                />
+                                                                                                                                {fieldErrors.username && <p className="text-xs text-red-400">{fieldErrors.username}</p>}
+                                                                                                                            </div>
+                                                                                                                            <div className="space-y-2">
+                                                                                                                                <Label className="text-white/70">
+                                                                                                                                    Password <span className="text-red-400">*</span>
+                                                                                                                                </Label>
+                                                                                                                                <Input 
+                                                                                                                                    type="password"
+                                                                                                                                    value={config.password}
+                                                                                                                                    onChange={e => {
+                                                                                                                                        setConfig({ ...config, password: e.target.value });
+                                                                                                                                        if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
+                                                                                                                                    }}
+                                                                                                                                    className={`bg-white/5 text-white ${fieldErrors.password ? 'border-red-500/50' : 'border-white/10'}`}
+                                                                                                                                    placeholder="••••••••" 
+                                                                                                                                />
+                                                                                                                                {fieldErrors.password && <p className="text-xs text-red-400">{fieldErrors.password}</p>}
+                                                                                                                            </div>
+                                                                                                                        </div>                                                                <div className="flex items-center space-x-2 pt-2">
+                                                                    <Checkbox 
+                                                                        id="ssl" 
+                                                                        checked={config.ssl} 
+                                                                        onCheckedChange={(checked) => setConfig({ ...config, ssl: checked as boolean })}
+                                                                        className="border-white/30 data-[state=checked]:bg-[#00D4FF] data-[state=checked]:border-[#00D4FF]"
+                                                                    />
+                                                                    <Label htmlFor="ssl" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-white/70">
+                                                                        Enable SSL/TLS Connection
+                                                                    </Label>
+                                                                </div>
+                                                            </>
+                                                        )}                            </>
                         )}
 
                         <DialogFooter className="mt-4 flex sm:justify-between gap-2">
@@ -648,7 +902,7 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                                 <Button 
                                     onClick={handleTest} 
                                     variant="outline"
-                                    className="border-[#00D4FF]/50 bg-[#00D4FF]/10 text-[#00D4FF] hover:bg-[#00D4FF]/20 hover:border-[#00D4FF]/70"
+                                    className="bg-white/5 border-white/20 text-[#00D4FF] hover:bg-[#00D4FF]/10 hover:text-[#00D4FF]"
                                     disabled={loading || testStatus === 'testing'}
                                 >
                                     {testStatus === 'testing' ? 'Handshaking...' : 'Test Handshake'}
@@ -671,7 +925,18 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                             <CheckCircle2 className="w-4 h-4" />
                             Successfully connected to {type === 'SFW CRM' ? 'SFW CRM Instance' : config.database}
                         </div>
-                        <p className="text-sm text-white/70">Select {type === 'SFW CRM' ? 'entities' : 'tables'} to sync:</p>
+                        <div className="flex items-center justify-between">
+                            <p className="text-sm text-white/70">Select {type === 'SFW CRM' ? 'entities' : 'tables'} to sync:</p>
+                            <div className="relative w-1/2">
+                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-white/50" />
+                                <Input 
+                                    placeholder="Search tables..." 
+                                    value={tableSearch}
+                                    onChange={(e) => setTableSearch(e.target.value)}
+                                    className="h-8 pl-7 text-xs bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-1 focus-visible:ring-[#00D4FF]"
+                                />
+                            </div>
+                        </div>
                         
                         <div className="border border-white/10 rounded-md overflow-hidden">
                             <div className="bg-white/5 p-2 grid grid-cols-12 text-xs font-bold text-white/70">
@@ -680,31 +945,36 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                                 <div className="col-span-4 text-right">Records (Est.)</div>
                             </div>
                             <div className="max-h-[200px] overflow-y-auto">
-                                {tables.length === 0 ? (
+                                {filteredTables.length === 0 ? (
                                     <div className="p-4 flex flex-col items-center gap-3">
                                         <p className="text-white/50 text-sm text-center">
-                                            No tables found or auto-discovery failed. <br/>
-                                            Please enter a table name manually.
+                                            {tables.length === 0 
+                                                ? "No tables found or auto-discovery failed." 
+                                                : "No matching tables found."}
+                                            <br/>
+                                            {tables.length === 0 && "Please enter a table name manually."}
                                         </p>
-                                        <div className="flex w-full gap-2">
-                                            <Input 
-                                                value={manualTableInput}
-                                                onChange={(e) => setManualTableInput(e.target.value)}
-                                                placeholder="e.g. public.users"
-                                                className="h-8 text-sm bg-white/5 border-white/10"
-                                                onKeyDown={(e) => e.key === 'Enter' && addManualTable()}
-                                            />
-                                            <Button 
-                                                size="sm" 
-                                                onClick={addManualTable}
-                                                disabled={!manualTableInput.trim()}
-                                                className="h-8 bg-[#00D4FF]/20 text-[#00D4FF] hover:bg-[#00D4FF]/30 border border-[#00D4FF]/30"
-                                            >
-                                                Add
-                                            </Button>
-                                        </div>
+                                        {tables.length === 0 && (
+                                            <div className="flex w-full gap-2">
+                                                <Input 
+                                                    value={manualTableInput}
+                                                    onChange={(e) => setManualTableInput(e.target.value)}
+                                                    placeholder="e.g. public.users"
+                                                    className="h-8 text-sm bg-white/5 border-white/10"
+                                                    onKeyDown={(e) => e.key === 'Enter' && addManualTable()}
+                                                />
+                                                <Button 
+                                                    size="sm" 
+                                                    onClick={addManualTable}
+                                                    disabled={!manualTableInput.trim()}
+                                                    className="h-8 bg-[#00D4FF]/20 text-[#00D4FF] hover:bg-[#00D4FF]/30 border border-[#00D4FF]/30"
+                                                >
+                                                    Add
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
-                                ) : tables.map((table) => (
+                                ) : filteredTables.map((table) => (
                                     <div 
                                         key={table.name} 
                                         className="grid grid-cols-12 p-3 border-t border-white/5 hover:bg-white/5 items-center cursor-pointer transition-colors"

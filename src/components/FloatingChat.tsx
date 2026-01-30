@@ -37,6 +37,7 @@ import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { analyticalEngine, AnalyticalContext } from "@/lib/analytical-engine";
 import ChatChart from "./ChatChart";
 import { EChartsOption } from "echarts";
+import LoggerService from "@/services/LoggerService";
 
 // Type definitions for Web Speech API
 interface SpeechRecognition extends EventTarget {
@@ -337,7 +338,7 @@ const FloatingChat = () => {
           } as any);
 
           if (error) {
-            console.error('Error saving to dashboard:', error);
+            LoggerService.error('Chat', 'ADD_TO_DASHBOARD_ERROR', 'Failed to save chart to dashboard', error);
             if (error.message.includes("row-level security")) {
               toast.error("Permission denied. Ensure you are logged in and own this data.");
             } else {
@@ -345,6 +346,8 @@ const FloatingChat = () => {
             }
             throw new Error("Failed to save to dashboard. " + error.message);
           }
+
+          LoggerService.info('Chat', 'ADD_TO_DASHBOARD', `Added chart "${dashboardInsight}" to dashboard via chat intent`);
 
           const confirmationMsg: Message = {
             id: (Date.now() + 1).toString(),
@@ -418,7 +421,7 @@ const FloatingChat = () => {
         setMessages(prev => [...prev, assistantMessage]);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      LoggerService.error('Chat', 'SEND_MESSAGE_ERROR', 'Error processing chat message', error);
       // ... existing error handling ...
       const errorText = error instanceof Error ? error.message : 'Error';
       const errorMessage: Message = {
@@ -468,9 +471,10 @@ const FloatingChat = () => {
         }
       });
 
+      LoggerService.info('Chat', 'PIN_CHART', `Pinned chart "${chartTitle}" to dashboard`, { chartTitle, chartType: message.chartType });
       toast.success("Chart pinned to dashboard! Check the Analytics page.");
     } catch (error) {
-      console.error('Error pinning chart:', error);
+      LoggerService.error('Chat', 'PIN_CHART_ERROR', 'Failed to pin chart', error);
       toast.error("Failed to pin chart to dashboard");
     }
   };

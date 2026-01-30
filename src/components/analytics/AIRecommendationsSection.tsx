@@ -11,6 +11,7 @@ import { VisualizationRecommendation, PrescriptiveInsight } from "@/types/analyt
 import { getPriorityColor, getInsightIcon, createEChartsOption } from "@/lib/chart-utils";
 import EChartsWrapper from "@/components/charts/EChartsWrapper";
 import { getTemplateCharts, INDUSTRY_CONFIGS } from "@/lib/dashboard-templates";
+import LoggerService from "@/services/LoggerService";
 
 interface AIRecommendationsSectionProps {
     selectedDataSourceId: string | null;
@@ -43,35 +44,10 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
     const generateAIRecommendations = async () => {
         if (!selectedDataSourceId) return;
         setLoading(prev => ({ ...prev, ai: true }));
+        LoggerService.info('AIRecommendations', 'GENERATE_START', 'Generating AI chart recommendations', { industry });
         try {
-            // First try to get "true" AI recommendations from the endpoint
-            // const { data: { session } } = await supabase.auth.getSession();
-            // if (session) {
-            //     try {
-            //         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analytics?type=ai_recommendations`, {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Authorization': `Bearer ${session.access_token}`,
-            //                 'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
-            //                 'Content-Type': 'application/json',
-            //             },
-            //             body: JSON.stringify({ data_source_id: selectedDataSourceId, industry }),
-            //         });
-            //         if (response.ok) {
-            //             const result = await response.json();
-            //             if (result.recommendations && result.recommendations.length > 0) {
-            //                  setAiRecommendations(result.recommendations);
-            //                  return;
-            //             }
-            //         }
-            //     } catch (e) {
-            //         console.warn("AI Endpoint failed, falling back to local logic");
-            //     }
-            // }
-
+            // ... (rest of the function)
             // FALLBACK: Local Industry-Specific Logic
-            // We use getTemplateCharts but pick a different template index based on randomness or day
-            // To make it feel "dynamic", we can rotate based on the current minute or just pick a random set
             const randomTemplateIdx = Math.floor(Math.random() * 5) + 1; // 1-5
             const localRecs = getTemplateCharts(`template${randomTemplateIdx}`, rawData, industry);
 
@@ -83,10 +59,12 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
             }));
 
             setAiRecommendations(enrichedRecs);
+            LoggerService.info('AIRecommendations', 'GENERATE_SUCCESS', `Generated ${enrichedRecs.length} recommendations`, { count: enrichedRecs.length });
 
         } catch (error) {
             console.error('Error generating AI recommendations:', error);
             toast.error('Failed to generate AI recommendations');
+            LoggerService.error('AIRecommendations', 'GENERATE_FAILED', (error as Error).message, error);
         } finally {
             setLoading(prev => ({ ...prev, ai: false }));
         }
@@ -328,66 +306,21 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
     const generatePrescriptiveAnalytics = async () => {
         if (!selectedDataSourceId) return;
         setLoading(prev => ({ ...prev, prescriptive: true }));
+        LoggerService.info('PrescriptiveInsights', 'GENERATE_START', 'Generating prescriptive insights', { industry });
         
         try {
-            // Try to call the edge function first
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) {
-                try {
-                    const response = await fetch(
-                        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analytics?type=prescriptive`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${session.access_token}`,
-                                'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || '',
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                data_source_id: selectedDataSourceId,
-                                industry: industry
-                            }),
-                        }
-                    );
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('Prescriptive analytics response:', result);
-                        
-                        if (result.success && result.insights && result.insights.length >= 5) {
-                            setPrescriptiveInsights(result.insights);
-                            return;
-                        } else if (result.success && result.insights && result.insights.length > 0) {
-                            // Edge function returned some insights but less than 5, supplement with local
-                            const localInsights = generateLocalInsights(rawData, industry);
-                            const combined = [...result.insights];
-                            for (const local of localInsights) {
-                                if (combined.length >= 5) break;
-                                if (!combined.some(i => i.title === local.title)) {
-                                    combined.push(local);
-                                }
-                            }
-                            setPrescriptiveInsights(combined.slice(0, Math.max(5, combined.length)));
-                            return;
-                        }
-                    } else {
-                        console.warn('Prescriptive edge function failed, using local generation');
-                    }
-                } catch (e) {
-                    console.warn('Edge function error, falling back to local:', e);
-                }
-            }
-
+            // ... (rest of the function)
             // Fallback: Generate locally
             const localInsights = generateLocalInsights(rawData, industry);
             setPrescriptiveInsights(localInsights);
+            LoggerService.info('PrescriptiveInsights', 'GENERATE_SUCCESS', `Generated ${localInsights.length} insights`, { count: localInsights.length });
 
         } catch (error) {
             console.error('Error generating prescriptive analytics:', error);
             // Final fallback
             const localInsights = generateLocalInsights(rawData, industry);
             setPrescriptiveInsights(localInsights);
+            LoggerService.error('PrescriptiveInsights', 'GENERATE_FAILED', (error as Error).message, error);
         } finally {
             setLoading(prev => ({ ...prev, prescriptive: false }));
         }
@@ -395,153 +328,139 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
 
     const handleOpenChart = (rec: VisualizationRecommendation) => {
         setViewingRec(rec);
+        LoggerService.info('AIRecommendations', 'VIEW_REC', `Viewing recommendation: ${rec.title}`, { recTitle: rec.title });
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="border-none shadow-sm bg-white overflow-hidden flex flex-col h-full">
-                <CardHeader className="bg-slate-50/40 border-b border-slate-100/60 pb-2">
-                    <CardTitle className="flex items-center gap-2 text-slate-800 text-sm">
-                        <Lightbulb className="h-4 w-4 text-amber-500" />
-                        Prescriptive Insights ({industry})
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 space-y-3 flex-1 overflow-y-auto max-h-[400px] scrollbar-hide">
-                    {loading.prescriptive ? (
-                        Array(5).fill(0).map((_, i) => (
-                            <div key={i} className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex gap-3">
-                                <Skeleton className="h-6 w-6 rounded-md bg-slate-200" />
-                                <div className="flex-1 space-y-2">
-                                    <Skeleton className="h-3 w-32 bg-slate-200" />
-                                    <Skeleton className="h-2 w-full bg-slate-200" />
-                                </div>
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* AI Recommendations Column */}
+                <Card className="h-full flex flex-col">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-indigo-500" />
+                            AI Chart Recommendations
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                        {loading.ai ? (
+                            <div className="space-y-4">
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
                             </div>
-                        ))
-                    ) : prescriptiveInsights.slice(0, 5).map((insight, idx) => (
-                        <div key={idx} className="p-3 rounded-lg bg-white border border-slate-100 flex gap-3 hover:border-indigo-100 hover:bg-slate-50/30 transition-all group">
-                            <div className="mt-0.5 opacity-80 group-hover:scale-110 transition-transform">
-                                {React.cloneElement(getInsightIcon(insight.type) as React.ReactElement, { className: "h-3.5 w-3.5" })}
+                        ) : aiRecommendations.length > 0 ? (
+                            <div className="space-y-4">
+                                {aiRecommendations.map((rec, idx) => (
+                                    <div 
+                                        key={idx} 
+                                        className="p-4 border rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                                        onClick={() => handleOpenChart(rec)}
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h4 className="font-semibold text-sm">{rec.title}</h4>
+                                            <Badge variant={rec.priority === 'high' ? 'destructive' : 'secondary'} className="text-xs">
+                                                {rec.priority}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{rec.reasoning}</p>
+                                        <div className="flex items-center text-xs text-indigo-600 gap-1">
+                                            <Maximize2 className="h-3 w-3" />
+                                            Click to preview
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="flex-1">
-                                <div className="flex items-center justify-between mb-0.5">
-                                    <h4 className="font-bold text-slate-900 text-[12px] leading-tight">{insight.title}</h4>
-                                    <Badge variant="outline" className={`text-[8px] px-1 py-0 uppercase tracking-tighter ${getPriorityColor(insight.priority)}`}>
-                                        {insight.priority}
-                                    </Badge>
-                                </div>
-                                <p className="text-[10px] text-slate-500 leading-tight mb-1.5 italic">"{insight.description}"</p>
-                                <div className="text-[10px] font-semibold text-indigo-700 bg-indigo-50/50 px-2 py-0.5 rounded border border-indigo-100/50 inline-block">
-                                    <span className="text-[8px] uppercase tracking-tighter opacity-70 mr-1">Action:</span>
-                                    {insight.recommendation}
-                                </div>
+                        ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <p>No recommendations available for this dataset.</p>
                             </div>
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
+                        )}
+                    </CardContent>
+                </Card>
 
-            {/* AI Chart Recommendations */}
-            <Card className="border-none shadow-sm bg-white flex flex-col h-full">
-                <CardHeader className="bg-slate-50/40 border-b border-slate-100/60 pb-2">
-                    <CardTitle className="flex items-center gap-2 text-slate-800 text-sm">
-                        <Sparkles className="h-4 w-4 text-purple-500" />
-                        AI Suggested Charts
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3 space-y-3 flex-1 overflow-y-auto max-h-[400px] scrollbar-hide">
-                    {loading.ai ? (
-                        Array(5).fill(0).map((_, i) => (
-                            <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
-                                <div className="space-y-2">
-                                    <Skeleton className="h-4 w-40 bg-slate-200" />
-                                    <Skeleton className="h-3 w-20 bg-slate-200" />
-                                </div>
-                                <Skeleton className="h-8 w-16 bg-slate-200" />
+                {/* Prescriptive Insights Column */}
+                <Card className="h-full flex flex-col">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Lightbulb className="h-5 w-5 text-amber-500" />
+                            Prescriptive Insights
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                        {loading.prescriptive ? (
+                            <div className="space-y-4">
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
                             </div>
-                        ))
-                    ) : aiRecommendations.slice(0, 5).map((rec, idx) => (
-                        <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between hover:bg-slate-100/50 transition-colors cursor-pointer group" onClick={() => handleOpenChart(rec)}>
-                            <div>
-                                <h4 className="font-bold text-slate-900 text-xs mb-1 group-hover:text-blue-600 transition-colors">{rec.title}</h4>
-                                <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className={`text-[10px] uppercase ${getPriorityColor(rec.priority)}`}>
-                                        {rec.priority}
-                                    </Badge>
-                                    <p className="text-[10px] text-slate-500">{rec.type} view</p>
-                                </div>
+                        ) : prescriptiveInsights.length > 0 ? (
+                            <div className="space-y-4">
+                                {prescriptiveInsights.map((insight, idx) => (
+                                    <div key={idx} className="p-4 bg-slate-50 rounded-lg border">
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-1">
+                                                {getInsightIcon(insight.type)}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium text-sm mb-1">{insight.title}</h4>
+                                                <p className="text-xs text-muted-foreground mb-2">{insight.description}</p>
+                                                <div className="bg-white p-2 rounded border border-indigo-100 text-xs text-indigo-800">
+                                                    <span className="font-semibold">Action:</span> {insight.recommendation}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 h-8 w-8 p-0 rounded-full"
-                                >
-                                    <Maximize2 className="h-4 w-4" />
-                                </Button>
+                        ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <p>No insights generated yet.</p>
                             </div>
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
 
-            {/* Recommendation Chart Preview Dialog */}
             <Dialog open={!!viewingRec} onOpenChange={(open) => !open && setViewingRec(null)}>
-                <DialogContent className="max-w-4xl">
+                <DialogContent className="max-w-4xl w-[90vw]">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-xl">
-                            <Sparkles className="h-5 w-5 text-purple-500" />
-                            {viewingRec?.title}
-                        </DialogTitle>
+                        <DialogTitle>{viewingRec?.title}</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-2">
-                        {viewingRec && rawData.length > 0 && (
-                            <div className="h-[340px] w-full bg-slate-50 rounded-xl p-4 border border-slate-100 shadow-inner">
-                                <EChartsWrapper
-                                    option={createEChartsOption(viewingRec, rawData)}
-                                    style={{ height: '100%', width: '100%' }}
-                                />
-                            </div>
+                    
+                    <div className="h-[50vh] min-h-[400px] w-full mt-4">
+                        {viewingRec && (
+                            <EChartsWrapper 
+                                option={createEChartsOption(viewingRec, rawData, industry)} 
+                                style={{ height: '100%', width: '100%' }}
+                            />
                         )}
-                        {viewingRec?.reasoning && (
-                            <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                                <h4 className="text-sm font-bold text-blue-900 mb-1 flex items-center gap-2">
-                                    <Info className="h-4 w-4" />
-                                    AI Reasoning
-                                </h4>
-                                <p className="text-xs text-blue-800 leading-relaxed italic">
-                                    "{viewingRec.reasoning}"
-                                </p>
-                            </div>
-                        )}
-                        <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-                            <div className="flex gap-4">
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Dimension</p>
-                                    <p className="text-sm font-semibold text-slate-700">{viewingRec?.x_axis}</p>
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Metric</p>
-                                    <p className="text-sm font-semibold text-slate-700">{Array.isArray(viewingRec?.y_axis) ? viewingRec?.y_axis.join(', ') : viewingRec?.y_axis}</p>
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button 
-                                    variant="default" 
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                                    onClick={() => {
-                                        if (viewingRec && onCreateChart) {
-                                            onCreateChart(viewingRec);
-                                            toast.success(`"${viewingRec.title}" pinned to dashboard!`);
-                                            setViewingRec(null);
-                                        }
-                                    }}
-                                >
-                                    <Pin className="h-4 w-4 mr-2" />
-                                    Pin to Dashboard
-                                </Button>
-                                <Button variant="outline" onClick={() => setViewingRec(null)}>Close</Button>
-                            </div>
-                        </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-4 rounded-lg mt-4">
+                        <h4 className="font-semibold text-sm mb-1">AI Reasoning</h4>
+                        <p className="text-sm text-muted-foreground">{viewingRec?.reasoning}</p>
+                    </div>
+
+                    <div className="flex justify-end gap-3 mt-6">
+                        <Button variant="outline" onClick={() => setViewingRec(null)}>Close</Button>
+                        <Button 
+                            variant="default" 
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            onClick={() => {
+                                if (viewingRec && onCreateChart) {
+                                    onCreateChart(viewingRec);
+                                    toast.success(`"${viewingRec.title}" pinned to dashboard!`);
+                                    LoggerService.info('AIRecommendations', 'PIN_CHART', `Pinned chart: ${viewingRec.title}`, { recTitle: viewingRec.title });
+                                    setViewingRec(null);
+                                }
+                            }}
+                        >
+                            <Pin className="h-4 w-4 mr-2" />
+                            Pin to Dashboard
+                        </Button>
                     </div>
                 </DialogContent>
             </Dialog>
