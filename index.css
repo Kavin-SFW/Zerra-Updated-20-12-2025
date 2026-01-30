@@ -1,0 +1,443 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: 220 25% 98%;
+    --foreground: 230 35% 15%;
+
+    /* Card styles */
+    --card: 0 0% 100%;
+    --card-foreground: 230 35% 15%;
+
+    /* Popover styles */
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 35% 15%;
+
+    /* Primary - Deep Indigo */
+    --primary: 237 65% 22%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 237 65% 35%;
+    --primary-glow: 237 80% 65%;
+
+    /* Secondary - Lighter gray */
+    --secondary: 220 15% 96%;
+    --secondary-foreground: 230 35% 15%;
+
+    /* Muted */
+    --muted: 220 15% 96%;
+    --muted-foreground: 230 25% 45%;
+
+    /* Accent - Vibrant Cyan */
+    --accent: 190 90% 50%;
+    --accent-foreground: 0 0% 100%;
+    --accent-glow: 190 90% 65%;
+
+    /* Destructive */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and inputs */
+    --border: 220 15% 90%;
+    --input: 220 15% 92%;
+    --ring: 237 65% 22%;
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Base colors */
+    --background: 230 35% 8%;
+    --foreground: 220 25% 98%;
+
+    /* Card styles */
+    --card: 230 30% 12%;
+    --card-foreground: 220 25% 98%;
+
+    /* Popover styles */
+    --popover: 230 30% 12%;
+    --popover-foreground: 220 25% 98%;
+
+    /* Primary - Lighter Indigo for dark mode */
+    --primary: 237 70% 65%;
+    --primary-foreground: 230 35% 8%;
+    --primary-light: 237 65% 75%;
+    --primary-glow: 237 80% 80%;
+
+    /* Secondary */
+    --secondary: 230 25% 18%;
+    --secondary-foreground: 220 25% 98%;
+
+    /* Muted */
+    --muted: 230 25% 18%;
+    --muted-foreground: 220 20% 65%;
+
+    /* Accent - Vibrant Cyan */
+    --accent: 190 90% 55%;
+    --accent-foreground: 230 35% 8%;
+    --accent-glow: 190 90% 70%;
+
+    /* Destructive */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and inputs */
+    --border: 230 25% 18%;
+    --input: 230 25% 18%;
+    --ring: 237 70% 65%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    scroll-behavior: smooth;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Premium Glassmorphism Effect */
+@layer utilities {
+  .glass-card {
+    background: rgba(26, 31, 58, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  .glass-card:hover {
+    border-color: rgba(0, 212, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(0, 212, 255, 0.2);
+  }
+
+  /* Utility to hide scrollbar but keep functionality */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+/* Premium Animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+
+  33% {
+    transform: translateY(-20px) translateX(10px);
+  }
+
+  66% {
+    transform: translateY(10px) translateX(-10px);
+  }
+}
+
+@keyframes float-slow {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(5deg);
+  }
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg) translateX(180px) rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg) translateX(180px) rotate(-360deg);
+  }
+}
+
+@keyframes chart-grow {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
+  }
+}
+
+/* Animation Classes */
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 4s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-orbit {
+  animation: orbit 20s linear infinite;
+}
+
+.animate-chart-grow {
+  animation: chart-grow 0.8s ease-out forwards;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0E27;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00D4FF, #6B46C1);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00D4FF, #9333EA);
+}
+
+/* Selection */
+::selection {
+  background: rgba(0, 212, 255, 0.3);
+  color: #fff;
+}
+
+/* Global focus-visible override removed to maintain clean dashboard aesthetics */
+*:focus-visible {
+  outline: none;
+}
+
+/* Link Hover Effects */
+a {
+  transition: all 0.3s ease;
+}
+
+/* Button Ripple Effect */
+@keyframes ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #00D4FF 0%, #6B46C1 50%, #9333EA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Premium Typography */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+}
+
+/* Loading States */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(to right,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.1) 100%);
+  background-size: 1000px 100%;
+}
+
+/* Premium Card Hover Effects */
+.premium-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0, 212, 255, 0.2);
+}
+
+/* Glow Effects */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(107, 70, 193, 0.3);
+}
+
+/* Particle Effects */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Smooth Transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Premium Button Styles */
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-premium::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn-premium:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Section Spacing */
+section {
+  scroll-margin-top: 80px;
+}
