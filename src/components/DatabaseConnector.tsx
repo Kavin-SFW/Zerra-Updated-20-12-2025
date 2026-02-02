@@ -685,13 +685,13 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-xl">
                         {type === 'PostgreSQL' ? (
-                            <img src={postgresLogo} alt="PostgreSQL Logo" className="w-5 h-5 object-contain" />
+                            <img src={postgresLogo} alt="PostgreSQL Logo" className="w-5 h-5 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         ) : type === 'Odoo' ? (
-                            <img src={odooLogo} alt="Odoo Logo" className="w-5 h-5 object-contain" />
+                            <img src={odooLogo} alt="Odoo Logo" className="w-5 h-5 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         ) : type === 'GCC' ? (
-                            <img src={gccLogo} alt="GCC Logo" className="w-5 h-5 object-contain" />
+                            <img src={gccLogo} alt="GCC Logo" className="w-5 h-5 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         ) : type === 'Dynamics 365' ? (
-                            <img src={dynamicsLogo} alt="Dynamics 365 Logo" className="w-5 h-5 object-contain" />
+                            <img src={dynamicsLogo} alt="Dynamics 365 Logo" className="w-5 h-5 object-contain" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                         ) : (
                             <Database className="w-5 h-5 text-[#00D4FF]" />
                         )}
