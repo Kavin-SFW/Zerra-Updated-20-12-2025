@@ -22,6 +22,16 @@ import { useAnalytics } from "@/contexts/AnalyticsContext";
 import { DatabaseConnector } from "@/components/DatabaseConnector";
 import { mockDataService } from "@/services/MockDataService";
 import { supabaseService } from "@/integrations/supabase/supabase-service";
+import LoggerService from "@/services/LoggerService";
+import odooLogo from "@/assets/logos/odoo.png";
+import gccLogo from "@/assets/logos/gcc logo.png";
+import postgresLogo from "@/assets/logos/Postgresql_elephant.svg";
+import sqlServerLogo from "@/assets/logos/microsoft-sql-server-1.svg";
+import mysqlLogo from "@/assets/logos/Mysql_logo.png";
+import oracleLogo from "@/assets/logos/oracle-logo.svg";
+import mongodbLogo from "@/assets/logos/mongodb.png";
+import sapLogo from "@/assets/logos/sap.png";
+import dynamicsLogo from "@/assets/logos/Dynamics-365-logo.jpg";
 
 type DataSourceStatus = "active" | "syncing" | "error" | "inactive";
 
@@ -43,6 +53,7 @@ interface QuickConnectSource {
   name: string;
   icon: React.ComponentType<{ className?: string; size?: number }>;
   color: string;
+  image?: string;
 }
 
 const ALLOWED_FILE_TYPES = [
@@ -57,6 +68,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 const DataSources = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
@@ -111,7 +123,7 @@ const DataSources = () => {
 
       setDataSources(allSources);
     } catch (error) {
-      console.error('Error fetching data sources:', error);
+      LoggerService.error('DataSources', 'FETCH_SOURCES_ERROR', 'Error fetching data sources', error);
       // Still show mock sources if DB fails
       const mockSources = mockDataService.getSources().map(s => mapSourceToDisplay(s));
       setDataSources(mockSources);
@@ -180,15 +192,17 @@ const DataSources = () => {
       setConnectorOpen(true);
   };
 
-  const quickConnectSources = [
-    { name: "PostgreSQL", icon: Database, color: "from-blue-500 to-blue-600" },
-    { name: "MySQL", icon: Database, color: "from-orange-500 to-orange-600" },
-    { name: "SQL Server", icon: Database, color: "from-red-500 to-red-600" },
-    { name: "Oracle", icon: Server, color: "from-red-500 to-red-600" },
-    { name: "MongoDB", icon: Database, color: "from-green-500 to-green-600" },
-    { name: "SAP", icon: Server, color: "from-yellow-500 to-yellow-600" },
-    { name: "Dynamics 365", icon: Cloud, color: "from-purple-500 to-purple-600" },
+  const quickConnectSources: QuickConnectSource[] = [
+    { name: "PostgreSQL", icon: Database, color: "from-blue-500 to-blue-600", image: postgresLogo },
+    { name: "MySQL", icon: Database, color: "from-orange-500 to-orange-600", image: mysqlLogo },
+    { name: "SQL Server", icon: Database, color: "from-red-500 to-red-600", image: sqlServerLogo },
+    { name: "Oracle", icon: Server, color: "from-red-500 to-red-600", image: oracleLogo },
+    { name: "MongoDB", icon: Database, color: "from-green-500 to-green-600", image: mongodbLogo },
+    { name: "SAP", icon: Server, color: "from-yellow-500 to-yellow-600", image: sapLogo },
+    { name: "Dynamics 365", icon: Cloud, color: "from-purple-500 to-purple-600", image: dynamicsLogo },
     { name: "SFW CRM", icon: Database, color: "from-emerald-500 to-emerald-600" },
+    { name: "Odoo", icon: Database, color: "from-white-500 to-white-500", image: odooLogo },
+    { name: "GCC", icon: Cloud, color: "from-indigo-500 to-indigo-600", image: gccLogo },
   ];
 
   const filteredSources = dataSources.filter((source) => {
@@ -303,11 +317,17 @@ const DataSources = () => {
     }
 
     setUploading(true);
+    LoggerService.action('DataSources', 'UPLOAD_START', `Starting upload of ${file.name}`, { 
+      fileName: file.name, 
+      fileSize: file.size, 
+      fileType: file.type 
+    });
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Please log in to upload files.");
+        LoggerService.warn('DataSources', 'UPLOAD_UNAUTHORIZED', 'Upload attempted without session');
         return;
       }
 
@@ -356,6 +376,12 @@ const DataSources = () => {
           duration: 5000
         });
 
+        LoggerService.info('DataSources', 'UPLOAD_SUCCESS', `Successfully uploaded and processed ${file.name}`, {
+          fileName: file.name,
+          rowCount: result.rows_count,
+          dataSourceId: result.data_source_id
+        });
+
         // Set the newly created data source ID and navigate to analytics
         if (result.data_source_id) {
           setSelectedDataSourceId(result.data_source_id);
@@ -366,7 +392,7 @@ const DataSources = () => {
           // Refresh the data sources list if we don't navigate
           await fetchDataSources();
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error uploading file:', error);
         const errorMessage = error instanceof Error ? error.message : 'Failed to upload file. Please try again.';
         toast.error(errorMessage, {
@@ -374,10 +400,12 @@ const DataSources = () => {
           icon: <X className="w-5 h-5 text-red-500" />,
           duration: 5000
         });
+        LoggerService.error('DataSources', 'UPLOAD_FAILED', errorMessage, error, { fileName: file.name });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error in file upload:', error);
       toast.error('An unexpected error occurred');
+      LoggerService.error('DataSources', 'UPLOAD_CRITICAL_ERROR', error.message, error, { fileName: file.name });
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -473,11 +501,13 @@ const DataSources = () => {
       toast.dismiss(toastId);
       if (errorCount === 0) {
         toast.success(`Successfully deleted ${deletedCount} data source${deletedCount > 1 ? 's' : ''}`);
+        LoggerService.info('DataSources', 'BULK_DELETE_SUCCESS', `Deleted ${deletedCount} sources`);
       } else {
         toast.warning(`Deleted ${deletedCount} source${deletedCount > 1 ? 's' : ''}, ${errorCount} failed`);
+        LoggerService.warn('DataSources', 'BULK_DELETE_PARTIAL', `Deleted ${deletedCount}, Failed ${errorCount}`, { errorCount, deletedCount });
       }
     } catch (error) {
-      console.error('Bulk delete error:', error);
+      LoggerService.error('DataSources', 'BULK_DELETE_ERROR', 'Failed to delete sources', error);
       toast.error('Failed to delete sources', { id: toastId });
     }
   };
@@ -579,7 +609,18 @@ const DataSources = () => {
                 className="glass-card p-6 rounded-xl hover:scale-105 hover:border-[#00D4FF]/50 transition-all group text-center"
               >
                 <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${source.color} mx-auto mb-3 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <source.icon className="text-white" size={24} />
+                  {source.image && !imageErrors.has(source.name) ? (
+                     <img 
+                       src={source.image} 
+                       alt={source.name} 
+                       className="w-8 h-8 object-contain"
+                       onError={() => {
+                         setImageErrors(prev => new Set(prev).add(source.name));
+                       }}
+                     />
+                  ) : (
+                     <source.icon className="text-white" size={24} />
+                  )}
                 </div>
                 <p className="text-sm font-medium text-white">{source.name}</p>
               </button>
@@ -755,7 +796,8 @@ const DataSources = () => {
                         <DropdownMenuItem
                           className="hover:bg-white/10"
                           onClick={async () => {
-                            if (source.is_mock) {
+                            const isLocal = mockDataService.getSources().some(s => s.id === source.id);
+                            if (isLocal) {
                                 if (source.type === 'SFW CRM') {
                                     const toastId = toast.loading("Syncing with SFW CRM...");
                                     try {
@@ -777,6 +819,13 @@ const DataSources = () => {
                                         toast.dismiss(toastId);
                                         toast.error(`Failed to sync SFW CRM: ${e.message || 'Unknown error'}`);
                                     }
+                                    return;
+                                }
+                                
+                                if (!source.is_mock) {
+                                    toast.info("To refresh this data, please create a new connection.", {
+                                        description: "We do not store your database credentials for security."
+                                    });
                                     return;
                                 }
 
@@ -814,7 +863,10 @@ const DataSources = () => {
                           onClick={async () => {
                             if (!confirm("Are you sure you want to delete this data source? This action cannot be undone.")) return;
 
-                            if (source.is_mock) {
+                            // Check if it exists in mock data service first (recently connected or mock)
+                            const isLocalSource = mockDataService.getSources().some(s => s.id === source.id);
+                            
+                            if (isLocalSource) {
                                 mockDataService.deleteSource(source.id);
                                 toast.success('Data source deleted');
                                 if (selectedDataSourceId === source.id) setSelectedDataSourceId(null);
@@ -858,7 +910,8 @@ const DataSources = () => {
                         <DropdownMenuItem
                           className="text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-400"
                           onClick={async () => {
-                            if (source.is_mock) {
+                            const isLocal = mockDataService.getSources().some(s => s.id === source.id);
+                            if (isLocal) {
                                 toast.success('Disconnected');
                                 return;
                             }
