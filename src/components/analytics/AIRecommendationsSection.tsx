@@ -12,6 +12,7 @@ import { getPriorityColor, getInsightIcon, createEChartsOption } from "@/lib/cha
 import EChartsWrapper from "@/components/charts/EChartsWrapper";
 import { getTemplateCharts, INDUSTRY_CONFIGS } from "@/lib/dashboard-templates";
 import LoggerService from "@/services/LoggerService";
+import { ChartRecommendationService } from "@/services/ChartRecommendationService";
 
 interface AIRecommendationsSectionProps {
     selectedDataSourceId: string | null;
@@ -46,7 +47,17 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
         setLoading(prev => ({ ...prev, ai: true }));
         LoggerService.info('AIRecommendations', 'GENERATE_START', 'Generating AI chart recommendations', { industry });
         try {
-            // ... (rest of the function)
+            // Use intelligent data-driven chart recommendations
+            if (rawData && rawData.length > 0) {
+                const intelligentRecs = ChartRecommendationService.analyzeDataAndRecommend(rawData);
+                
+                if (intelligentRecs.length > 0) {
+                    setAiRecommendations(intelligentRecs);
+                    LoggerService.info('AIRecommendations', 'GENERATE_SUCCESS', `Generated ${intelligentRecs.length} intelligent recommendations`, { count: intelligentRecs.length });
+                    return;
+                }
+            }
+
             // FALLBACK: Local Industry-Specific Logic
             const randomTemplateIdx = Math.floor(Math.random() * 5) + 1; // 1-5
             const localRecs = getTemplateCharts(`template${randomTemplateIdx}`, rawData, industry);
@@ -334,6 +345,49 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
     return (
         <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Prescriptive Insights Column */}
+                <Card className="h-full flex flex-col">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Lightbulb className="h-5 w-5 text-amber-500" />
+                            Prescriptive Insights
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                        {loading.prescriptive ? (
+                            <div className="space-y-4">
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
+                                <Skeleton className="h-24 w-full" />
+                            </div>
+                        ) : prescriptiveInsights.length > 0 ? (
+                            <div className="space-y-4">
+                                {prescriptiveInsights.map((insight, idx) => (
+                                    <div key={idx} className="p-4 bg-slate-50 rounded-lg border">
+                                        <div className="flex items-start gap-3">
+                                            <div className="mt-1">
+                                                {getInsightIcon(insight.type)}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-medium text-sm mb-1">{insight.title}</h4>
+                                                <p className="text-xs text-muted-foreground mb-2">{insight.description}</p>
+                                                <div className="bg-white p-2 rounded border border-indigo-100 text-xs text-indigo-800">
+                                                    <span className="font-semibold">Action:</span> {insight.recommendation}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <p>No insights generated yet.</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
                 {/* AI Recommendations Column */}
                 <Card className="h-full flex flex-col">
                     <CardHeader>
@@ -375,49 +429,6 @@ const AIRecommendationsSection: React.FC<AIRecommendationsSectionProps> = ({
                             <div className="text-center py-8 text-muted-foreground">
                                 <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                 <p>No recommendations available for this dataset.</p>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Prescriptive Insights Column */}
-                <Card className="h-full flex flex-col">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Lightbulb className="h-5 w-5 text-amber-500" />
-                            Prescriptive Insights
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1">
-                        {loading.prescriptive ? (
-                            <div className="space-y-4">
-                                <Skeleton className="h-24 w-full" />
-                                <Skeleton className="h-24 w-full" />
-                                <Skeleton className="h-24 w-full" />
-                            </div>
-                        ) : prescriptiveInsights.length > 0 ? (
-                            <div className="space-y-4">
-                                {prescriptiveInsights.map((insight, idx) => (
-                                    <div key={idx} className="p-4 bg-slate-50 rounded-lg border">
-                                        <div className="flex items-start gap-3">
-                                            <div className="mt-1">
-                                                {getInsightIcon(insight.type)}
-                                            </div>
-                                            <div>
-                                                <h4 className="font-medium text-sm mb-1">{insight.title}</h4>
-                                                <p className="text-xs text-muted-foreground mb-2">{insight.description}</p>
-                                                <div className="bg-white p-2 rounded border border-indigo-100 text-xs text-indigo-800">
-                                                    <span className="font-semibold">Action:</span> {insight.recommendation}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <Info className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                <p>No insights generated yet.</p>
                             </div>
                         )}
                     </CardContent>

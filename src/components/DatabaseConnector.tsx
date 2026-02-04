@@ -489,7 +489,7 @@ export const DatabaseConnector = ({ isOpen, onClose, type }: DatabaseConnectorPr
                                     password: config.password,
                                     ssl: config.ssl
                                 },
-                                query: `SELECT * FROM ${table.name} LIMIT 1000` 
+                                query: `SELECT * FROM ${table.name}` 
                             })
                         });
                         const resData = await response.json();
