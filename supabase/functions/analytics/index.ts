@@ -1,6 +1,72 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
-import { EdgeLogger } from "../shared-logger.ts";
+
+// EdgeLogger class inlined to avoid import issues during bundling
+class EdgeLogger {
+  private supabase: any;
+  private userId: string | null = null;
+
+  constructor(supabaseClient: any, userId?: string | null) {
+    this.supabase = supabaseClient;
+    this.userId = userId || null;
+  }
+
+  setUserId(userId: string) {
+    this.userId = userId;
+  }
+
+  private async writeLog(level: 'info' | 'warn' | 'error', action: string, module: string, message: string, metadata: any = {}, errorStack: string | null = null) {
+    try {
+      const now = new Date();
+      const log_date = now.toISOString().split('T')[0];
+      const log_time = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+
+      const payload = {
+        user_id: this.userId,
+        log_date,
+        log_time,
+        timezone: 'UTC',
+        level,
+        action,
+        module,
+        message,
+        metadata: {
+            ...metadata,
+            source: 'Edge Function'
+        },
+        error_stack: errorStack
+      };
+
+      const { error } = await this.supabase.from('logs').insert(payload);
+      if (error) {
+        console.error('EdgeLogger: Failed to write to DB:', error);
+      }
+    } catch (err) {
+      console.error('EdgeLogger: Critical error:', err);
+    }
+  }
+
+  async info(module: string, action: string, message: string, metadata?: any) {
+    console.log(`[INFO] [${module}] ${action}: ${message}`);
+    await this.writeLog('info', action, module, message, metadata);
+  }
+
+  async warn(module: string, action: string, message: string, metadata?: any) {
+    console.warn(`[WARN] [${module}] ${action}: ${message}`);
+    await this.writeLog('warn', action, module, message, metadata);
+  }
+
+  async error(module: string, action: string, message: string, error?: any, metadata?: any) {
+    console.error(`[ERROR] [${module}] ${action}: ${message}`, error);
+    const stack = error instanceof Error ? error.stack : (typeof error === 'object' ? JSON.stringify(error) : String(error));
+    await this.writeLog('error', action, module, message, metadata, stack);
+  }
+  
+  async action(module: string, action: string, message: string, metadata?: any) {
+    console.log(`[ACTION] [${module}] ${action}: ${message}`);
+    await this.writeLog('info', action, module, message, { ...metadata, is_user_action: true });
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -225,11 +291,33 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { data: records, error: recError } = await supabase
-      .from("data_records")
-      .select("row_data")
-      .eq("file_id", fileId)
-      .limit(2000);
+    // Fetch all records with pagination (Supabase default limit is 1000)
+    let allRecords: any[] = [];
+    let from = 0;
+    const pageSize = 1000;
+    let hasMore = true;
+    let recError: any = null;
+
+    while (hasMore) {
+      const { data: records, error } = await supabase
+        .from("data_records")
+        .select("row_data")
+        .eq("file_id", fileId)
+        .range(from, from + pageSize - 1);
+
+      if (error) {
+        recError = error;
+        break;
+      }
+
+      if (records && records.length > 0) {
+        allRecords = [...allRecords, ...records];
+        from += pageSize;
+        hasMore = records.length === pageSize; // If we got less than pageSize, we're done
+      } else {
+        hasMore = false;
+      }
+    }
 
     if (recError) {
       await logger.error("Analytics", "FETCH_RECORDS_ERROR", "Failed to fetch data records", recError);
@@ -239,7 +327,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const data = (records ?? []).map((r: any) => r.row_data);
+    const data = allRecords.map((r: any) => r.row_data);
     
     if (data.length === 0) {
       await logger.warn("Analytics", "EMPTY_DATA", "No data records found", { fileId });
