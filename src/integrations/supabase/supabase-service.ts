@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient, RealtimeChannel } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import LoggerService from "@/services/LoggerService";
 
 export type ConnectionStatus = 
     | { success: true; message: string }
@@ -32,6 +33,7 @@ export class SupabaseService {
         console.group(`[Supabase Error] ${context}`);
         console.error(error);
         console.groupEnd();
+        LoggerService.error('Supabase', 'QUERY_ERROR', `Error in ${context}`, error, { context });
     }
 
     /**
@@ -46,6 +48,7 @@ export class SupabaseService {
             old: any;
         }) => void
     ): () => void {
+        LoggerService.info('Supabase', 'REALTIME_SUBSCRIBE', `Subscribing to table: ${table}`, { table });
         const channel: RealtimeChannel = client
             .channel(`realtime:${table}`)
             .on(
@@ -62,29 +65,37 @@ export class SupabaseService {
             .subscribe();
 
         return () => {
+            LoggerService.info('Supabase', 'REALTIME_UNSUBSCRIBE', `Unsubscribing from table: ${table}`, { table });
             client.removeChannel(channel);
         };
     }
 
     public async testConnection(url: string, key: string): Promise<ConnectionStatus> {
+        LoggerService.info('Supabase', 'CONNECTION_TEST_START', `Testing connection to ${url}`, { url });
         try {
             const response = await fetch(`${url}/rest/v1/`, {
                 headers: { apikey: key, Authorization: `Bearer ${key}` }
             });
 
-            if (response.ok) return { success: true, message: "Connection successful." };
+            if (response.ok) {
+                LoggerService.info('Supabase', 'CONNECTION_TEST_SUCCESS', `Connection successful to ${url}`);
+                return { success: true, message: "Connection successful." };
+            }
 
+            LoggerService.error('Supabase', 'CONNECTION_TEST_FAILED', response.statusText, null, { url, status: response.status });
             return {
                 success: false,
                 errorType: response.status === 401 ? 'AUTH' : 'NETWORK',
                 message: response.statusText
             };
         } catch (e: any) {
+            LoggerService.error('Supabase', 'CONNECTION_TEST_EXCEPTION', e.message, e, { url });
             return { success: false, errorType: 'UNKNOWN', message: e.message };
         }
     }
 
     public async fetchAvailableTables(url: string, key: string) {
+        LoggerService.info('Supabase', 'TABLE_DISCOVERY_START', `Fetching tables from ${url}`, { url });
         try {
             // First, try to get tables from the information_schema via RPC or direct query
             // Supabase exposes table info through the PostgREST OpenAPI spec
@@ -98,6 +109,7 @@ export class SupabaseService {
             
             if (!res.ok) {
                 console.warn('[SupabaseService] Failed to fetch OpenAPI spec:', res.status);
+                LoggerService.error('Supabase', 'TABLE_DISCOVERY_FAILED', `Status: ${res.status}`, null, { url });
                 return [];
             }
             
@@ -138,12 +150,17 @@ export class SupabaseService {
                         .from(tableName)
                         .select('*', { count: 'exact', head: true });
                     
+                    if (error) {
+                        console.warn(`[SupabaseService] Skipping table '${tableName}' due to access error:`, error.message);
+                        continue;
+                    }
+
                     tables.push({ 
                         name: tableName, 
-                        rows: error ? 0 : (count || 0) 
+                        rows: count || 0 
                     });
-                } catch {
-                    tables.push({ name: tableName, rows: 0 });
+                } catch (err) {
+                    console.warn(`[SupabaseService] Skipping table '${tableName}' due to exception:`, err);
                 }
             }
             
@@ -151,19 +168,45 @@ export class SupabaseService {
             tables.sort((a, b) => b.rows - a.rows);
             
             console.log('[SupabaseService] Discovered tables with counts:', tables);
+            LoggerService.info('Supabase', 'TABLE_DISCOVERY_SUCCESS', `Found ${tables.length} tables`, { tablesCount: tables.length });
             return tables;
         } catch (error) {
             console.error('[SupabaseService] Error fetching tables:', error);
+            LoggerService.error('Supabase', 'TABLE_DISCOVERY_EXCEPTION', (error as Error).message, error);
             return [];
         }
     }
 
-    public async fetchTableData(client: SupabaseClient, table: string, limit = 1000) {
+    public async fetchTableData(client: SupabaseClient, table: string, limit: number | null = null) {
+        LoggerService.info('Supabase', 'FETCH_TABLE_DATA_START', `Fetching data from table: ${table}`, { table, limit: limit || 'all' });
         try {
-            const { data, error } = await client.from(table).select('*').limit(limit);
-            if (error) throw error;
-            return { data, error: null };
+            let allData: any[] = [];
+            let from = 0;
+            const pageSize = 1000; // Supabase default limit
+            let hasMore = true;
+
+            while (hasMore && (limit === null || allData.length < limit)) {
+                const query = client.from(table).select('*').range(from, from + pageSize - 1);
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    allData = [...allData, ...data];
+                    from += pageSize;
+                    hasMore = data.length === pageSize && (limit === null || allData.length < limit);
+                } else {
+                    hasMore = false;
+                }
+            }
+
+            // If limit was specified, trim to that limit
+            const finalData = limit ? allData.slice(0, limit) : allData;
+            
+            LoggerService.info('Supabase', 'FETCH_TABLE_DATA_SUCCESS', `Fetched ${finalData.length} rows from ${table}`, { table, rowCount: finalData.length });
+            return { data: finalData, error: null };
         } catch (e: any) {
+            LoggerService.error('Supabase', 'FETCH_TABLE_DATA_FAILED', e.message, e, { table });
             return { data: null, error: e.message };
         }
     }
