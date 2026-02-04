@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { User, Session } from "@supabase/supabase-js";
 import { BarChart3, Sparkles, Mail, Lock, ArrowRight } from "lucide-react";
+import LoggerService from "@/services/LoggerService";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -24,6 +25,13 @@ const Auth = () => {
     } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      // Log auth state changes
+      if (event === 'SIGNED_IN') {
+        LoggerService.info('Auth', 'SIGNED_IN', 'User signed in', { userId: session?.user?.id });
+      } else if (event === 'SIGNED_OUT') {
+        LoggerService.info('Auth', 'SIGNED_OUT', 'User signed out');
+      }
     });
 
     // THEN check for existing session
@@ -53,6 +61,7 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success("Logged in successfully!");
+        LoggerService.action('Auth', 'LOGIN_SUCCESS', 'User logged in successfully', { email });
       } else {
         const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({
@@ -64,10 +73,12 @@ const Auth = () => {
         });
         if (error) throw error;
         toast.success("Account created! You can now log in.");
+        LoggerService.action('Auth', 'SIGNUP_SUCCESS', 'User signed up successfully', { email });
         setIsLogin(true);
       }
     } catch (error: any) {
       toast.error(error.message || "Authentication failed");
+      LoggerService.error('Auth', isLogin ? 'LOGIN_FAILED' : 'SIGNUP_FAILED', error.message, error, { email });
     } finally {
       setLoading(false);
     }

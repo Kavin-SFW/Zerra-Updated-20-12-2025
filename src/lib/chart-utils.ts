@@ -6,11 +6,17 @@ import {
     TrendingUp, Activity, Target, Zap,
     BarChart3, AlertCircle
 } from 'lucide-react';
+import { applyPowerBITheme, POWERBI_COLORS, createPowerBIGradient, formatPowerBINumber } from './powerbi-chart-theme';
 
 export const capitalize = (str: any) => {
     if (!str) return '';
     const s = String(str);
     return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
+// Helper to apply PowerBI theme to chart options
+const applyTheme = (option: EChartsOption): EChartsOption => {
+    return applyPowerBITheme(option);
 };
 
 export const createEChartsOption = (
@@ -22,38 +28,53 @@ export const createEChartsOption = (
 ): EChartsOption => {
     const chartType = rec.type || 'bar';
 
+    // Use PowerBI theme as base
     const baseOption: EChartsOption = {
         backgroundColor: 'transparent',
         tooltip: {
             trigger: 'axis',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderColor: '#e2e8f0',
-            textStyle: { color: '#1e293b' },
-            axisPointer: {
-                type: 'cross',
-                label: {
-                    backgroundColor: '#64748b',
-                    color: '#ffffff'
-                }
-            },
+            backgroundColor: '#FFFFFF',
+            borderColor: '#E1DFDD',
             borderWidth: 1,
-            padding: [10, 14],
-            extraCssText: 'backdrop-filter: blur(4px); border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);'
+            textStyle: {
+                color: '#323130',
+                fontSize: 12,
+                fontFamily: 'Segoe UI, sans-serif'
+            },
+            padding: [8, 12],
+            extraCssText: 'box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-radius: 4px;',
+            axisPointer: {
+                type: 'line',
+                lineStyle: {
+                    color: '#0078D4',
+                    width: 1,
+                    type: 'solid'
+                },
+                label: {
+                    backgroundColor: '#0078D4',
+                    borderColor: '#0078D4',
+                    color: '#FFFFFF',
+                    fontSize: 11
+                }
+            }
         },
         grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '15%',
-            top: '40px',
-            containLabel: true
+            left: '60px',
+            right: '20px',
+            top: '50px',
+            bottom: '50px',
+            containLabel: true,
+            borderColor: 'transparent'
         },
-        color: ['#12FFCC', '#0EA5E9', '#A855F7', '#F472B6', '#FBBF24'],
+        color: POWERBI_COLORS,
         textStyle: {
-            fontFamily: 'Inter, -apple-system, system-ui, sans-serif',
-            color: '#64748b'
+            fontFamily: 'Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif',
+            fontSize: 12,
+            color: '#323130',
+            fontWeight: 'normal'
         },
-        animationDuration: 1000,
-        animationEasing: 'exponentialOut'
+        animationDuration: 750,
+        animationEasing: 'cubicOut'
     };
 
     // Apply dynamic palette if present
@@ -68,7 +89,7 @@ export const createEChartsOption = (
         const avg = values.reduce((a, b) => a + b, 0) / (values.length || 1);
         const max = Math.max(...values, 100);
 
-        return {
+        return applyTheme({
             ...baseOption,
             series: [{
                 type: 'gauge',
@@ -76,17 +97,17 @@ export const createEChartsOption = (
                 radius: '85%',
                 data: [{ value: Math.round(avg), name: capitalize(yAxis) }],
                 max: Math.round(max * 1.2),
-                pointer: { itemStyle: { color: 'auto' }, width: 4 },
+                pointer: { itemStyle: { color: '#0078D4' }, width: 4 },
                 detail: {
                     formatter: (val: number) => `{value|${val}}{unit|%}`,
                     offsetCenter: [0, '50%'],
                     rich: {
-                        value: { fontSize: 24, fontWeight: 'bold', color: '#1E293B' },
-                        unit: { fontSize: 12, color: '#64748B', padding: [0, 0, 4, 2] }
+                        value: { fontSize: 24, fontWeight: 'bold', color: '#323130' },
+                        unit: { fontSize: 12, color: '#605E5C', padding: [0, 0, 4, 2] }
                     }
                 }
             }]
-        };
+        });
     }
 
     if (chartType === 'funnel') {
@@ -105,7 +126,7 @@ export const createEChartsOption = (
             .sort((a, b) => b.value - a.value)
             .slice(0, 8);
 
-        return {
+        return applyTheme({
             ...baseOption,
             tooltip: { trigger: 'item', formatter: '{b}: {c}' },
             series: [{
@@ -120,11 +141,11 @@ export const createEChartsOption = (
                 maxSize: '100%',
                 sort: 'descending',
                 gap: 2,
-                label: { show: true, position: 'inside', fontSize: 10 },
-                emphasis: { label: { fontSize: 14 } },
+                label: { show: true, position: 'inside', fontSize: 11, color: '#323130' },
+                emphasis: { label: { fontSize: 13, fontWeight: 'bold' } },
                 data: funnelData
             }]
-        };
+        });
     }
 
     if (chartType === 'radar') {
@@ -142,7 +163,7 @@ export const createEChartsOption = (
             value: topData.map(d => Number(d[yCol]) || 0)
         }));
 
-        return {
+        return applyTheme({
             ...baseOption,
             tooltip: { trigger: 'item' },
             radar: {
@@ -150,18 +171,18 @@ export const createEChartsOption = (
                 radius: '60%',
                 center: ['50%', '55%'],
                 splitNumber: 4,
-                axisLine: { lineStyle: { color: '#E2E8F0' } },
-                splitArea: { areaStyle: { color: ['rgba(255,255,255,0)', 'rgba(238,242,255,0.3)'] } },
-                splitLine: { lineStyle: { color: '#E2E8F0' } }
+                axisLine: { lineStyle: { color: '#E1DFDD' } },
+                splitArea: { areaStyle: { color: ['rgba(255,255,255,0)', 'rgba(243,242,241,0.3)'] } },
+                splitLine: { lineStyle: { color: '#E1DFDD' } }
             },
             series: [{
                 type: 'radar',
                 data: seriesData,
                 symbolSize: 6,
-                areaStyle: { opacity: 0.2 },
-                lineStyle: { width: 2 }
+                areaStyle: { opacity: 0.25 },
+                lineStyle: { width: 2, color: '#0078D4' }
             }]
-        };
+        });
     }
 
     if (chartType === 'pie') {
@@ -189,7 +210,19 @@ export const createEChartsOption = (
         const grouped = data.reduce((acc: any, item) => {
             const key = getKey(item);
             // If count aggregation or y_axis column doesn't exist, count occurrences
-            const value = isCountAggregation ? 1 : (Number(item[yAxis]) || 0);
+            let value: number;
+            if (isCountAggregation) {
+                value = 1;
+            } else {
+                const rawValue = item[yAxis];
+                // More accurate number parsing
+                if (rawValue === null || rawValue === undefined || rawValue === '') {
+                    value = 0;
+                } else {
+                    const parsed = Number(rawValue);
+                    value = isNaN(parsed) ? 0 : parsed;
+                }
+            }
             acc[key] = (acc[key] || 0) + value;
             return acc;
         }, {});
@@ -215,7 +248,7 @@ export const createEChartsOption = (
             pieData = [...top10, { name: 'Others', value: othersSum }];
         }
 
-        return {
+        return applyTheme({
             ...baseOption,
             tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
             series: [{
@@ -227,62 +260,63 @@ export const createEChartsOption = (
                     show: true,
                     position: 'outside',
                     formatter: '{b}: {d}%',
-                    fontSize: 10,
-                    color: '#64748B',
+                    fontSize: 11,
+                    color: '#323130',
+                    fontFamily: 'Segoe UI, sans-serif'
                 },
                 labelLine: useBreakdown ? { show: false } : { show: true, length: 10, length2: 10 },
                 emphasis: {
-                    label: { show: true, fontSize: 12, fontWeight: 'bold' }
+                    label: { show: true, fontSize: 12, fontWeight: 'bold' },
+                    itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,0.2)' }
                 },
                 data: pieData
             }]
-        };
+        });
     }
 
     if (chartType === 'scatter') {
         const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
         const scatterData = data.map(d => [Number(d[rec.x_axis]) || 0, Number(d[yAxis]) || 0]);
 
-        return {
+        return applyTheme({
             ...baseOption,
             xAxis: {
                 name: rec.x_label || capitalize(rec.x_axis),
                 nameLocation: 'middle',
                 nameGap: 40,
                 nameTextStyle: {
-                    color: '#64748b',
+                    color: '#323130',
                     fontSize: 12,
                     fontWeight: 500,
-                    padding: [25, 0, 0, 0]
+                    padding: [25, 0, 0, 0],
+                    fontFamily: 'Segoe UI, sans-serif'
                 },
-                splitLine: { lineStyle: { color: '#f1f5f9' } },
+                splitLine: { lineStyle: { color: '#F3F2F1' } },
                 axisLabel: {
-                    color: '#64748b',
+                    color: '#605E5C',
                     rotate: 35,
-                    fontSize: 10,
+                    fontSize: 11,
                     interval: 0,
-                    margin: 15
+                    margin: 15,
+                    fontFamily: 'Segoe UI, sans-serif'
                 },
-                axisLine: { lineStyle: { color: '#e2e8f0' } }
+                axisLine: { lineStyle: { color: '#E1DFDD' } }
             },
             yAxis: {
                 name: rec.y_label || capitalize(yAxis),
-                splitLine: { lineStyle: { color: '#f1f5f9' } },
-                axisLabel: { color: '#64748b' },
-                axisLine: { lineStyle: { color: '#e2e8f0' } }
+                splitLine: { lineStyle: { color: '#F3F2F1' } },
+                axisLabel: { color: '#605E5C', fontFamily: 'Segoe UI, sans-serif' },
+                axisLine: { lineStyle: { color: '#E1DFDD' } }
             },
             series: [{
                 type: 'scatter',
                 data: scatterData,
                 symbolSize: 10,
                 itemStyle: {
-                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: '#0EA5E9' },
-                        { offset: 1, color: '#8B5CF6' }
-                    ])
+                    color: createPowerBIGradient('#0078D4', '#00B294')
                 }
             }]
-        };
+        });
     }
 
     if (chartType === 'area') {
@@ -334,38 +368,50 @@ export const createEChartsOption = (
                     data: uniqueCategories.map(cat => pivotedData[cat][breakdown] || 0)
                 }));
 
-                return {
+                return applyTheme({
                     ...baseOption,
                     tooltip: {
                         trigger: 'axis',
                         axisPointer: { type: 'cross' }
                     },
-                    legend: { show: false },
+                    legend: { 
+                        show: uniqueBreakdowns.length <= 8,
+                        top: 'top',
+                        itemGap: 15
+                    },
                     grid: {
-                        left: '3%',
-                        right: '4%',
-                        bottom: '12%',
-                        top: '10%',
+                        left: '60px',
+                        right: '20px',
+                        bottom: '50px',
+                        top: uniqueBreakdowns.length <= 8 ? '80px' : '50px',
                         containLabel: true
                     },
                     xAxis: {
                         type: 'category',
                         data: uniqueCategories,
                         axisLabel: {
-                            color: '#64748b',
-                            rotate: 35,
-                            fontSize: 10,
+                            color: '#605E5C',
+                            rotate: uniqueCategories.length > 10 ? 35 : 0,
+                            fontSize: 11,
                             interval: 0,
-                            width: 80,
-                            overflow: 'truncate'
+                            width: uniqueCategories.length > 10 ? 80 : undefined,
+                            overflow: 'truncate',
+                            fontFamily: 'Segoe UI, sans-serif'
                         },
-                        axisLine: { lineStyle: { color: '#e2e8f0' } }
+                        axisLine: { lineStyle: { color: '#E1DFDD' } },
+                        axisTick: { show: false }
                     },
                     yAxis: {
                         type: 'value',
-                        splitLine: { lineStyle: { color: '#f1f5f9' } },
-                        axisLabel: { color: '#64748b' },
-                        axisLine: { lineStyle: { color: '#e2e8f0' } }
+                        splitLine: { lineStyle: { color: '#F3F2F1', width: 1 } },
+                        axisLabel: { 
+                            color: '#605E5C',
+                            fontSize: 11,
+                            fontFamily: 'Segoe UI, sans-serif',
+                            formatter: (value: number) => formatPowerBINumber(value)
+                        },
+                        axisLine: { show: false },
+                        axisTick: { show: false }
                     },
                     series: series as any,
                     dataZoom: isFullView ? [
@@ -374,7 +420,8 @@ export const createEChartsOption = (
                             show: true,
                             xAxisIndex: [0],
                             start: 0,
-                            end: 100
+                            end: 100,
+                            textStyle: { color: '#605E5C' }
                         },
                         {
                             type: 'inside',
@@ -383,7 +430,7 @@ export const createEChartsOption = (
                             end: 100
                         }
                     ] : undefined
-                };
+                });
             }
         }
 
@@ -412,27 +459,47 @@ export const createEChartsOption = (
             };
         });
 
-        return {
+        return applyTheme({
             ...baseOption,
             xAxis: {
                 type: 'category',
                 data: xData,
                 axisLabel: {
-                    color: '#64748b',
-                    rotate: 35,
-                    fontSize: 10,
-                    interval: 0
+                    color: '#605E5C',
+                    rotate: xData.length > 10 ? 35 : 0,
+                    fontSize: 11,
+                    interval: 0,
+                    fontFamily: 'Segoe UI, sans-serif'
                 },
-                axisLine: { lineStyle: { color: '#e2e8f0' } }
+                axisLine: { lineStyle: { color: '#E1DFDD' } },
+                axisTick: { show: false }
             },
             yAxis: {
                 type: 'value',
-                splitLine: { lineStyle: { color: '#f1f5f9' } },
-                axisLabel: { color: '#64748b' },
-                axisLine: { lineStyle: { color: '#e2e8f0' } }
+                splitLine: { lineStyle: { color: '#F3F2F1', width: 1 } },
+                axisLabel: { 
+                    color: '#605E5C',
+                    fontSize: 11,
+                    fontFamily: 'Segoe UI, sans-serif',
+                    formatter: (value: number) => formatPowerBINumber(value)
+                },
+                axisLine: { show: false },
+                axisTick: { show: false }
             },
-            series: series as any
-        };
+            series: series.map((s: any) => ({
+                ...s,
+                areaStyle: {
+                    opacity: 0.3,
+                    color: createPowerBIGradient(s.lineStyle?.color || '#0078D4', 'transparent')
+                },
+                lineStyle: {
+                    ...s.lineStyle,
+                    width: 3,
+                    cap: 'round',
+                    join: 'round'
+                }
+            })) as any
+        });
     }
 
     if (chartType === 'treemap') {
@@ -555,6 +622,171 @@ export const createEChartsOption = (
                 lineStyle: { color: 'gradient', curveness: 0.5 }
             }]
         };
+    }
+
+    // Network Graph
+    if (chartType === 'network') {
+        const nodesSet = new Set<string>();
+        const links: any[] = [];
+        const nodeMap = new Map<string, number>();
+
+        data.slice(0, 20).forEach((item, idx) => {
+            const source = capitalize(item[rec.x_axis]);
+            const targetDim = typeof rec.y_axis === 'string' ? rec.y_axis : (Array.isArray(rec.y_axis) && rec.y_axis.length > 1 ? rec.y_axis[1] : rec.y_axis);
+            const target = capitalize(item[targetDim] || `Node${idx}`);
+            const value = Number(item[Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis]) || 1;
+
+            if (!nodesSet.has(source)) {
+                nodesSet.add(source);
+                nodeMap.set(source, nodeMap.size);
+            }
+            if (!nodesSet.has(target)) {
+                nodesSet.add(target);
+                nodeMap.set(target, nodeMap.size);
+            }
+            links.push({ source: nodeMap.get(source), target: nodeMap.get(target), value });
+        });
+
+        const nodes = Array.from(nodesSet).map((name, idx) => ({
+            id: idx,
+            name,
+            symbolSize: 30,
+            category: idx % 3,
+            label: { show: true, fontSize: 10 }
+        }));
+
+        return applyPowerBITheme({
+            ...baseOption,
+            tooltip: { trigger: 'item', formatter: '{b}' },
+            legend: { show: false },
+            series: [{
+                type: 'graph',
+                layout: 'force',
+                data: nodes,
+                links: links,
+                categories: [{ name: 'Category A' }, { name: 'Category B' }, { name: 'Category C' }],
+                roam: true,
+                label: { show: true, position: 'right', fontSize: 10 },
+                labelLayout: { hideOverlap: true },
+                lineStyle: { color: 'source', curveness: 0.3, width: 2 },
+                emphasis: { focus: 'adjacency', lineStyle: { width: 4 } },
+                force: {
+                    repulsion: 200,
+                    gravity: 0.1,
+                    edgeLength: 100,
+                    layoutAnimation: true
+                }
+            }]
+        });
+    }
+
+    // Geographic Map
+    if (chartType === 'map') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const locationDim = typeof rec.y_axis === 'string' ? rec.y_axis : (Array.isArray(rec.y_axis) && rec.y_axis.length > 1 ? rec.y_axis[1] : rec.x_axis);
+        
+        // Group by location
+        const locationData = data.reduce((acc: any, item) => {
+            const location = capitalize(item[locationDim] || item[rec.x_axis] || 'Unknown');
+            const value = Number(item[yAxis]) || 0;
+            acc[location] = (acc[location] || 0) + value;
+            return acc;
+        }, {});
+
+        const mapData = Object.entries(locationData).map(([name, value]) => ({
+            name,
+            value: Number(value)
+        }));
+
+        return applyPowerBITheme({
+            ...baseOption,
+            tooltip: { trigger: 'item', formatter: '{b}: {c}' },
+            visualMap: {
+                min: 0,
+                max: Math.max(...mapData.map(d => d.value), 100),
+                left: 'left',
+                top: 'bottom',
+                text: ['High', 'Low'],
+                calculable: true,
+                inRange: { color: ['#bae6fd', '#0ea5e9', '#0369a1', '#1e40af'] }
+            },
+            geo: {
+                map: 'world',
+                roam: true,
+                label: { emphasis: { show: false } },
+                itemStyle: {
+                    areaColor: '#f0f0f0',
+                    borderColor: '#d0d0d0'
+                },
+                emphasis: {
+                    itemStyle: { areaColor: '#0078D4' }
+                }
+            },
+            series: [{
+                name: 'Data',
+                type: 'map',
+                mapType: 'world',
+                geoIndex: 0,
+                data: mapData,
+                label: { show: true, fontSize: 10 }
+            }]
+        });
+    }
+
+    // 3D Scatter Plot
+    if (chartType === '3d-scatter') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const zAxis = Array.isArray(rec.y_axis) && rec.y_axis.length > 1 ? rec.y_axis[1] : yAxis;
+        
+        const scatterData = data.slice(0, 100).map(d => [
+            Number(d[rec.x_axis]) || 0,
+            Number(d[yAxis]) || 0,
+            Number(d[zAxis]) || 0
+        ]);
+
+        return applyPowerBITheme({
+            ...baseOption,
+            grid3D: {},
+            xAxis3D: { type: 'value', name: capitalize(rec.x_axis) },
+            yAxis3D: { type: 'value', name: capitalize(yAxis) },
+            zAxis3D: { type: 'value', name: capitalize(zAxis) },
+            visualMap: {
+                max: Math.max(...scatterData.map(d => d[2]), 100),
+                inRange: { color: ['#bae6fd', '#0ea5e9', '#0369a1'] }
+            },
+            series: [{
+                type: 'scatter3D',
+                data: scatterData,
+                symbolSize: 8,
+                itemStyle: { opacity: 0.8 }
+            }]
+        });
+    }
+
+    // 3D Bar Chart
+    if (chartType === '3d-bar') {
+        const yAxis = Array.isArray(rec.y_axis) ? rec.y_axis[0] : rec.y_axis;
+        const xData = data.slice(0, 10).map(d => capitalize(d[rec.x_axis]));
+        const values = data.slice(0, 10).map(d => Number(d[yAxis]) || 0);
+
+        return applyPowerBITheme({
+            ...baseOption,
+            grid3D: {},
+            xAxis3D: { type: 'category', data: xData },
+            yAxis3D: { type: 'value', name: capitalize(yAxis) },
+            zAxis3D: {},
+            visualMap: {
+                max: Math.max(...values, 100),
+                inRange: { color: ['#bae6fd', '#0ea5e9', '#0369a1'] }
+            },
+            series: [{
+                type: 'bar3D',
+                data: values.map((v, i) => [i, v, 0]),
+                shading: 'lambert',
+                itemStyle: { color: '#0078D4' },
+                emphasis: { itemStyle: { color: '#005A9E' } }
+            }]
+        });
     }
 
     if (chartType === 'waterfall') {
@@ -961,7 +1193,7 @@ export const createEChartsOption = (
             finalValues = sorted.map(([, val]) => val);
         }
 
-        return {
+        return applyTheme({
             ...baseOption,
             title: [
                 {
@@ -969,9 +1201,10 @@ export const createEChartsOption = (
                     left: 'center',
                     top: 0,
                     textStyle: {
-                        color: '#1E293B',
-                        fontSize: 14,
-                        fontWeight: 600
+                        color: '#323130',
+                        fontSize: 16,
+                        fontWeight: 600,
+                        fontFamily: 'Segoe UI, sans-serif'
                     }
                 }
             ],
@@ -987,14 +1220,15 @@ export const createEChartsOption = (
                 name: rec.y_label || capitalize(yAxisRaw),
                 nameLocation: 'middle',
                 nameGap: 45,
-                splitLine: { lineStyle: { color: '#F1F5F9' } },
+                splitLine: { lineStyle: { color: '#F3F2F1', width: 1 } },
                 axisLabel: {
-                    color: '#64748B',
-                    fontSize: 10,
-                    formatter: (value: number) => {
-                        return value >= 1000 ? `${(value / 1000).toFixed(0)}K` : String(value);
-                    }
-                }
+                    color: '#605E5C',
+                    fontSize: 11,
+                    fontFamily: 'Segoe UI, sans-serif',
+                    formatter: (value: number) => formatPowerBINumber(value)
+                },
+                axisLine: { show: false },
+                axisTick: { show: false }
             },
             yAxis: {
                 type: 'category',
@@ -1003,14 +1237,15 @@ export const createEChartsOption = (
                 nameGap: 65,
                 data: finalCategories,
                 axisLabel: {
-                    color: '#64748B',
-                    fontSize: 10,
+                    color: '#605E5C',
+                    fontSize: 11,
                     interval: 0,
                     width: 100,
-                    overflow: 'truncate'
+                    overflow: 'truncate',
+                    fontFamily: 'Segoe UI, sans-serif'
                 },
                 axisTick: { show: false },
-                axisLine: { lineStyle: { color: '#E2E8F0' } },
+                axisLine: { lineStyle: { color: '#E1DFDD' } },
                 inverse: true,
             },
             series: [{
@@ -1019,37 +1254,56 @@ export const createEChartsOption = (
                 label: {
                     show: true,
                     position: 'right',
-                    color: '#64748B',
-                    fontSize: 10,
+                    color: '#323130',
+                    fontSize: 11,
+                    fontFamily: 'Segoe UI, sans-serif',
+                    fontWeight: 'normal',
                     formatter: (params: any) => {
                         const val = params.value;
-                        return typeof val === 'number' ? val.toLocaleString() : val;
+                        return typeof val === 'number' ? formatPowerBINumber(val) : String(val);
                     }
                 },
                 itemStyle: {
                     borderRadius: [0, 4, 4, 0],
                     color: (params: any) => {
                         if (params.name === 'Others') {
-                            return new echarts.graphic.LinearGradient(0, 0, 1, 0, [
-                                { offset: 0, color: '#94A3B8' },
-                                { offset: 1, color: '#64748B' }
-                            ]);
+                            return createPowerBIGradient('#94A3B8', '#64748B', 'horizontal');
                         }
-                        return chartColors[params.dataIndex % chartColors.length];
+                        const idx = params.dataIndex % chartColors.length;
+                        return createPowerBIGradient(chartColors[idx], chartColors[(idx + 1) % chartColors.length], 'horizontal');
+                    }
+                },
+                emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0,0,0,0.2)'
                     }
                 },
                 data: finalValues,
             }],
-        };
+        });
     }
 
-    let xData = xDataRaw;
-    let yData = yDataRaw;
+    // Ensure accurate data processing
+    const processedXData = xDataRaw.map(cat => String(cat || '').trim() || 'Unknown');
+    const processedYData = yDataRaw.map((val, idx) => {
+        const rawVal = val;
+        if (rawVal === null || rawVal === undefined || rawVal === '') {
+            return 0;
+        }
+        const num = Number(rawVal);
+        return isNaN(num) ? 0 : num;
+    });
+
+    let xData = processedXData;
+    let yData = processedYData;
 
     if (!isFullView && !((rec as any).isHorizontal)) {
         const aggregated: Record<string, number> = {};
-        xDataRaw.forEach((category, idx) => {
-            aggregated[category] = (aggregated[category] || 0) + yDataRaw[idx];
+        processedXData.forEach((category, idx) => {
+            const val = processedYData[idx];
+            aggregated[category] = (aggregated[category] || 0) + (isNaN(val) ? 0 : val);
         });
 
         const sorted = Object.entries(aggregated);
@@ -1073,7 +1327,7 @@ export const createEChartsOption = (
         }
     }
 
-    return {
+    const finalOption = {
         ...baseOption,
         xAxis: {
             type: 'category',
@@ -1082,22 +1336,31 @@ export const createEChartsOption = (
             nameGap: 35,
             data: xData,
             axisLabel: {
-                color: '#64748B',
-                rotate: 35,
-                fontSize: 10,
+                color: '#605E5C',
+                rotate: xData.length > 10 ? 35 : 0,
+                fontSize: 11,
                 interval: 0,
                 overflow: 'truncate',
-                width: 80
-            }
+                width: xData.length > 10 ? 80 : undefined,
+                fontFamily: 'Segoe UI, sans-serif'
+            },
+            axisLine: { lineStyle: { color: '#E1DFDD' } },
+            axisTick: { show: false }
         },
         yAxis: {
             type: 'value',
             name: rec.y_label || capitalize(yAxisRaw),
             nameLocation: 'middle',
-            nameGap: 40,
-            splitLine: { lineStyle: { color: '#f1f5f9' } },
-            axisLabel: { color: '#64748b' },
-            axisLine: { lineStyle: { color: '#e2e8f0' } }
+            nameGap: 50,
+            splitLine: { lineStyle: { color: '#F3F2F1', width: 1 } },
+            axisLabel: { 
+                color: '#605E5C',
+                fontSize: 11,
+                fontFamily: 'Segoe UI, sans-serif',
+                formatter: (value: number) => formatPowerBINumber(value)
+            },
+            axisLine: { show: false },
+            axisTick: { show: false }
         },
         series: (Array.isArray(rec.y_axis) ? rec.y_axis : [rec.y_axis]).map((yAxis, seriesIdx) => {
             const color = chartColors[seriesIdx % chartColors.length];
@@ -1108,21 +1371,42 @@ export const createEChartsOption = (
                 itemStyle: chartType === 'bar' ? {
                     borderRadius: [4, 4, 0, 0],
                     color: (!Array.isArray(rec.y_axis) || rec.y_axis.length === 1)
-                        ? (params: any) => chartColors[params.dataIndex % chartColors.length]
-                        : color
+                        ? (params: any) => {
+                            const idx = params.dataIndex % chartColors.length;
+                            return createPowerBIGradient(chartColors[idx], chartColors[(idx + 1) % chartColors.length]);
+                        }
+                        : createPowerBIGradient(color, chartColors[(seriesIdx + 1) % chartColors.length])
                 } : undefined,
-                lineStyle: chartType === 'line' ? { width: 3, color: color } : undefined,
+                lineStyle: chartType === 'line' ? { 
+                    width: 3, 
+                    color: color,
+                    cap: 'round',
+                    join: 'round'
+                } : undefined,
+                areaStyle: chartType === 'area' ? {
+                    opacity: 0.3,
+                    color: createPowerBIGradient(color, 'transparent')
+                } : undefined,
                 label: {
                     show: !Array.isArray(rec.y_axis) || rec.y_axis.length === 1,
                     position: 'top',
-                    color: '#64748B',
-                    fontSize: 10,
+                    color: '#323130',
+                    fontSize: 11,
+                    fontFamily: 'Segoe UI, sans-serif',
+                    fontWeight: 'normal',
                     formatter: (params: any) => {
                         const val = params.value;
-                        return typeof val === 'number' ? val.toLocaleString() : val;
+                        return typeof val === 'number' ? formatPowerBINumber(val) : String(val);
                     }
                 },
-                emphasis: { focus: 'series' },
+                emphasis: { 
+                    focus: 'series',
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0,0,0,0.2)'
+                    }
+                },
                 data: Array.isArray(rec.y_axis) 
                     ? (yAxis === 'count' || yAxis === '_count_' || !data[0]?.[yAxis] 
                         ? data.map(() => 1) 
@@ -1146,6 +1430,9 @@ export const createEChartsOption = (
             }
         ] : undefined
     };
+    
+    // Apply PowerBI theme for professional styling
+    return applyPowerBITheme(finalOption);
 };
 
 export const getPriorityColor = (priority: string) => {

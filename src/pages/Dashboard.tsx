@@ -7,6 +7,7 @@ import { EChartsOption } from "echarts";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
+import LoggerService from "@/services/LoggerService";
 
 interface Visualization {
   id: string;
@@ -96,6 +97,8 @@ const Dashboard = () => {
 
   const deleteChart = async (id: string) => {
     try {
+      LoggerService.info('Dashboard', 'DELETE_CHART_START', `Deleting chart ${id}`, { chartId: id });
+      
       const { error } = await supabase
         .from('visualizations')
         .delete()
@@ -105,8 +108,9 @@ const Dashboard = () => {
 
       setCharts(prev => prev.filter(chart => chart.id !== id));
       toast.success("Chart removed from dashboard");
+      LoggerService.info('Dashboard', 'DELETE_CHART_SUCCESS', `Chart ${id} deleted`, { chartId: id });
     } catch (error) {
-      console.error('Error deleting chart:', error);
+      LoggerService.error('Dashboard', 'DELETE_CHART_ERROR', 'Failed to delete chart', error, { chartId: id });
       toast.error("Failed to delete chart");
     }
   };

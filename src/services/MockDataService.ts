@@ -1,3 +1,5 @@
+import LoggerService from "./LoggerService";
+
 export interface MockDataSource {
   id: string;
   name: string;
@@ -44,7 +46,7 @@ class MockDataService {
     this.subscribers.forEach(s => s(id, data));
   }
 
-  addSource(name: string, type: string, data: unknown[], mapping?: Record<string, unknown>, tableName?: string): MockDataSource {
+  addSource(name: string, type: string, data: unknown[], mapping?: Record<string, unknown>, tableName?: string, is_mock = true): MockDataSource {
     // Polyfill for environments where crypto.randomUUID is not available (e.g. non-secure contexts)
     const id = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
       ? crypto.randomUUID()
@@ -60,14 +62,23 @@ class MockDataService {
       row_count: data.length,
       created_at: new Date().toISOString(),
       last_synced_at: new Date().toISOString(),
-      is_mock: true,
+      is_mock,
       mapping,
       tableName
     };
     this.sources.unshift(source);
     this.dataStore[id] = data;
     this.save();
+    LoggerService.info('MockData', 'ADD_SOURCE', `Added mock/local source: ${name}`, { type, is_mock, rowCount: data.length });
     return source;
+  }
+
+  deleteSource(id: string) {
+    const source = this.sources.find(s => s.id === id);
+    this.sources = this.sources.filter(s => s.id !== id);
+    delete this.dataStore[id];
+    this.save();
+    LoggerService.info('MockData', 'DELETE_SOURCE', `Deleted mock/local source: ${source?.name || id}`, { id });
   }
 
   upsertRecord(sourceId: string, record: unknown) {
@@ -79,6 +90,7 @@ class MockDataService {
     this.dataStore[sourceId] = data;
     this.notify(sourceId);
     this.save();
+    LoggerService.info('MockData', 'UPSERT_RECORD', `Upserted record in source: ${sourceId}`, { sourceId });
   }
 
   updateSourceData(sourceId: string, data: unknown[]) {
@@ -91,20 +103,14 @@ class MockDataService {
     }
     this.notify(sourceId);
     this.save();
+    LoggerService.info('MockData', 'UPDATE_DATA', `Updated data for source: ${sourceId}`, { sourceId, rowCount: data.length });
   }
 
   deleteRecord(sourceId: string, recordId: unknown) {
     this.dataStore[sourceId] = (this.dataStore[sourceId] || []).filter(r => (r as Record<string, unknown>).id !== recordId);
     this.notify(sourceId);
     this.save();
-  }
-
-  deleteSource(sourceId: string) {
-    // Remove from sources array
-    this.sources = this.sources.filter(s => s.id !== sourceId);
-    // Remove associated data
-    delete this.dataStore[sourceId];
-    this.save();
+    LoggerService.info('MockData', 'DELETE_RECORD', `Deleted record ${recordId} from source ${sourceId}`, { sourceId, recordId });
   }
 
   getSources() { return this.sources; }

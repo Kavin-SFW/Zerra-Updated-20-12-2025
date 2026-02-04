@@ -258,6 +258,16 @@ export const INDUSTRY_CONFIGS: Record<string, IndustryConfig> = {
             { title: "Projects Completed", keyMatch: /project|done/i, icon: TargetIcon, color: "white", bg: "bg-gradient-to-br from-cyan-500 to-blue-600", agg: 'count' },
         ]
     },
+    "odoo": {
+        name: "Odoo CRM",
+        kpis: [
+            { title: "Total Revenue", keyMatch: /revenue|expected/i, icon: DollarSign, color: "white", bg: "bg-gradient-to-br from-purple-600 to-indigo-800", prefix: "$", agg: 'sum' },
+            { title: "Win Rate", keyMatch: /probability|win/i, icon: TargetIcon, color: "white", bg: "bg-gradient-to-br from-emerald-500 to-teal-600", suffix: "%", agg: 'avg' },
+            { title: "Open Leads", keyMatch: /id|name/i, icon: LayersIcon, color: "white", bg: "bg-gradient-to-br from-orange-500 to-red-600", agg: 'count' },
+            { title: "Avg Deal Size", keyMatch: /revenue|expected/i, icon: Activity, color: "white", bg: "bg-gradient-to-br from-blue-500 to-cyan-600", prefix: "$", agg: 'avg' },
+            { title: "Lead Velocity", keyMatch: /date|create/i, icon: ZapIcon, color: "white", bg: "bg-gradient-to-br from-pink-500 to-rose-600", suffix: " /mo", agg: 'count' }, // Proxy
+        ]
+    },
     "crm": {
         name: "CRM / Sales",
         kpis: [
@@ -285,7 +295,27 @@ export interface ChartRecommendation extends VisualizationRecommendation {
     colorPalette?: string[];
 }
 
-const TEMPLATE_VARIATIONS: Record<string, ChartRecommendation[][]> = {};
+const PALETTES = [
+    ['#12FFCC', '#A855F7', '#D946EF', '#8B5CF6', '#EC4899'],
+    ['#3B82F6', '#6366F1', '#8B5CF6', '#D946EF', '#EC4899'],
+    ['#10B981', '#059669', '#34D399', '#6EE7B7', '#A7F3D0'],
+    ['#F59E0B', '#FBBF24', '#D97706', '#B45309', '#78350F'],
+    ['#6366F1', '#4F46E5', '#4338CA', '#3730A3', '#312E81'],
+    ['#EC4899', '#DB2777', '#BE185D', '#9D174D', '#831843'],
+    ['#14B8A6', '#0D9488', '#0F766E', '#115E59', '#134E4A'],
+    ['#8B5CF6', '#A78BFA', '#7C3AED', '#6D28D9', '#5B21B6'],
+];
+
+const TEMPLATE_VARIATIONS: Record<string, ChartRecommendation[][]> = {
+    "odoo": [
+        [
+            { type: 'funnel', title: 'Sales Pipeline', x_axis: 'Stage', y_axis: 'Revenue', x_label: 'Stage', y_label: 'Expected Revenue', priority: 'high', size: 'large', colorPalette: PALETTES[4] },
+            { type: 'bar', title: 'Revenue by Owner', x_axis: 'Owner', y_axis: 'Revenue', x_label: 'Salesperson', y_label: 'Revenue', priority: 'medium', size: 'normal', colorPalette: PALETTES[1] },
+            { type: 'pie', title: 'Leads by Stage', x_axis: 'Stage', y_axis: 'Revenue', x_label: 'Stage', y_label: 'Count', priority: 'medium', size: 'normal', colorPalette: PALETTES[0] },
+            { type: 'line', title: 'Revenue Forecast', x_axis: 'create_date', y_axis: 'Revenue', x_label: 'Date', y_label: 'Revenue', priority: 'medium', size: 'normal', colorPalette: PALETTES[2] },
+        ]
+    ]
+};
 
 // Label mappings for meaningful axes
 const LABEL_MAP: Record<string, string> = {
@@ -315,17 +345,6 @@ const LABEL_MAP: Record<string, string> = {
 };
 
 const getLabel = (key: string) => LABEL_MAP[key.toLowerCase()] || capitalize(key);
-
-const PALETTES = [
-    ['#12FFCC', '#A855F7', '#D946EF', '#8B5CF6', '#EC4899'],
-    ['#3B82F6', '#6366F1', '#8B5CF6', '#D946EF', '#EC4899'],
-    ['#10B981', '#059669', '#34D399', '#6EE7B7', '#A7F3D0'],
-    ['#F59E0B', '#FBBF24', '#D97706', '#B45309', '#78350F'],
-    ['#6366F1', '#4F46E5', '#4338CA', '#3730A3', '#312E81'],
-    ['#EC4899', '#DB2777', '#BE185D', '#9D174D', '#831843'],
-    ['#14B8A6', '#0D9488', '#0F766E', '#115E59', '#134E4A'],
-    ['#8B5CF6', '#A78BFA', '#7C3AED', '#6D28D9', '#5B21B6'],
-];
 
 const generateIndustryTemplates = (industry: string): ChartRecommendation[][] => {
     const templates: ChartRecommendation[][] = [];
@@ -685,7 +704,8 @@ const getIndustryKey = (industryName?: string): string => {
     let key = "retail";
     if (industryName) {
         const lowerInfo = industryName.toLowerCase();
-        if (lowerInfo.includes('crm') || lowerInfo.includes('sfw')) key = 'crm';
+        if (lowerInfo.includes('odoo')) key = 'odoo';
+        else if (lowerInfo.includes('crm') || lowerInfo.includes('sfw')) key = 'crm';
         else if (lowerInfo.includes('retail')) key = 'retail';
         else if (lowerInfo.includes('sale')) key = 'sales';
         else if (lowerInfo.includes('market')) key = 'marketing';

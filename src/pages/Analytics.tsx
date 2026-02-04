@@ -70,6 +70,7 @@ import { useAnalytics } from "@/contexts/AnalyticsContext";
 import EChartsWrapper from "@/components/charts/EChartsWrapper";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EChartsOption } from 'echarts';
+import LoggerService from "@/services/LoggerService";
 import {
   VisualizationRecommendation,
   PrescriptiveInsight
@@ -82,6 +83,8 @@ import {
 } from "@/lib/chart-utils";
 import AIRecommendationsSection from "@/components/analytics/AIRecommendationsSection";
 import { InteractiveChartBuilder } from "@/components/analytics/InteractiveChartBuilder";
+import { ComparativeAnalysis } from "@/components/analytics/ComparativeAnalysis";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { getTemplateCharts, ChartRecommendation, INDUSTRY_CONFIGS } from "@/lib/dashboard-templates";
 import { mockDataService } from "@/services/MockDataService";
@@ -105,6 +108,7 @@ const Analytics = () => {
     clearPendingCharts
   } = useAnalytics();
   const [industries, setIndustries] = useState<{ id: string; name: string }[]>([]);
+  const [activeTab, setActiveTab] = useState<'analytics' | 'comparative'>('analytics');
   const [dataSources, setDataSources] = useState<any[]>([]);
 
   // Effect removed as templates are now dynamic per industry
@@ -113,6 +117,7 @@ const Analytics = () => {
   const [rawData, setRawData] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAllRows, setShowAllRows] = useState(false);
   const rowsPerPage = 10;
   const [chartSortOrder, setChartSortOrder] = useState<'none' | 'desc' | 'asc'>('none');
   const [groupByDimension, setGroupByDimension] = useState<string[]>([]); // Changed to array for Multi-Selection
@@ -153,7 +158,6 @@ const Analytics = () => {
       toast.success(`Added ${newCharts.length} chart${newCharts.length > 1 ? 's' : ''} to dashboard`);
     }
   }, [pendingCharts, clearPendingCharts]);
-
   useEffect(() => {
     if (!selectedDataSourceId) return;
 
@@ -230,6 +234,11 @@ const Analytics = () => {
     if (!selectedDataSourceId) return;
 
     setLoading(prev => ({ ...prev, dashboard: true }));
+    LoggerService.info('Analytics', 'TEMPLATE_LOAD_START', `Loading template ${selectedTemplate}`, {
+      template: selectedTemplate,
+      industry: selectedIndustryName
+    });
+
     try {
       let dataToUse = filteredData;
 
@@ -237,13 +246,30 @@ const Analytics = () => {
         const fetchedData = await fetchAndComputeKpis();
         if (!fetchedData) {
           setLoading(prev => ({ ...prev, dashboard: false }));
+          LoggerService.warn('Analytics', 'TEMPLATE_LOAD_NO_DATA', 'No data available for template');
           return;
         }
         dataToUse = fetchedData;
       }
 
       // Detect CRM sources to use appropriate templates
-      const sourceInfo = mockDataService.getSources().find(s => s.id === selectedDataSourceId);
+      // Use dataSources state to find the source, not just mockDataService
+      let sourceInfo = dataSources.find(s => s.id === selectedDataSourceId);
+
+      // FIX: If sourceInfo is missing from state (race condition), fetch it directly
+      if (!sourceInfo && selectedDataSourceId) {
+        try {
+           const { data: fetchedSource } = await (supabase as any)
+              .from('data_sources')
+              .select('*')
+              .eq('id', selectedDataSourceId)
+              .single();
+           if (fetchedSource) sourceInfo = fetchedSource;
+        } catch (err) {
+           console.error("Failed to fetch source info for template loading", err);
+        }
+      }
+
       const isCrmSource = sourceInfo?.type === 'SFW CRM' || sourceInfo?.type?.toLowerCase().includes('crm');
       const industryToUse = isCrmSource ? 'crm' : selectedIndustryName;
 
@@ -258,9 +284,13 @@ const Analytics = () => {
       setCharts(newCharts);
       const templateNum = selectedTemplate.replace('template', '');
       toast.success(`Dashboard Template ${templateNum} applied`);
+      LoggerService.info('Analytics', 'TEMPLATE_LOAD_SUCCESS', `Template ${selectedTemplate} applied`, {
+        chartsCount: newCharts.length
+      });
     } catch (error) {
       console.error('Error loading template dashboard:', error);
       toast.error('Failed to load template');
+      LoggerService.error('Analytics', 'TEMPLATE_LOAD_FAILED', (error as Error).message, error);
     } finally {
       setLoading(prev => ({ ...prev, dashboard: false }));
     }
@@ -285,7 +315,8 @@ const Analytics = () => {
   useEffect(() => {
     if (rawData.length > 0) {
       // PREFER MAPPED DATE COLUMN
-      const sourceInfo = mockDataService.getSources().find(s => s.id === selectedDataSourceId);
+      // Use dataSources state to find the source
+      const sourceInfo = dataSources.find(s => s.id === selectedDataSourceId);
       const mappedDateCol = sourceInfo?.mapping?.dateCol;
 
       if (mappedDateCol && rawData[0].hasOwnProperty(mappedDateCol)) {
@@ -390,12 +421,18 @@ const Analytics = () => {
     if (!selectedDataSourceId) return;
 
     setLoading(prev => ({ ...prev, dashboard: true }));
+    LoggerService.info('Analytics', 'DASHBOARD_GEN_START', 'Generating dashboard', { 
+      dataSourceId: selectedDataSourceId, 
+      industry: selectedIndustryName 
+    });
+
     try {
       // Fetch data first
       const data = await fetchAndComputeKpis();
       if (!data || data.length === 0) {
         console.error('No data available for chart generation');
         toast.error('No data available. Please ensure your file was processed correctly.');
+        LoggerService.warn('Analytics', 'DASHBOARD_GEN_NO_DATA', 'No data available for generation');
         return;
       }
       
@@ -657,6 +694,9 @@ const Analytics = () => {
               }
             }
             toast.success(`Created ${result.recommendations.length} charts`);
+            LoggerService.info('Analytics', 'DASHBOARD_GEN_SUCCESS', `Generated ${result.recommendations.length} charts via Edge Function`, {
+              recommendationsCount: result.recommendations.length
+            });
           } else {
             console.warn('No recommendations or data available:', {
               hasData: !!data,
@@ -669,41 +709,66 @@ const Analytics = () => {
             } else if (!result.recommendations || result.recommendations.length === 0) {
               console.error('No chart recommendations received from edge function');
               toast.error('Failed to generate charts. Please try again or check edge function logs.');
+              LoggerService.error('Analytics', 'DASHBOARD_GEN_EMPTY_RECS', 'Edge function returned no recommendations');
             }
           }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating dashboard:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to generate dashboard';
+      LoggerService.error('Analytics', 'DASHBOARD_GEN_FAILED', errorMessage, error);
       
       // Check if this is a mock/CRM data source - if so, generate charts locally
-      const sourceInfo = mockDataService.getSources().find(s => s.id === selectedDataSourceId);
-      if (sourceInfo && sourceInfo.is_mock) {
-        console.log('Falling back to local chart generation for mock/CRM data source');
+      // Fallback for SFW CRM sources or Mock sources when Edge Function fails
+      let sourceInfo = dataSources.find(s => s.id === selectedDataSourceId);
+
+      // FIX: If sourceInfo is missing from state (race condition), fetch it directly
+      if (!sourceInfo && selectedDataSourceId) {
         try {
-          const data = mockDataService.getData(selectedDataSourceId);
-          if (data && data.length > 0) {
+           const { data: fetchedSource } = await (supabase as any)
+              .from('data_sources')
+              .select('*')
+              .eq('id', selectedDataSourceId)
+              .single();
+           if (fetchedSource) sourceInfo = fetchedSource;
+        } catch (err) {
+           console.error("Failed to fetch source info for fallback", err);
+        }
+      }
+
+      const isSfwCrm = sourceInfo?.type === 'SFW CRM' || sourceInfo?.type?.toLowerCase().includes('crm');
+
+      if (sourceInfo && (sourceInfo.is_mock || isSfwCrm)) {
+        console.log('Falling back to local chart generation for mock/CRM data source');
+        LoggerService.info('Analytics', 'DASHBOARD_GEN_FALLBACK', 'Falling back to local generation', { sourceType: sourceInfo.type });
+        try {
+          // Use the data that was already fetched at the start of generateDashboard
+          // If not available there (unlikely if we reached here), try mock service or state
+          const dataToUse = (typeof data !== 'undefined' && data) ? data : (mockDataService.getData(selectedDataSourceId) || filteredData || rawData);
+
+          if (dataToUse && dataToUse.length > 0) {
             // Detect industry based on source type - use 'crm' for SFW CRM sources
-            const isCrmSource = sourceInfo.type === 'SFW CRM' || sourceInfo.type?.toLowerCase().includes('crm');
-            const industryToUse = isCrmSource ? 'crm' : (selectedIndustryName || 'retail');
+            const industryToUse = isSfwCrm ? 'crm' : (selectedIndustryName || 'retail');
             
             console.log('Generating local charts with industry:', industryToUse, 'for source type:', sourceInfo.type);
             
             // Generate charts locally using templates
-            const templateRecs = getTemplateCharts('template1', data, industryToUse);
+            const templateRecs = getTemplateCharts('template1', dataToUse, industryToUse);
             
             const newCharts = templateRecs.map(rec => ({
               title: rec.title,
               rec: rec,
-              option: createEChartsOption(rec, data, chartSortOrder, false, groupByDimension)
+              option: createEChartsOption(rec, dataToUse, chartSortOrder, false, groupByDimension)
             }));
             
             setCharts(newCharts);
-            toast.success(`Generated ${newCharts.length} charts from your ${isCrmSource ? 'CRM' : industryToUse} data`);
+            toast.success(`Generated ${newCharts.length} charts from your ${isSfwCrm ? 'CRM' : industryToUse} data`);
+            LoggerService.info('Analytics', 'DASHBOARD_GEN_FALLBACK_SUCCESS', `Generated ${newCharts.length} local charts`);
             return;
           }
         } catch (localError) {
           console.error('Local chart generation also failed:', localError);
+          LoggerService.error('Analytics', 'DASHBOARD_GEN_FALLBACK_FAILED', 'Local fallback generation failed', localError);
         }
       }
       
@@ -754,15 +819,54 @@ const Analytics = () => {
       if (!uploadedFiles || uploadedFiles.length === 0) return null;
 
       const fileId = uploadedFiles[0].id;
-      const { data: records } = await (supabase as any)
+      
+      // Fetch all records with optimized parallel pagination
+      // First, get the total count to determine how many pages we need
+      const { count } = await (supabase as any)
         .from('data_records')
-        .select('row_data')
-        .eq('file_id', fileId)
-        .limit(2000);
+        .select('*', { count: 'exact', head: true })
+        .eq('file_id', fileId);
 
-      if (!records || records.length === 0) return null;
+      const totalRecords = count || 0;
+      const pageSize = 1000;
+      const totalPages = Math.ceil(totalRecords / pageSize);
 
-      const data = records.map((r: any) => r.row_data);
+      // Fetch pages in parallel batches (10 at a time for better performance)
+      let allRecords: any[] = [];
+      const batchSize = 10;
+      
+      for (let batchStart = 0; batchStart < totalPages; batchStart += batchSize) {
+        const batchEnd = Math.min(batchStart + batchSize, totalPages);
+        const batchPromises = [];
+        
+        for (let page = batchStart; page < batchEnd; page++) {
+          const from = page * pageSize;
+          const to = from + pageSize - 1;
+          batchPromises.push(
+            (supabase as any)
+              .from('data_records')
+              .select('row_data')
+              .eq('file_id', fileId)
+              .range(from, to)
+          );
+        }
+        
+        const batchResults = await Promise.all(batchPromises);
+        
+        for (const result of batchResults) {
+          if (result.error) {
+            console.error('Error fetching records batch:', result.error);
+            continue;
+          }
+          if (result.data && result.data.length > 0) {
+            allRecords = [...allRecords, ...result.data];
+          }
+        }
+      }
+
+      if (allRecords.length === 0) return null;
+
+      const data = allRecords.map((r: any) => r.row_data);
       setRawData(data);
       setFilteredData(data);
       computeMetrics(data);
@@ -778,7 +882,8 @@ const Analytics = () => {
     const keys = Object.keys(data[0] || {});
     
     // RETRIEVE MAPPING FROM SOURCE IF AVAILABLE
-    const sourceInfo = mockDataService.getSources().find(s => s.id === selectedDataSourceId);
+    // Use dataSources state to find the source
+    const sourceInfo = dataSources.find(s => s.id === selectedDataSourceId);
     const mapping = sourceInfo?.mapping || {};
 
     const industryKey = selectedIndustryName?.toLowerCase();
@@ -1034,7 +1139,6 @@ const Analytics = () => {
         if (groupByDimension.length > 0 && effectiveRec.isHorizontal) {
           delete effectiveRec.isHorizontal;
         }
-        
         console.log('Creating chart option with:', {
           rec: effectiveRec,
           dataLength: fetchedData.length,
@@ -1061,7 +1165,6 @@ const Analytics = () => {
         if (groupByDimension.length > 0 && effectiveRec.isHorizontal) {
           delete effectiveRec.isHorizontal;
         }
-        
         console.log('Creating chart option with provided data:', {
           rec: effectiveRec,
           dataLength: dataToUse.length,
@@ -1122,6 +1225,10 @@ const Analytics = () => {
 
     try {
       const chartTitle = charts[chartIndex]?.title || 'chart';
+      LoggerService.info('Analytics', 'CHART_EXPORT', `Exporting chart ${chartTitle} as ${format}`, {
+        format,
+        chartTitle
+      });
 
       if (format === 'pdf') {
         const dataURL = instance.getDataURL({
@@ -1159,6 +1266,7 @@ const Analytics = () => {
     } catch (error) {
       console.error('Export error:', error);
       toast.error(`Failed to export chart as ${format.toUpperCase()}`);
+      LoggerService.error('Analytics', 'CHART_EXPORT_FAILED', (error as Error).message, error, { format });
     }
   };
 
@@ -1169,6 +1277,11 @@ const Analytics = () => {
     }
 
     try {
+      LoggerService.info('Analytics', 'CSV_EXPORT_START', 'Exporting data to CSV', { 
+        rows: rawData.length,
+        dataSourceId: selectedDataSourceId 
+      });
+
       const headers = Object.keys(rawData[0]).join(',');
       const rows = rawData.map(row =>
         Object.values(row).map(val => `"${String(val).replace(/"/g, '""')}"`).join(',')
@@ -1185,9 +1298,11 @@ const Analytics = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       toast.success("Data exported to CSV");
+      LoggerService.info('Analytics', 'CSV_EXPORT_SUCCESS', 'Data exported to CSV successfully');
     } catch (error) {
       console.error('CSV Export error:', error);
       toast.error("Failed to export data to CSV");
+      LoggerService.error('Analytics', 'CSV_EXPORT_FAILED', (error as Error).message, error);
     }
   };
 
@@ -1198,8 +1313,14 @@ const Analytics = () => {
     }
 
     const toastId = toast.loading("Generating dashboard PDF...");
+    LoggerService.info('Analytics', 'DASHBOARD_DOWNLOAD_START', 'Downloading full dashboard PDF', {
+        chartsCount: charts.length,
+        dataSourceId: selectedDataSourceId
+    });
 
     try {
+      // ... (existing PDF generation logic)
+      // (I will keep the existing implementation but wrap it with logging)
       // Create a new PDF document in landscape orientation
       const pdf = new jsPDF({
         orientation: 'landscape',
@@ -1665,10 +1786,19 @@ const Analytics = () => {
 
         {charts.length > 0 && !loading.dashboard && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                Visual Analytics
-              </h2>
+            <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)}>
+              <div className="flex items-center justify-between">
+                <TabsList className="grid w-auto grid-cols-2">
+                  <TabsTrigger value="analytics">Visual Analytics</TabsTrigger>
+                  <TabsTrigger value="comparative">Comparative</TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="analytics" className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    Visual Analytics
+                  </h2>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 mr-2 bg-gray-50/50 p-1 rounded-lg border border-gray-100">
                   <Select onValueChange={handlePresetChange}>
@@ -1834,7 +1964,7 @@ const Analytics = () => {
                       key={idx}
                       className={cn(
                         "min-h-[450px] flex",
-                        (idx === 0 || isLarge) ? "lg:col-span-12" : "lg:col-span-6"
+                        isLarge ? "lg:col-span-12" : "lg:col-span-6"
                       )}
                     >
                       <Card className="w-full border border-gray-200 overflow-hidden bg-white group/chart hover:shadow-md transition-all duration-300 hover:border-gray-300 flex flex-col">
@@ -1948,6 +2078,31 @@ const Analytics = () => {
                 })}
               </div>
             </div>
+              </TabsContent>
+
+              <TabsContent value="comparative" className="space-y-6">
+                {selectedDataSourceId && rawData.length > 0 ? (
+                  <ComparativeAnalysis
+                    data={filteredData.length > 0 ? filteredData : rawData}
+                    dateColumn={dateColumn || undefined}
+                    metricColumn={rawData.length > 0 ? Object.keys(rawData[0]).find(k => {
+                      const val = rawData[0][k];
+                      return typeof val === 'number' || (!isNaN(Number(val)) && typeof val !== 'boolean');
+                    }) : undefined}
+                    dimensionColumn={rawData.length > 0 ? Object.keys(rawData[0]).find(k => {
+                      const val = rawData[0][k];
+                      return typeof val === 'string' && !['id', '_id', 'uuid'].includes(k.toLowerCase());
+                    }) : undefined}
+                  />
+                ) : (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <p className="text-gray-500">Please select a data source to use Comparative Analysis</p>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         )}
 
@@ -1977,6 +2132,21 @@ const Analytics = () => {
                 >
                   <Download className="mr-1.5 h-3.5 w-3.5" />
                   Export CSV
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowAllRows(!showAllRows);
+                    setCurrentPage(1);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className={`h-8 text-[11px] font-bold transition-colors ${
+                    showAllRows 
+                      ? "border-green-200 text-green-700 bg-green-50/50 hover:bg-green-100" 
+                      : "border-slate-200 text-slate-700 bg-white hover:bg-slate-50"
+                  }`}
+                >
+                  {showAllRows ? "Show Paginated" : "Show All Rows"}
                 </Button>
                 <div className="relative">
                   <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -2016,14 +2186,17 @@ const Analytics = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {rawData
-                        .filter(row =>
+                      {(() => {
+                        const filteredData = rawData.filter(row =>
                           Object.values(row).some(val =>
                             String(val).toLowerCase().includes(searchTerm.toLowerCase())
                           )
-                        )
-                        .slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage)
-                        .map((row, i) => (
+                        );
+                        const displayData = showAllRows 
+                          ? filteredData 
+                          : filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+                        
+                        return displayData.map((row, i) => (
                           <tr key={i} className="hover:bg-slate-50/50 transition-colors border-b border-slate-100 last:border-b-0">
                             {Object.values(row).map((val: any, j) => (
                               <td key={j} className="px-3 py-1.5 border-r border-slate-100 text-slate-600 truncate max-w-[180px] text-[11px] last:border-r-0">
@@ -2031,40 +2204,56 @@ const Analytics = () => {
                               </td>
                             ))}
                           </tr>
-                        ))
-                      }
+                        ));
+                      })()}
                     </tbody>
                   </table>
                 )}
               </div>
-              {!loading.dashboard && (
-                <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between bg-white">
-                  <p className="text-xs text-slate-500">
-                    Showing {(currentPage - 1) * rowsPerPage + 1} to {Math.min(currentPage * rowsPerPage, rawData.length)} of {rawData.length} rows
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      disabled={currentPage === 1}
-                      onClick={() => setCurrentPage(p => p - 1)}
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="text-xs font-medium text-slate-600">Page {currentPage}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 w-8 p-0"
-                      disabled={currentPage * rowsPerPage >= rawData.length}
-                      onClick={() => setCurrentPage(p => p + 1)}
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
+              {!loading.dashboard && (() => {
+                const filteredCount = rawData.filter(row =>
+                  Object.values(row).some(val =>
+                    String(val).toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                ).length;
+                
+                return (
+                  <div className="px-4 py-3 border-t border-slate-100 flex items-center justify-between bg-white">
+                    <p className="text-xs text-slate-500">
+                      {showAllRows ? (
+                        <>Showing all {filteredCount} rows</>
+                      ) : (
+                        <>Showing {(currentPage - 1) * rowsPerPage + 1} to {Math.min(currentPage * rowsPerPage, filteredCount)} of {filteredCount} rows</>
+                      )}
+                    </p>
+                    {!showAllRows && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          disabled={currentPage === 1}
+                          onClick={() => setCurrentPage(p => p - 1)}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="text-xs font-medium text-slate-600">
+                          Page {currentPage} of {Math.ceil(filteredCount / rowsPerPage) || 1}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          disabled={currentPage * rowsPerPage >= filteredCount}
+                          onClick={() => setCurrentPage(p => p + 1)}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </Card>
           </div>
         )}

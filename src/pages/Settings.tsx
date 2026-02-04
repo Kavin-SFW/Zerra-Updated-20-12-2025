@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,27 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  User, Mail, Bell, Shield, Key, Database, Globe, 
-  Moon, Sun, Download, Trash2, Eye, EyeOff, Save,
-  CheckCircle2, AlertCircle, Loader2, Copy, ExternalLink
+import {
+  AlertCircle,
+  Bell,
+  CheckCircle2,
+  Copy,
+  Database,
+  Download,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Globe,
+  Key,
+  Loader2,
+  Mail,
+  Moon,
+  Plus,
+  Save,
+  Shield,
+  Sun,
+  Trash2,
+  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -29,6 +46,9 @@ interface UserProfile {
   avatar_url: string | null;
   role: string;
   metadata: any;
+  created_at: string;
+  last_login_at: string | null;
+  tenant_id: string | null;
 }
 
 interface TenantInfo {
@@ -44,12 +64,12 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [tenantInfo, setTenantInfo] = useState<TenantInfo | null>(null);
-  
+
   // Profile form state
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
-  
+
   // Preferences state
   const [theme, setTheme] = useState<"light" | "dark" | "system">("dark");
   const [language, setLanguage] = useState("en");
@@ -60,13 +80,13 @@ const Settings = () => {
     dataSync: true,
     alerts: true,
   });
-  
+
   // Privacy state
   const [gdprConsents, setGdprConsents] = useState<any[]>([]);
   const [showPassword, setShowPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   // API keys state
   const [apiKeys, setApiKeys] = useState<any[]>([]);
   const [newApiKeyName, setNewApiKeyName] = useState("");
@@ -78,7 +98,7 @@ const Settings = () => {
   const loadUserData = async () => {
     try {
       setLoading(true);
-      
+
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -87,7 +107,7 @@ const Settings = () => {
       }
 
       // Get user profile
-      const { data: profile, error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", user.id)
@@ -98,6 +118,8 @@ const Settings = () => {
         toast.error("Failed to load profile");
         return;
       }
+
+      const profile = profileData as unknown as UserProfile;
 
       setUserProfile(profile);
       setFullName(profile.full_name || "");
@@ -119,10 +141,14 @@ const Settings = () => {
 
       // Load preferences from metadata
       if (profile.metadata) {
-        if (profile.metadata.theme) setTheme(profile.metadata.theme);
-        if (profile.metadata.language) setLanguage(profile.metadata.language);
-        if (profile.metadata.notifications) {
-          setNotifications(profile.metadata.notifications);
+        const metadata = profile.metadata as any;
+        if (metadata.theme) setTheme(metadata.theme);
+        if (metadata.language) setLanguage(metadata.language);
+        if (metadata.notifications) {
+          setNotifications(metadata.notifications);
+        }
+        if (metadata.api_keys) {
+          setApiKeys(metadata.api_keys);
         }
       }
 
@@ -136,7 +162,6 @@ const Settings = () => {
       if (consents) {
         setGdprConsents(consents);
       }
-
     } catch (error) {
       console.error("Error loading user data:", error);
       toast.error("Failed to load settings");
@@ -170,7 +195,9 @@ const Settings = () => {
         });
         if (emailError) {
           console.error("Error updating email:", emailError);
-          toast.warning("Profile updated but email change requires verification");
+          toast.warning(
+            "Profile updated but email change requires verification",
+          );
         }
       }
 
@@ -266,19 +293,23 @@ const Settings = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            Authorization: `Bearer ${
+              (await supabase.auth.getSession()).data.session?.access_token
+            }`,
           },
           body: JSON.stringify({
             action: "access",
             user_id: user.id,
           }),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Failed to request data export");
 
       const result = await response.json();
-      toast.success("Data export requested. You will receive an email when ready.");
+      toast.success(
+        "Data export requested. You will receive an email when ready.",
+      );
     } catch (error: any) {
       console.error("Error requesting data export:", error);
       toast.error(error.message || "Failed to request data export");
@@ -288,7 +319,11 @@ const Settings = () => {
   };
 
   const handleRequestDataDeletion = async () => {
-    if (!confirm("Are you sure you want to delete all your data? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete all your data? This action cannot be undone.",
+      )
+    ) {
       return;
     }
 
@@ -304,18 +339,22 @@ const Settings = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+            Authorization: `Bearer ${
+              (await supabase.auth.getSession()).data.session?.access_token
+            }`,
           },
           body: JSON.stringify({
             action: "deletion",
             user_id: user.id,
           }),
-        }
+        },
       );
 
       if (!response.ok) throw new Error("Failed to request data deletion");
 
-      toast.success("Data deletion requested. You will receive a confirmation email.");
+      toast.success(
+        "Data deletion requested. You will receive a confirmation email.",
+      );
     } catch (error: any) {
       console.error("Error requesting data deletion:", error);
       toast.error(error.message || "Failed to request data deletion");
@@ -372,33 +411,57 @@ const Settings = () => {
               Settings
             </span>
           </h1>
-          <p className="text-[#E5E7EB]/70 text-lg">Manage your account and preferences</p>
+          <p className="text-[#E5E7EB]/70 text-lg">
+            Manage your account and preferences
+          </p>
         </div>
 
         {/* Settings Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList className="glass-card bg-white/5 border-white/10 p-1">
-            <TabsTrigger value="profile" className="data-[state=active]:bg-[#00D4FF]/20">
+            <TabsTrigger
+              value="profile"
+              className="data-[state=active]:bg-[#00D4FF]/20"
+            >
               <User className="w-4 h-4 mr-2" />
               Profile
             </TabsTrigger>
-            <TabsTrigger value="account" className="data-[state=active]:bg-[#00D4FF]/20">
+            <TabsTrigger
+              value="account"
+              className="data-[state=active]:bg-[#00D4FF]/20"
+            >
               <Shield className="w-4 h-4 mr-2" />
               Account
             </TabsTrigger>
-            <TabsTrigger value="preferences" className="data-[state=active]:bg-[#00D4FF]/20">
+            <TabsTrigger
+              value="preferences"
+              className="data-[state=active]:bg-[#00D4FF]/20"
+            >
               <Globe className="w-4 h-4 mr-2" />
               Preferences
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="data-[state=active]:bg-[#00D4FF]/20">
+            <TabsTrigger
+              value="notifications"
+              className="data-[state=active]:bg-[#00D4FF]/20"
+            >
               <Bell className="w-4 h-4 mr-2" />
               Notifications
             </TabsTrigger>
-            <TabsTrigger value="privacy" className="data-[state=active]:bg-[#00D4FF]/20">
+            <TabsTrigger
+              value="privacy"
+              className="data-[state=active]:bg-[#00D4FF]/20"
+            >
               <Database className="w-4 h-4 mr-2" />
               Privacy
             </TabsTrigger>
-            <TabsTrigger value="api" className="data-[state=active]:bg-[#00D4FF]/20">
+            <TabsTrigger
+              value="api"
+              className="data-[state=active]:bg-[#00D4FF]/20"
+            >
               <Key className="w-4 h-4 mr-2" />
               API
             </TabsTrigger>
@@ -470,17 +533,19 @@ const Settings = () => {
                   disabled={saving}
                   className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90"
                 >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Changes
-                    </>
-                  )}
+                  {saving
+                    ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    )
+                    : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
                 </Button>
               </div>
             </Card>
@@ -509,7 +574,9 @@ const Settings = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E5E7EB]/50 hover:text-white"
                       >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {showPassword
+                          ? <EyeOff className="w-4 h-4" />
+                          : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
@@ -529,14 +596,16 @@ const Settings = () => {
                     disabled={saving || !newPassword || !confirmPassword}
                     className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90"
                   >
-                    {saving ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Changing...
-                      </>
-                    ) : (
-                      "Change Password"
-                    )}
+                    {saving
+                      ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Changing...
+                        </>
+                      )
+                      : (
+                        "Change Password"
+                      )}
                   </Button>
                 </div>
 
@@ -572,7 +641,10 @@ const Settings = () => {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="theme">Theme</Label>
-                  <Select value={theme} onValueChange={(value: any) => setTheme(value)}>
+                  <Select
+                    value={theme}
+                    onValueChange={(value: any) => setTheme(value)}
+                  >
                     <SelectTrigger className="bg-white/5 border-white/20 text-white">
                       <SelectValue />
                     </SelectTrigger>
@@ -606,17 +678,19 @@ const Settings = () => {
                   disabled={saving}
                   className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90"
                 >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Preferences
-                    </>
-                  )}
+                  {saving
+                    ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    )
+                    : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Preferences
+                      </>
+                    )}
                 </Button>
               </div>
             </Card>
@@ -625,7 +699,9 @@ const Settings = () => {
           {/* Notifications Tab */}
           <TabsContent value="notifications">
             <Card className="glass-card p-6 border-white/10">
-              <h2 className="text-2xl font-bold mb-6">Notification Preferences</h2>
+              <h2 className="text-2xl font-bold mb-6">
+                Notification Preferences
+              </h2>
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -637,8 +713,7 @@ const Settings = () => {
                   <Switch
                     checked={notifications.email}
                     onCheckedChange={(checked) =>
-                      setNotifications({ ...notifications, email: checked })
-                    }
+                      setNotifications({ ...notifications, email: checked })}
                   />
                 </div>
 
@@ -652,8 +727,7 @@ const Settings = () => {
                   <Switch
                     checked={notifications.push}
                     onCheckedChange={(checked) =>
-                      setNotifications({ ...notifications, push: checked })
-                    }
+                      setNotifications({ ...notifications, push: checked })}
                   />
                 </div>
 
@@ -667,8 +741,10 @@ const Settings = () => {
                   <Switch
                     checked={notifications.modelTraining}
                     onCheckedChange={(checked) =>
-                      setNotifications({ ...notifications, modelTraining: checked })
-                    }
+                      setNotifications({
+                        ...notifications,
+                        modelTraining: checked,
+                      })}
                   />
                 </div>
 
@@ -682,8 +758,7 @@ const Settings = () => {
                   <Switch
                     checked={notifications.dataSync}
                     onCheckedChange={(checked) =>
-                      setNotifications({ ...notifications, dataSync: checked })
-                    }
+                      setNotifications({ ...notifications, dataSync: checked })}
                   />
                 </div>
 
@@ -697,8 +772,7 @@ const Settings = () => {
                   <Switch
                     checked={notifications.alerts}
                     onCheckedChange={(checked) =>
-                      setNotifications({ ...notifications, alerts: checked })
-                    }
+                      setNotifications({ ...notifications, alerts: checked })}
                   />
                 </div>
 
@@ -707,17 +781,19 @@ const Settings = () => {
                   disabled={saving}
                   className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90"
                 >
-                  {saving ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Notification Settings
-                    </>
-                  )}
+                  {saving
+                    ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    )
+                    : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Notification Settings
+                      </>
+                    )}
                 </Button>
               </div>
             </Card>
@@ -729,7 +805,9 @@ const Settings = () => {
               <h2 className="text-2xl font-bold mb-6">Privacy & Data</h2>
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">GDPR Consent Management</h3>
+                  <h3 className="text-lg font-semibold">
+                    GDPR Consent Management
+                  </h3>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                       <div className="space-y-0.5">
@@ -739,13 +817,12 @@ const Settings = () => {
                         </p>
                       </div>
                       <Switch
-                        checked={
-                          gdprConsents.find((c) => c.consent_type === "data_processing")
-                            ?.granted || false
-                        }
+                        checked={gdprConsents.find((c) =>
+                          c.consent_type === "data_processing"
+                        )
+                          ?.granted || false}
                         onCheckedChange={(checked) =>
-                          handleUpdateConsent("data_processing", checked)
-                        }
+                          handleUpdateConsent("data_processing", checked)}
                         disabled={saving}
                       />
                     </div>
@@ -758,13 +835,12 @@ const Settings = () => {
                         </p>
                       </div>
                       <Switch
-                        checked={
-                          gdprConsents.find((c) => c.consent_type === "marketing")?.granted ||
-                          false
-                        }
+                        checked={gdprConsents.find((c) =>
+                          c.consent_type === "marketing"
+                        )?.granted ||
+                          false}
                         onCheckedChange={(checked) =>
-                          handleUpdateConsent("marketing", checked)
-                        }
+                          handleUpdateConsent("marketing", checked)}
                         disabled={saving}
                       />
                     </div>
@@ -777,13 +853,12 @@ const Settings = () => {
                         </p>
                       </div>
                       <Switch
-                        checked={
-                          gdprConsents.find((c) => c.consent_type === "analytics")?.granted ||
-                          false
-                        }
+                        checked={gdprConsents.find((c) =>
+                          c.consent_type === "analytics"
+                        )?.granted ||
+                          false}
                         onCheckedChange={(checked) =>
-                          handleUpdateConsent("analytics", checked)
-                        }
+                          handleUpdateConsent("analytics", checked)}
                         disabled={saving}
                       />
                     </div>
@@ -827,9 +902,12 @@ const Settings = () => {
                 <div className="p-4 bg-[#00D4FF]/10 border border-[#00D4FF]/30 rounded-lg">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <p className="font-semibold text-white">API Documentation</p>
+                      <p className="font-semibold text-white">
+                        API Documentation
+                      </p>
                       <p className="text-sm text-[#E5E7EB]/70">
-                        View our API documentation to integrate ZERRA into your applications
+                        View our API documentation to integrate ZERRA into your
+                        applications
                       </p>
                     </div>
                     <Button
@@ -849,47 +927,155 @@ const Settings = () => {
                   <p className="text-sm text-[#E5E7EB]/50">
                     Manage your API keys for programmatic access to ZERRA
                   </p>
-                  
-                  {apiKeys.length === 0 ? (
-                    <div className="p-4 bg-white/5 rounded-lg text-center">
-                      <p className="text-[#E5E7EB]/70">No API keys created yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {apiKeys.map((key) => (
-                        <div
-                          key={key.id}
-                          className="flex items-center justify-between p-4 bg-white/5 rounded-lg"
-                        >
-                          <div>
-                            <p className="font-medium text-white">{key.name}</p>
-                            <p className="text-sm text-[#E5E7EB]/50">
-                              Created {new Date(key.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-[#E5E7EB]/70 hover:text-white"
+
+                  {apiKeys.length === 0
+                    ? (
+                      <div className="p-4 bg-white/5 rounded-lg text-center">
+                        <p className="text-[#E5E7EB]/70">
+                          No API keys created yet
+                        </p>
+                      </div>
+                    )
+                    : (
+                      <div className="space-y-2">
+                        {apiKeys.map((key) => (
+                          <div
+                            key={key.id}
+                            className="flex items-center justify-between p-4 bg-white/5 rounded-lg group"
                           >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                            <div>
+                              <p className="font-medium text-white">
+                                {key.name}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <code className="text-xs bg-black/30 px-2 py-0.5 rounded text-[#E5E7EB]/70">
+                                  {key.key.substring(0, 8)}...{key.key
+                                    .substring(key.key.length - 4)}
+                                </code>
+                                <p className="text-xs text-[#E5E7EB]/30">
+                                  Created {new Date(key.created_at)
+                                    .toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(key.key);
+                                  toast.success("API key copied to clipboard");
+                                }}
+                                className="text-[#E5E7EB]/70 hover:text-white"
+                              >
+                                <Copy className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  if (
+                                    !confirm(
+                                      "Are you sure you want to delete this API key? This will break any applications using it.",
+                                    )
+                                  ) return;
+
+                                  try {
+                                    setSaving(true);
+                                    const newKeys = apiKeys.filter((k) =>
+                                      k.id !== key.id
+                                    );
+                                    // Save to profile metadata
+                                    const { error } = await supabase
+                                      .from("user_profiles")
+                                      .update({
+                                        metadata: {
+                                          ...userProfile?.metadata,
+                                          api_keys: newKeys,
+                                        },
+                                        updated_at: new Date().toISOString(),
+                                      })
+                                      .eq("id", userProfile?.id);
+
+                                    if (error) throw error;
+                                    setApiKeys(newKeys);
+                                    toast.success("API key deleted");
+                                  } catch (err: any) {
+                                    toast.error(
+                                      err.message || "Failed to delete API key",
+                                    );
+                                  } finally {
+                                    setSaving(false);
+                                  }
+                                }}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                   <div className="flex gap-2">
                     <Input
                       value={newApiKeyName}
                       onChange={(e) => setNewApiKeyName(e.target.value)}
-                      placeholder="API key name"
+                      placeholder="API key name (e.g. Production App)"
                       className="bg-white/5 border-white/20 text-white"
+                      disabled={saving}
                     />
                     <Button
                       disabled={!newApiKeyName || saving}
+                      onClick={async () => {
+                        if (!newApiKeyName.trim()) return;
+
+                        try {
+                          setSaving(true);
+                          // Generate new key
+                          const newKey = {
+                            id: crypto.randomUUID(),
+                            name: newApiKeyName,
+                            key: `sk_zerra_${
+                              Math.random().toString(36).substring(2, 10)
+                            }${Math.random().toString(36).substring(2, 10)}`,
+                            created_at: new Date().toISOString(),
+                          };
+
+                          const newKeys = [...apiKeys, newKey];
+
+                          // Save to profile metadata
+                          const { error } = await supabase
+                            .from("user_profiles")
+                            .update({
+                              metadata: {
+                                ...userProfile?.metadata,
+                                api_keys: newKeys,
+                              },
+                              updated_at: new Date().toISOString(),
+                            })
+                            .eq("id", userProfile?.id);
+
+                          if (error) throw error;
+
+                          setApiKeys(newKeys);
+                          setNewApiKeyName("");
+                          toast.success("API key created successfully");
+                        } catch (err: any) {
+                          console.error("Failed to create key:", err);
+                          toast.error(
+                            err.message || "Failed to create API key",
+                          );
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
                       className="bg-gradient-to-r from-[#00D4FF] to-[#6B46C1] hover:from-[#00D4FF]/90 hover:to-[#6B46C1]/90"
                     >
+                      {saving
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <Plus className="w-4 h-4 mr-2" />}
                       Create Key
                     </Button>
                   </div>
