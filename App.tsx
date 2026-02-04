@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -11,6 +11,7 @@ import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import ApiDocs from "./pages/ApiDocs";
 import { AuthGuard } from "./components/AuthGuard";
 import FloatingChat from "./components/FloatingChat";
 import SidebarLayout from "./components/SidebarLayout";
@@ -23,13 +24,18 @@ const queryClient = new QueryClient();
 
 const NavigationTracker = () => {
   const location = useLocation();
-  
+
   useEffect(() => {
-    LoggerService.info('Navigation', 'PAGE_VIEW', `Navigated to ${location.pathname}`, {
-      path: location.pathname,
-      search: location.search,
-      hash: location.hash
-    });
+    LoggerService.info(
+      "Navigation",
+      "PAGE_VIEW",
+      `Navigated to ${location.pathname}`,
+      {
+        path: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      },
+    );
   }, [location]);
 
   return null;
@@ -37,21 +43,27 @@ const NavigationTracker = () => {
 
 const AuthTracker = () => {
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      // Log auth events
-      if (event === 'SIGNED_IN') {
-        LoggerService.info('Auth', 'LOGIN', 'User signed in', { 
-            userId: session?.user?.id, 
-            email: session?.user?.email 
-        });
-      } else if (event === 'SIGNED_OUT') {
-        LoggerService.info('Auth', 'LOGOUT', 'User signed out');
-      } else if (event === 'USER_UPDATED') {
-        LoggerService.info('Auth', 'USER_UPDATED', 'User account updated');
-      } else if (event === 'PASSWORD_RECOVERY') {
-        LoggerService.info('Auth', 'PASSWORD_RECOVERY', 'Password recovery initiated');
-      }
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        // Log auth events
+        if (event === "SIGNED_IN") {
+          LoggerService.info("Auth", "LOGIN", "User signed in", {
+            userId: session?.user?.id,
+            email: session?.user?.email,
+          });
+        } else if (event === "SIGNED_OUT") {
+          LoggerService.info("Auth", "LOGOUT", "User signed out");
+        } else if (event === "USER_UPDATED") {
+          LoggerService.info("Auth", "USER_UPDATED", "User account updated");
+        } else if (event === "PASSWORD_RECOVERY") {
+          LoggerService.info(
+            "Auth",
+            "PASSWORD_RECOVERY",
+            "Password recovery initiated",
+          );
+        }
+      },
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -68,12 +80,7 @@ const App = () => (
         <AnalyticsProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true,
-            }}
-          >
+          <BrowserRouter>
             <NavigationTracker />
             <AuthTracker />
             <Routes>
@@ -123,6 +130,7 @@ const App = () => (
                   </AuthGuard>
                 }
               />
+              <Route path="/api-docs" element={<ApiDocs />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
